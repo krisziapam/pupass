@@ -18,6 +18,7 @@
       --border: #E6E6E6;
       --green: #2E7D32;
       --red: #B00020;
+      --blue: #1565C0;
     }
 
     * {
@@ -206,6 +207,26 @@
       border: 1px solid var(--maroon);
     }
 
+    .btn-small {
+      width: auto;
+      min-height: 36px;
+      font-size: 12px;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      margin-right: 6px;
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: white;
+    }
+
     .input-box {
       width: 100%;
       height: 52px;
@@ -216,6 +237,20 @@
       margin-bottom: 14px;
       font-size: 14px;
       color: var(--text);
+    }
+
+    .input-error {
+      border-color: var(--red);
+      background: #fff5f5;
+    }
+
+    .error-text {
+      display: none;
+      color: var(--red);
+      font-size: 12px;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      font-weight: 700;
     }
 
     textarea.input-box {
@@ -310,6 +345,21 @@
       font-size: 12px;
       font-weight: 800;
       margin-top: 8px;
+    }
+
+    .status-waiting {
+      background: var(--light-gold);
+      color: var(--dark-maroon);
+    }
+
+    .status-serving {
+      background: #E3F2FD;
+      color: var(--blue);
+    }
+
+    .status-completed {
+      background: #E8F5E9;
+      color: var(--green);
     }
 
     .detail-row {
@@ -489,6 +539,13 @@
       margin-bottom: 4px;
     }
 
+    .admin-actions {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     .bottom-nav {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -602,7 +659,7 @@
         <input class="input-box" type="text" placeholder="Admin Username" />
         <input class="input-box" type="password" placeholder="Password" />
 
-        <button class="btn" onclick="showScreen('admin')">Log In</button>
+        <button class="btn" onclick="openAdminDashboard()">Log In</button>
 
         <div class="link">Forgot Password?</div>
         <p class="muted-center">For authorized PUP staff only.</p>
@@ -616,14 +673,14 @@
           <div class="small-logo">PUP</div>
           <div>
             <h1>Hello, Isko/Iska!</h1>
-            <p>Book a student service appointment without logging in.</p>
+            <p>Book a student service appointment with student number verification.</p>
           </div>
         </div>
       </div>
 
       <div class="card gold-card">
         <h2>Quick Appointment</h2>
-        <p>No login needed. Enter your appointment details, confirm your schedule, and save or screenshot your queue pass.</p>
+        <p>No login needed, but your student number is required for verification before generating a queue pass.</p>
         <span class="status-pill">Student Access</span>
       </div>
 
@@ -727,13 +784,14 @@
       </div>
 
       <label>Student Name</label>
-      <input class="input-box" type="text" id="studentName" value="Maria Santos" />
+      <input class="input-box" type="text" id="studentName" placeholder="Enter your full name" />
 
-      <label>Student Number</label>
-      <input class="input-box" type="text" id="studentNumber" value="2022-00001-MN-0" />
+      <label>Student Number <span style="color:var(--red);">*</span></label>
+      <input class="input-box" type="text" id="studentNumber" placeholder="Required e.g., 2022-00001-MN-0" />
+      <div class="error-text" id="studentNumberError">Student number is required for verification.</div>
 
       <label>Course / Year</label>
-      <input class="input-box" type="text" id="studentCourse" value="BSIT - 3rd Year" />
+      <input class="input-box" type="text" id="studentCourse" placeholder="e.g., BSIT - 3rd Year" />
 
       <label>Request Type</label>
       <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
@@ -756,7 +814,7 @@
       <textarea class="input-box" id="purposeText"></textarea>
 
       <div class="card gold-card">
-        <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
+        <p><b>Verification:</b> A valid student number is required before your appointment pass can be generated.</p>
       </div>
 
       <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
@@ -970,50 +1028,25 @@
       <div class="admin-stats">
         <div class="stat-card">
           <p>Today’s Appointments</p>
-          <strong>45</strong>
+          <strong id="adminTotal">0</strong>
         </div>
         <div class="stat-card">
           <p>Waiting</p>
-          <strong>12</strong>
+          <strong id="adminWaiting">0</strong>
         </div>
         <div class="stat-card">
           <p>Serving</p>
-          <strong>3</strong>
+          <strong id="adminServing">0</strong>
         </div>
         <div class="stat-card">
           <p>Completed</p>
-          <strong>30</strong>
+          <strong id="adminCompleted">0</strong>
         </div>
       </div>
 
       <div class="section-title">Appointment Queue</div>
+      <div id="adminAppointmentList"></div>
 
-      <div class="list-item">
-        <strong>R-020</strong>
-        <p>Maria Santos · Registrar</p>
-        <span class="status-pill">Serving</span>
-      </div>
-
-      <div class="list-item">
-        <strong>C-014</strong>
-        <p>Juan Dela Cruz · Cashier</p>
-        <span class="status-pill">Waiting</span>
-      </div>
-
-      <div class="list-item">
-        <strong>L-008</strong>
-        <p>Ana Reyes · Library</p>
-        <span class="status-pill">Waiting</span>
-      </div>
-
-      <div class="list-item">
-        <strong>G-006</strong>
-        <p>Mark Rivera · Guidance Office</p>
-        <span class="status-pill">Waiting</span>
-      </div>
-
-      <button class="btn">Mark as Serving</button>
-      <button class="btn btn-outline">Mark as Completed</button>
       <button class="btn btn-outline" onclick="showScreen('splash')">Log Out</button>
     </section>
 
@@ -1103,6 +1136,41 @@
       }
     };
 
+    let adminAppointments = [
+      {
+        queue: "R-020",
+        student: "Maria Santos",
+        studentNumber: "2022-00001-MN-0",
+        service: "Registrar",
+        request: "Certificate of Registration",
+        status: "Serving"
+      },
+      {
+        queue: "C-014",
+        student: "Juan Dela Cruz",
+        studentNumber: "2022-00002-MN-0",
+        service: "Cashier",
+        request: "Assessment Inquiry",
+        status: "Waiting"
+      },
+      {
+        queue: "L-008",
+        student: "Ana Reyes",
+        studentNumber: "2022-00003-MN-0",
+        service: "Library",
+        request: "Library Clearance",
+        status: "Waiting"
+      },
+      {
+        queue: "G-006",
+        student: "Mark Rivera",
+        studentNumber: "2022-00004-MN-0",
+        service: "Guidance Office",
+        request: "Counseling Appointment",
+        status: "Waiting"
+      }
+    ];
+
     function showScreen(screenId) {
       const screens = document.querySelectorAll(".screen");
       screens.forEach(screen => screen.classList.remove("active"));
@@ -1117,6 +1185,11 @@
 
     function selectAdmin() {
       showScreen("adminLogin");
+    }
+
+    function openAdminDashboard() {
+      renderAdminAppointments();
+      showScreen("admin");
     }
 
     function selectService(serviceKey) {
@@ -1145,12 +1218,34 @@
       document.getElementById("purposeText").value = "Request for " + requestType;
     }
 
+    function validateStudentNumber() {
+      const studentNumberInput = document.getElementById("studentNumber");
+      const studentNumberError = document.getElementById("studentNumberError");
+      const studentNumber = studentNumberInput.value.trim();
+
+      if (studentNumber === "") {
+        studentNumberInput.classList.add("input-error");
+        studentNumberError.style.display = "block";
+        return false;
+      }
+
+      studentNumberInput.classList.remove("input-error");
+      studentNumberError.style.display = "none";
+      return true;
+    }
+
     function prepareConfirmation() {
+      const isStudentNumberValid = validateStudentNumber();
+
+      if (!isStudentNumberValid) {
+        return;
+      }
+
       const service = services[selectedServiceKey];
 
-      const studentName = document.getElementById("studentName").value;
-      const studentNumber = document.getElementById("studentNumber").value;
-      const studentCourse = document.getElementById("studentCourse").value;
+      const studentName = document.getElementById("studentName").value.trim() || "Student";
+      const studentNumber = document.getElementById("studentNumber").value.trim();
+      const studentCourse = document.getElementById("studentCourse").value.trim() || "Not specified";
       const requestType = document.getElementById("requestType").value;
       const date = document.getElementById("appointmentDate").value;
       const time = document.getElementById("appointmentTime").value;
@@ -1171,8 +1266,8 @@
     function generatePass() {
       const service = services[selectedServiceKey];
 
-      const studentName = document.getElementById("studentName").value;
-      const studentNumber = document.getElementById("studentNumber").value;
+      const studentName = document.getElementById("studentName").value.trim() || "Student";
+      const studentNumber = document.getElementById("studentNumber").value.trim();
       const requestType = document.getElementById("requestType").value;
       const date = document.getElementById("appointmentDate").value;
       const time = document.getElementById("appointmentTime").value;
@@ -1195,8 +1290,79 @@
       window.print();
     }
 
+    function getStatusClass(status) {
+      if (status === "Serving") {
+        return "status-serving";
+      }
+
+      if (status === "Completed") {
+        return "status-completed";
+      }
+
+      return "status-waiting";
+    }
+
+    function renderAdminAppointments() {
+      const list = document.getElementById("adminAppointmentList");
+      list.innerHTML = "";
+
+      const total = adminAppointments.length;
+      const waiting = adminAppointments.filter(item => item.status === "Waiting").length;
+      const serving = adminAppointments.filter(item => item.status === "Serving").length;
+      const completed = adminAppointments.filter(item => item.status === "Completed").length;
+
+      document.getElementById("adminTotal").innerText = total;
+      document.getElementById("adminWaiting").innerText = waiting;
+      document.getElementById("adminServing").innerText = serving;
+      document.getElementById("adminCompleted").innerText = completed;
+
+      adminAppointments.forEach(function(item, index) {
+        const appointmentCard = document.createElement("div");
+        appointmentCard.className = "list-item";
+
+        let actionButtons = "";
+
+        if (item.status === "Waiting") {
+          actionButtons = `
+            <button class="btn btn-small btn-blue" onclick="updateAdminStatus(${index}, 'Serving')">Now Serving</button>
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus(${index}, 'Completed')">Complete</button>
+          `;
+        } else if (item.status === "Serving") {
+          actionButtons = `
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus(${index}, 'Completed')">Complete</button>
+          `;
+        } else {
+          actionButtons = `
+            <button class="btn btn-small btn-outline" disabled>Completed</button>
+          `;
+        }
+
+        appointmentCard.innerHTML = `
+          <strong>${item.queue}</strong>
+          <p>${item.student} · ${item.service}</p>
+          <p style="font-size:12px;">Student No: ${item.studentNumber}</p>
+          <p style="font-size:12px;">Request: ${item.request}</p>
+          <span class="status-pill ${getStatusClass(item.status)}">${item.status}</span>
+          <div class="admin-actions">
+            ${actionButtons}
+          </div>
+        `;
+
+        list.appendChild(appointmentCard);
+      });
+    }
+
+    function updateAdminStatus(index, newStatus) {
+      adminAppointments[index].status = newStatus;
+      renderAdminAppointments();
+    }
+
     window.onload = function() {
       selectServiceDataOnly("registrar");
+
+      document.getElementById("studentNumber").addEventListener("input", function() {
+        validateStudentNumber();
+      });
     };
 
     function selectServiceDataOnly(serviceKey) {
