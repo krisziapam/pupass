@@ -19,6 +19,7 @@
       --green: #2e7d32;
       --red: #b00020;
       --blue: #1565c0;
+      --gray: #777777;
     }
 
     * {
@@ -29,27 +30,27 @@
     }
 
     body {
-      background: #e5e5e5;
+      background: linear-gradient(135deg, #f2f2f2, #e8e8e8);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
     }
 
-    .phone {
-      width: 390px;
-      min-height: 844px;
+    .app {
+      width: min(1120px, 100%);
+      min-height: 760px;
       background: var(--bg);
       border-radius: 28px;
       overflow: hidden;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
     }
 
     .screen {
       display: none;
-      min-height: 844px;
-      padding: 24px;
+      min-height: 760px;
+      padding: 32px;
     }
 
     .screen.active {
@@ -60,7 +61,18 @@
       background: var(--maroon);
       color: white;
       text-align: center;
-      padding-top: 70px;
+      display: none;
+      place-items: center;
+      padding: 40px 24px;
+    }
+
+    .splash.active {
+      display: grid;
+    }
+
+    .splash-content {
+      max-width: 520px;
+      width: 100%;
     }
 
     .logo-circle {
@@ -94,7 +106,7 @@
     }
 
     .app-title {
-      font-size: 44px;
+      font-size: 50px;
       font-weight: 900;
       margin-bottom: 8px;
     }
@@ -104,18 +116,18 @@
     }
 
     h1 {
-      font-size: 26px;
+      font-size: 30px;
       margin-bottom: 8px;
       color: var(--text);
     }
 
     h2 {
-      font-size: 20px;
+      font-size: 21px;
       margin-bottom: 10px;
     }
 
     h3 {
-      font-size: 15px;
+      font-size: 16px;
       margin-bottom: 6px;
     }
 
@@ -139,29 +151,35 @@
 
     .tagline {
       color: var(--light-gold) !important;
-      margin-top: 14px;
-      margin-bottom: 50px;
-      padding: 0 20px;
+      margin: 16px auto 36px;
+      max-width: 420px;
     }
 
-    .header {
+    .page-header {
       background: var(--maroon);
-      margin: -24px -24px 24px;
-      padding: 28px 24px 30px;
+      margin: -32px -32px 28px;
+      padding: 30px 32px;
       color: white;
-      border-bottom-left-radius: 26px;
-      border-bottom-right-radius: 26px;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
     }
 
-    .header h1,
-    .header p {
+    .page-header h1,
+    .page-header p {
       color: white;
     }
 
     .header-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+    }
+
+    .desktop-layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1.4fr;
+      gap: 24px;
+      align-items: start;
     }
 
     .card {
@@ -268,8 +286,8 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
       margin-top: 14px;
     }
 
@@ -314,17 +332,19 @@
 
     .quick-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
     }
 
     .quick-card {
       background: white;
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px;
       border: 1px solid var(--border);
       font-weight: 700;
       font-size: 13px;
+      cursor: pointer;
+      min-height: 74px;
     }
 
     .status-pill {
@@ -351,6 +371,11 @@
     .status-completed {
       background: #e8f5e9;
       color: var(--green);
+    }
+
+    .status-cancelled {
+      background: #eeeeee;
+      color: var(--gray);
     }
 
     .detail-row {
@@ -435,13 +460,19 @@
       font-weight: 700;
     }
 
+    .queue-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
     .now-serving {
       background: var(--maroon);
       color: white;
       border-radius: 20px;
       padding: 24px;
       text-align: center;
-      margin: 18px 0;
     }
 
     .now-serving p {
@@ -451,7 +482,7 @@
 
     .now-serving strong {
       display: block;
-      font-size: 48px;
+      font-size: 42px;
       margin-top: 8px;
     }
 
@@ -459,9 +490,8 @@
       background: white;
       border: 2px solid var(--gold);
       border-radius: 20px;
-      padding: 20px;
+      padding: 24px;
       text-align: center;
-      margin-bottom: 16px;
     }
 
     .next-line-card h1 {
@@ -512,7 +542,7 @@
 
     .admin-stats {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-bottom: 18px;
     }
@@ -529,6 +559,12 @@
       color: var(--maroon);
       display: block;
       margin-top: 4px;
+    }
+
+    .admin-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
     }
 
     .list-item {
@@ -567,7 +603,11 @@
       font-weight: 700;
     }
 
-    .bottom-nav div:first-child {
+    .nav-item {
+      cursor: pointer;
+    }
+
+    .nav-item.active {
       color: var(--maroon);
     }
 
@@ -579,13 +619,23 @@
       cursor: pointer;
     }
 
-    @media (max-width: 430px) {
+    .login-wrapper {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .center-block {
+      text-align: center;
+      margin-top: 35px;
+    }
+
+    @media (max-width: 768px) {
       body {
         padding: 0;
         background: var(--bg);
       }
 
-      .phone {
+      .app {
         width: 100%;
         min-height: 100vh;
         border-radius: 0;
@@ -594,6 +644,55 @@
 
       .screen {
         min-height: 100vh;
+        padding: 24px;
+      }
+
+      .page-header {
+        margin: -24px -24px 24px;
+        padding: 28px 24px 30px;
+      }
+
+      .desktop-layout {
+        display: block;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .quick-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .queue-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .admin-list {
+        grid-template-columns: 1fr;
+      }
+
+      .app-title {
+        font-size: 44px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .service-card {
+        min-height: 130px;
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 26px;
       }
     }
 
@@ -604,7 +703,7 @@
         display: block;
       }
 
-      .phone {
+      .app {
         width: 100%;
         box-shadow: none;
         border-radius: 0;
@@ -636,51 +735,55 @@
 </head>
 
 <body>
-  <main class="phone">
+  <main class="app">
 
     <!-- SPLASH -->
     <section id="splash" class="screen splash active">
-      <div class="logo-circle">PUP</div>
-      <div class="app-title">PU<span>Pass</span></div>
-      <p>Student Appointment & Queue Pass System</p>
-      <p class="tagline">Book your slot. Get your pass. Skip the long line.</p>
+      <div class="splash-content">
+        <div class="logo-circle">PUP</div>
+        <div class="app-title">PU<span>Pass</span></div>
+        <p>Student Appointment & Queue Pass System</p>
+        <p class="tagline">Book your slot. Get your pass. Skip the long line.</p>
 
-      <button class="btn btn-gold" onclick="showScreen('studentLogin')">Continue as Student</button>
-      <button class="btn btn-outline" onclick="showScreen('adminLogin')" style="margin-top:14px;">Continue as Admin</button>
+        <button class="btn btn-gold" onclick="showScreen('studentLogin')">Continue as Student</button>
+        <button class="btn btn-outline" onclick="showScreen('adminLogin')" style="margin-top:14px;">Continue as Admin</button>
 
-      <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
+        <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
+      </div>
     </section>
 
     <!-- STUDENT LOGIN -->
     <section id="studentLogin" class="screen">
-      <div class="back" onclick="showScreen('splash')">← Back</div>
+      <div class="login-wrapper">
+        <div class="back" onclick="showScreen('splash')">← Back</div>
 
-      <div style="text-align:center; margin-top: 35px;">
-        <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
-        <h1>Student Login</h1>
-        <p>Enter your Student ID Number and Full Name to continue booking.</p>
-      </div>
-
-      <div style="margin-top: 34px;">
-        <label>Student ID Number <span style="color:var(--red);">*</span></label>
-        <input class="input-box" type="text" id="studentIdInput" placeholder="e.g., 2022-00001-MN-0" />
-        <div class="error-text" id="studentIdError">Student ID Number is required.</div>
-
-        <label>Full Name <span style="color:var(--red);">*</span></label>
-        <input class="input-box" type="text" id="fullNameInput" placeholder="Enter your full name" />
-        <div class="error-text" id="fullNameError">Full Name is required.</div>
-
-        <div class="card gold-card">
-          <p><b>Note:</b> No password is required. Your Student ID Number and Full Name will be used for appointment verification.</p>
+        <div class="center-block">
+          <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
+          <h1>Student Login</h1>
+          <p>Enter your Student ID Number and Full Name to continue booking.</p>
         </div>
 
-        <button class="btn" onclick="studentLogin()">Continue to Booking</button>
+        <div style="margin-top: 34px;">
+          <label>Student ID Number <span style="color:var(--red);">*</span></label>
+          <input class="input-box" type="text" id="studentIdInput" placeholder="e.g., 2022-00001-MN-0" />
+          <div class="error-text" id="studentIdError">Student ID Number is required.</div>
+
+          <label>Full Name <span style="color:var(--red);">*</span></label>
+          <input class="input-box" type="text" id="fullNameInput" placeholder="Enter your full name" />
+          <div class="error-text" id="fullNameError">Full Name is required.</div>
+
+          <div class="card gold-card">
+            <p><b>Note:</b> No password is required. Your Student ID Number and Full Name will be used for appointment verification.</p>
+          </div>
+
+          <button class="btn" onclick="studentLogin()">Continue to Booking</button>
+        </div>
       </div>
     </section>
 
     <!-- STUDENT DASHBOARD -->
     <section id="dashboard" class="screen">
-      <div class="header">
+      <div class="page-header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
@@ -690,54 +793,72 @@
         </div>
       </div>
 
-      <div class="card gold-card">
-        <h2>Student Verified</h2>
-        <p id="verifiedStudentText">Student ID Number and Full Name verified.</p>
-        <span class="status-pill">Verified</span>
-      </div>
+      <div class="desktop-layout">
+        <div>
+          <div class="card gold-card">
+            <h2>Student Verified</h2>
+            <p id="verifiedStudentText">Student ID Number and Full Name verified.</p>
+            <span class="status-pill">Verified</span>
+          </div>
 
-      <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
+          <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
 
-      <div class="section-title">Quick Access</div>
-      <div class="quick-row">
-        <div class="quick-card">Appointment Pass</div>
-        <div class="quick-card">Queue Status</div>
-        <div class="quick-card">Notifications</div>
-        <div class="quick-card">Help</div>
-      </div>
-
-      <div class="section-title">Popular Services</div>
-      <div class="grid">
-        <div class="service-card" onclick="selectService('registrar')">
-          <div class="icon">R</div>
-          <h3>Registrar</h3>
-          <p>Documents and enrollment concerns</p>
+          <div class="section-title">Quick Access</div>
+          <div class="quick-row">
+            <div class="quick-card" onclick="showAppointmentScreen()">My Appointment</div>
+            <div class="quick-card" onclick="showQueueFromNav()">Queue Status</div>
+            <div class="quick-card">Notifications</div>
+            <div class="quick-card">Help</div>
+          </div>
         </div>
 
-        <div class="service-card" onclick="selectService('cashier')">
-          <div class="icon">C</div>
-          <h3>Cashier</h3>
-          <p>Payment and assessment concerns</p>
-        </div>
+        <div>
+          <div class="section-title">Popular Services</div>
+          <div class="grid">
+            <div class="service-card" onclick="selectService('registrar')">
+              <div class="icon">R</div>
+              <h3>Registrar</h3>
+              <p>Documents and enrollment concerns</p>
+            </div>
 
-        <div class="service-card" onclick="selectService('library')">
-          <div class="icon">L</div>
-          <h3>Library</h3>
-          <p>Clearance and borrowing concerns</p>
-        </div>
+            <div class="service-card" onclick="selectService('cashier')">
+              <div class="icon">C</div>
+              <h3>Cashier</h3>
+              <p>Payment and assessment concerns</p>
+            </div>
 
-        <div class="service-card" onclick="selectService('guidance')">
-          <div class="icon">G</div>
-          <h3>Guidance</h3>
-          <p>Counseling appointments</p>
+            <div class="service-card" onclick="selectService('library')">
+              <div class="icon">L</div>
+              <h3>Library</h3>
+              <p>Clearance and borrowing concerns</p>
+            </div>
+
+            <div class="service-card" onclick="selectService('guidance')">
+              <div class="icon">G</div>
+              <h3>Guidance</h3>
+              <p>Counseling appointments</p>
+            </div>
+
+            <div class="service-card" onclick="selectService('studentAffairs')">
+              <div class="icon">S</div>
+              <h3>Student Affairs</h3>
+              <p>ID concerns and assistance</p>
+            </div>
+
+            <div class="service-card" onclick="selectService('scholarship')">
+              <div class="icon">₱</div>
+              <h3>Scholarship</h3>
+              <p>Scholarship application and inquiry</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="bottom-nav">
-        <div>Home</div>
-        <div>Services</div>
-        <div>Queue</div>
-        <div>Help</div>
+        <div class="nav-item active" onclick="showScreen('dashboard')">Home</div>
+        <div class="nav-item" onclick="goToServices()">Services</div>
+        <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+        <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
       </div>
     </section>
 
@@ -784,6 +905,13 @@
           <p>Scholarship application and inquiry</p>
         </div>
       </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+        <div class="nav-item active" onclick="goToServices()">Services</div>
+        <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+        <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+      </div>
     </section>
 
     <!-- BOOK APPOINTMENT -->
@@ -792,51 +920,55 @@
       <h1>Book Appointment</h1>
       <p>Your verified student details will be used for this appointment.</p>
 
-      <div class="card gold-card">
-        <h2>Student Details</h2>
+      <div class="desktop-layout">
+        <div>
+          <div class="card gold-card">
+            <h2>Student Details</h2>
+            <div class="detail-row">
+              <span>Student ID</span>
+              <span id="bookStudentId">Required</span>
+            </div>
+            <div class="detail-row">
+              <span>Full Name</span>
+              <span id="bookFullName">Student</span>
+            </div>
+          </div>
 
-        <div class="detail-row">
-          <span>Student ID</span>
-          <span id="bookStudentId">Required</span>
+          <div class="card">
+            <p>Selected Service</p>
+            <h2 id="selectedOffice">Registrar Office</h2>
+            <p id="selectedDescription">Document request and enrollment-related concerns.</p>
+          </div>
         </div>
 
-        <div class="detail-row">
-          <span>Full Name</span>
-          <span id="bookFullName">Student</span>
+        <div>
+          <label>Request Type</label>
+          <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
+
+          <label>Appointment Date</label>
+          <input class="input-box" type="text" id="appointmentDate" value="May 10, 2026" />
+
+          <label>Appointment Time</label>
+          <select class="input-box" id="appointmentTime">
+            <option>8:00 AM</option>
+            <option>9:00 AM</option>
+            <option selected>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>1:00 PM</option>
+            <option>2:00 PM</option>
+            <option>3:00 PM</option>
+          </select>
+
+          <label>Purpose of Visit</label>
+          <textarea class="input-box" id="purposeText"></textarea>
+
+          <div class="card gold-card">
+            <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
+          </div>
+
+          <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
         </div>
       </div>
-
-      <div class="card">
-        <p>Selected Service</p>
-        <h2 id="selectedOffice">Registrar Office</h2>
-        <p id="selectedDescription">Document request and enrollment-related concerns.</p>
-      </div>
-
-      <label>Request Type</label>
-      <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
-
-      <label>Appointment Date</label>
-      <input class="input-box" type="text" id="appointmentDate" value="May 10, 2026" />
-
-      <label>Appointment Time</label>
-      <select class="input-box" id="appointmentTime">
-        <option>8:00 AM</option>
-        <option>9:00 AM</option>
-        <option selected>10:00 AM</option>
-        <option>11:00 AM</option>
-        <option>1:00 PM</option>
-        <option>2:00 PM</option>
-        <option>3:00 PM</option>
-      </select>
-
-      <label>Purpose of Visit</label>
-      <textarea class="input-box" id="purposeText"></textarea>
-
-      <div class="card gold-card">
-        <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
-      </div>
-
-      <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
     </section>
 
     <!-- CONFIRMATION -->
@@ -850,40 +982,30 @@
           <span>Student ID</span>
           <span id="confirmStudentId">Required</span>
         </div>
-
         <div class="detail-row">
           <span>Full Name</span>
           <span id="confirmFullName">Student</span>
         </div>
-
         <div class="detail-row">
           <span>Office</span>
           <span id="confirmOffice">Registrar</span>
         </div>
-
         <div class="detail-row">
           <span>Request Type</span>
           <span id="confirmRequest">Certificate of Registration</span>
         </div>
-
         <div class="detail-row">
           <span>Date</span>
           <span id="confirmDate">May 10, 2026</span>
         </div>
-
         <div class="detail-row">
           <span>Time</span>
           <span id="confirmTime">10:00 AM</span>
         </div>
-
         <div class="detail-row">
           <span>Purpose</span>
           <span id="confirmPurpose">Request for COR</span>
         </div>
-      </div>
-
-      <div class="card gold-card">
-        <p>Your queue pass will be generated after confirmation. You may print, save as PDF, or screenshot your pass.</p>
       </div>
 
       <button class="btn" onclick="generatePass()">Confirm Booking</button>
@@ -896,123 +1018,135 @@
       <h1>Your Digital Queue Pass</h1>
       <p>Save, print, or screenshot this pass and show it at the office.</p>
 
-      <div class="queue-pass">
-        <div class="pass-top">
-          <div>
-            <strong>PUPass</strong>
-            <p>Confirmed Appointment</p>
+      <div class="desktop-layout">
+        <div>
+          <div class="queue-pass">
+            <div class="pass-top">
+              <div>
+                <strong>PUPass</strong>
+                <p>Confirmed Appointment</p>
+              </div>
+              <div class="small-logo">PUP</div>
+            </div>
+
+            <div class="pass-body">
+              <div class="queue-label">Queue Number</div>
+              <div class="queue-number" id="passQueue">R-025</div>
+
+              <div class="detail-row">
+                <span>Student ID</span>
+                <span id="passStudentId">Required</span>
+              </div>
+              <div class="detail-row">
+                <span>Full Name</span>
+                <span id="passFullName">Student</span>
+              </div>
+              <div class="detail-row">
+                <span>Office</span>
+                <span id="passOffice">Registrar</span>
+              </div>
+              <div class="detail-row">
+                <span>Request</span>
+                <span id="passRequest">Certificate of Registration</span>
+              </div>
+              <div class="detail-row">
+                <span>Date</span>
+                <span id="passDate">May 10, 2026</span>
+              </div>
+              <div class="detail-row">
+                <span>Time</span>
+                <span id="passTime">10:00 AM</span>
+              </div>
+              <div class="detail-row">
+                <span>Status</span>
+                <span style="color:var(--green);" id="passStatus">Confirmed</span>
+              </div>
+
+              <div class="qr">QR</div>
+              <p style="font-size:12px;">Scan or present this pass at the office counter.</p>
+            </div>
           </div>
-          <div class="small-logo">PUP</div>
         </div>
 
-        <div class="pass-body">
-          <div class="queue-label">Queue Number</div>
-          <div class="queue-number" id="passQueue">R-025</div>
-
-          <div class="detail-row">
-            <span>Student ID</span>
-            <span id="passStudentId">Required</span>
+        <div>
+          <div class="card gold-card">
+            <h2>Appointment Actions</h2>
+            <p>You can save your pass, view queue status, or manage your appointment.</p>
           </div>
 
-          <div class="detail-row">
-            <span>Full Name</span>
-            <span id="passFullName">Student</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Office</span>
-            <span id="passOffice">Registrar</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Request</span>
-            <span id="passRequest">Certificate of Registration</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Date</span>
-            <span id="passDate">May 10, 2026</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Time</span>
-            <span id="passTime">10:00 AM</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Status</span>
-            <span style="color:var(--green);">Confirmed</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Estimated Wait</span>
-            <span>15 minutes</span>
-          </div>
-
-          <div class="qr">QR</div>
-          <p style="font-size:12px;">Scan or present this pass at the office counter.</p>
+          <button class="btn btn-gold" onclick="printPass()">Print / Save Queue Pass</button>
+          <button class="btn" onclick="showQueueFromNav()">View Queue Status</button>
+          <button class="btn btn-outline" onclick="showAppointmentScreen()">View My Appointment</button>
         </div>
       </div>
+    </section>
 
-      <button class="btn btn-gold" onclick="printPass()">Print / Save Queue Pass</button>
-      <button class="btn" onclick="showScreen('queue')">View Queue Status</button>
-      <p class="muted-center">You may also take a screenshot of this pass.</p>
+    <!-- MY APPOINTMENT -->
+    <section id="appointment" class="screen">
+      <div class="back" onclick="showScreen('dashboard')">← Home</div>
+      <h1>My Appointment</h1>
+      <p>View your appointment status, queue pass, or reschedule your booking.</p>
+
+      <div id="appointmentContent"></div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+        <div class="nav-item" onclick="goToServices()">Services</div>
+        <div class="nav-item active" onclick="showAppointmentScreen()">Appointment</div>
+        <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+      </div>
+    </section>
+
+    <!-- RESCHEDULE -->
+    <section id="reschedule" class="screen">
+      <div class="back" onclick="showAppointmentScreen()">← Back</div>
+      <h1>Reschedule Appointment</h1>
+      <p>Choose a new date and time for your appointment.</p>
+
+      <div class="desktop-layout">
+        <div>
+          <div class="card">
+            <p>Current Appointment</p>
+            <h2 id="rescheduleOffice">Registrar</h2>
+            <p id="rescheduleCurrentDate">May 10, 2026 · 10:00 AM</p>
+          </div>
+        </div>
+
+        <div>
+          <label>New Appointment Date</label>
+          <input class="input-box" type="text" id="newAppointmentDate" value="May 15, 2026" />
+
+          <label>New Appointment Time</label>
+          <select class="input-box" id="newAppointmentTime">
+            <option>8:00 AM</option>
+            <option>9:00 AM</option>
+            <option selected>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>1:00 PM</option>
+            <option>2:00 PM</option>
+            <option>3:00 PM</option>
+          </select>
+
+          <button class="btn" onclick="confirmReschedule()">Confirm Reschedule</button>
+          <button class="btn btn-outline" onclick="showAppointmentScreen()">Cancel</button>
+        </div>
+      </div>
     </section>
 
     <!-- QUEUE STATUS -->
     <section id="queue" class="screen">
-      <div class="back" onclick="showScreen('pass')">← Back</div>
+      <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Queue Status</h1>
       <p>Track your current position in line.</p>
 
-      <div class="now-serving">
-        <p>Now Serving</p>
-        <strong id="nowServing">R-020</strong>
+      <div id="queueContent"></div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+        <div class="nav-item" onclick="goToServices()">Services</div>
+        <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+        <div class="nav-item active" onclick="showQueueFromNav()">Queue</div>
       </div>
-
-      <div class="next-line-card">
-        <p>Next in Line</p>
-        <h1 id="nextInLine">R-021</h1>
-        <p>This is the next queue number to be called.</p>
-      </div>
-
-      <div class="card">
-        <p>Your Queue Number</p>
-        <h1 id="yourQueue" style="color:var(--maroon);font-size:44px;">R-025</h1>
-        <span class="status-pill">Waiting</span>
-      </div>
-
-      <div class="card gold-card">
-        <p><b id="studentsAheadText">There are 4 students ahead of you.</b></p>
-        <p>Please be ready when your number is near or next in line.</p>
-      </div>
-
-      <div class="card">
-        <h2>Progress</h2>
-
-        <div class="step done">
-          <div class="dot"></div>
-          <span>Appointment Confirmed</span>
-        </div>
-
-        <div class="step active">
-          <div class="dot"></div>
-          <span>Waiting</span>
-        </div>
-
-        <div class="step">
-          <div class="dot"></div>
-          <span>Now Serving</span>
-        </div>
-
-        <div class="step">
-          <div class="dot"></div>
-          <span>Completed</span>
-        </div>
-      </div>
-
-      <button class="btn">Refresh Status</button>
-      <button class="btn btn-outline" onclick="showScreen('feedback')">Finish / Give Feedback</button>
     </section>
 
     <!-- FEEDBACK -->
@@ -1026,19 +1160,9 @@
         <div class="stars">★ ★ ★ ★ ☆</div>
       </div>
 
-      <div class="card">
-        <p><b>Was the appointment process easy?</b></p>
-        <p>Yes</p>
-      </div>
-
-      <div class="card">
-        <p><b>Was the queue status helpful?</b></p>
-        <p>Yes</p>
-      </div>
-
       <textarea class="input-box" placeholder="Write your comments or suggestions here..."></textarea>
 
-      <button class="btn" onclick="showScreen('thankYou')">Submit Feedback</button>
+      <button class="btn" onclick="completeAppointment()">Submit Feedback</button>
     </section>
 
     <!-- THANK YOU -->
@@ -1046,32 +1170,35 @@
       <div style="text-align:center; margin-top: 100px;">
         <div class="logo-circle">✓</div>
         <h1>Thank you!</h1>
-        <p>Your feedback has been submitted successfully.</p>
-        <button class="btn btn-gold" onclick="showScreen('dashboard')">Back to Home</button>
+        <p>Your appointment is now marked as completed.</p>
+        <button class="btn btn-gold" onclick="showAppointmentScreen()">View Appointment History</button>
+        <button class="btn btn-outline" onclick="showScreen('dashboard')">Back to Home</button>
       </div>
     </section>
 
     <!-- ADMIN LOGIN -->
     <section id="adminLogin" class="screen">
-      <div class="back" onclick="showScreen('splash')">← Back</div>
+      <div class="login-wrapper">
+        <div class="back" onclick="showScreen('splash')">← Back</div>
 
-      <div style="text-align:center; margin-top: 35px;">
-        <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
-        <h1>Admin Login</h1>
-        <p>Log in using your staff account to manage appointments.</p>
-      </div>
+        <div class="center-block">
+          <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
+          <h1>Admin Login</h1>
+          <p>Log in using your staff account to manage appointments.</p>
+        </div>
 
-      <div style="margin-top: 38px;">
-        <input class="input-box" type="text" placeholder="Admin Username" />
-        <input class="input-box" type="password" placeholder="Password" />
-        <button class="btn" onclick="openAdminDashboard()">Log In</button>
-        <p class="muted-center">For authorized PUP staff only.</p>
+        <div style="margin-top: 38px;">
+          <input class="input-box" type="text" placeholder="Admin Username" />
+          <input class="input-box" type="password" placeholder="Password" />
+          <button class="btn" onclick="openAdminDashboard()">Log In</button>
+          <p class="muted-center">For authorized PUP staff only.</p>
+        </div>
       </div>
     </section>
 
     <!-- ADMIN DASHBOARD -->
     <section id="admin" class="screen">
-      <div class="header">
+      <div class="page-header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
@@ -1104,7 +1231,7 @@
       </div>
 
       <div class="section-title">Appointment Queue</div>
-      <div id="adminAppointmentList"></div>
+      <div id="adminAppointmentList" class="admin-list"></div>
 
       <button class="btn btn-outline" onclick="showScreen('splash')">Log Out</button>
     </section>
@@ -1117,6 +1244,20 @@
     let verifiedStudent = {
       studentId: "",
       fullName: ""
+    };
+
+    let currentAppointment = {
+      exists: false,
+      status: "None",
+      queue: "",
+      office: "",
+      request: "",
+      date: "",
+      time: "",
+      purpose: "",
+      nowServing: "",
+      nextInLine: "",
+      ahead: 0
     };
 
     const services = {
@@ -1291,9 +1432,7 @@
         fullNameError.style.display = "none";
       }
 
-      if (!valid) {
-        return;
-      }
+      if (!valid) return;
 
       verifiedStudent.studentId = studentId;
       verifiedStudent.fullName = fullName;
@@ -1317,17 +1456,12 @@
     }
 
     function goToServices() {
-      if (!ensureStudentLoggedIn()) {
-        return;
-      }
-
+      if (!ensureStudentLoggedIn()) return;
       showScreen("services");
     }
 
     function selectService(serviceKey) {
-      if (!ensureStudentLoggedIn()) {
-        return;
-      }
+      if (!ensureStudentLoggedIn()) return;
 
       selectedServiceKey = serviceKey;
       const service = services[serviceKey];
@@ -1379,22 +1513,275 @@
       const requestType = document.getElementById("requestType").value;
       const date = document.getElementById("appointmentDate").value;
       const time = document.getElementById("appointmentTime").value;
+      const purpose = document.getElementById("purposeText").value;
 
-      document.getElementById("passQueue").innerText = service.queue;
+      currentAppointment.exists = true;
+      currentAppointment.status = "Upcoming";
+      currentAppointment.queue = service.queue;
+      currentAppointment.office = service.shortOffice;
+      currentAppointment.request = requestType;
+      currentAppointment.date = date;
+      currentAppointment.time = time;
+      currentAppointment.purpose = purpose;
+      currentAppointment.nowServing = service.nowServing;
+      currentAppointment.nextInLine = service.nextInLine;
+      currentAppointment.ahead = service.ahead;
+
+      updatePassDetails();
+      showScreen("pass");
+    }
+
+    function updatePassDetails() {
+      document.getElementById("passQueue").innerText = currentAppointment.queue;
       document.getElementById("passStudentId").innerText = verifiedStudent.studentId;
       document.getElementById("passFullName").innerText = verifiedStudent.fullName;
-      document.getElementById("passOffice").innerText = service.shortOffice;
-      document.getElementById("passRequest").innerText = requestType;
-      document.getElementById("passDate").innerText = date;
-      document.getElementById("passTime").innerText = time;
+      document.getElementById("passOffice").innerText = currentAppointment.office;
+      document.getElementById("passRequest").innerText = currentAppointment.request;
+      document.getElementById("passDate").innerText = currentAppointment.date;
+      document.getElementById("passTime").innerText = currentAppointment.time;
+      document.getElementById("passStatus").innerText = currentAppointment.status;
+    }
 
-      document.getElementById("nowServing").innerText = service.nowServing;
-      document.getElementById("nextInLine").innerText = service.nextInLine;
-      document.getElementById("yourQueue").innerText = service.queue;
-      document.getElementById("studentsAheadText").innerText =
-        "There are " + service.ahead + " students ahead of you.";
+    function showAppointmentScreen() {
+      if (!ensureStudentLoggedIn()) return;
 
-      showScreen("pass");
+      const content = document.getElementById("appointmentContent");
+
+      if (!currentAppointment.exists) {
+        content.innerHTML = `
+          <div class="card gold-card">
+            <h2>No Appointment Yet</h2>
+            <p>You do not have an active appointment. Book an appointment to receive a queue pass.</p>
+            <span class="status-pill">No Booking</span>
+          </div>
+          <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
+        `;
+        showScreen("appointment");
+        return;
+      }
+
+      let statusClass = "status-waiting";
+      let statusLabel = currentAppointment.status;
+
+      if (currentAppointment.status === "Completed") {
+        statusClass = "status-completed";
+        statusLabel = "Already Passed / Completed";
+      }
+
+      if (currentAppointment.status === "Cancelled") {
+        statusClass = "status-cancelled";
+        statusLabel = "Cancelled";
+      }
+
+      let actionButtons = "";
+
+      if (currentAppointment.status === "Upcoming") {
+        actionButtons = `
+          <button class="btn" onclick="showScreen('pass')">View Queue Pass</button>
+          <button class="btn btn-outline" onclick="showQueueFromNav()">View Queue Status</button>
+          <button class="btn btn-gold" onclick="openReschedule()">Reschedule Appointment</button>
+          <button class="btn btn-outline" onclick="cancelAppointment()">Cancel Appointment</button>
+        `;
+      } else if (currentAppointment.status === "Completed") {
+        actionButtons = `<button class="btn btn-outline" onclick="goToServices()">Book New Appointment</button>`;
+      } else if (currentAppointment.status === "Cancelled") {
+        actionButtons = `<button class="btn btn-gold" onclick="goToServices()">Book Again</button>`;
+      }
+
+      content.innerHTML = `
+        <div class="card">
+          <h2>Appointment Details</h2>
+
+          <div class="detail-row">
+            <span>Status</span>
+            <span><span class="status-pill ${statusClass}">${statusLabel}</span></span>
+          </div>
+
+          <div class="detail-row">
+            <span>Queue Number</span>
+            <span>${currentAppointment.queue}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Office</span>
+            <span>${currentAppointment.office}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Request</span>
+            <span>${currentAppointment.request}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Date</span>
+            <span>${currentAppointment.date}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Time</span>
+            <span>${currentAppointment.time}</span>
+          </div>
+        </div>
+
+        ${actionButtons}
+      `;
+
+      showScreen("appointment");
+    }
+
+    function showQueueFromNav() {
+      if (!ensureStudentLoggedIn()) return;
+
+      const content = document.getElementById("queueContent");
+
+      if (!currentAppointment.exists) {
+        content.innerHTML = `
+          <div class="card gold-card">
+            <h2>No Queue Yet</h2>
+            <p>You do not have an appointment queue yet. Book an appointment first to view your queue status.</p>
+            <span class="status-pill">No Queue</span>
+          </div>
+          <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
+        `;
+        showScreen("queue");
+        return;
+      }
+
+      if (currentAppointment.status === "Cancelled") {
+        content.innerHTML = `
+          <div class="card">
+            <h2>Queue Unavailable</h2>
+            <p>Your appointment was cancelled. Please book a new appointment to get a new queue number.</p>
+            <span class="status-pill status-cancelled">Cancelled</span>
+          </div>
+          <button class="btn btn-gold" onclick="goToServices()">Book New Appointment</button>
+        `;
+        showScreen("queue");
+        return;
+      }
+
+      if (currentAppointment.status === "Completed") {
+        content.innerHTML = `
+          <div class="card">
+            <h2>Appointment Already Passed</h2>
+            <p>Your appointment has already been completed.</p>
+            <span class="status-pill status-completed">Completed</span>
+          </div>
+
+          <div class="card">
+            <div class="detail-row">
+              <span>Queue Number</span>
+              <span>${currentAppointment.queue}</span>
+            </div>
+            <div class="detail-row">
+              <span>Office</span>
+              <span>${currentAppointment.office}</span>
+            </div>
+            <div class="detail-row">
+              <span>Date</span>
+              <span>${currentAppointment.date}</span>
+            </div>
+            <div class="detail-row">
+              <span>Time</span>
+              <span>${currentAppointment.time}</span>
+            </div>
+          </div>
+
+          <button class="btn btn-gold" onclick="goToServices()">Book New Appointment</button>
+        `;
+        showScreen("queue");
+        return;
+      }
+
+      content.innerHTML = `
+        <div class="queue-grid">
+          <div class="now-serving">
+            <p>Now Serving</p>
+            <strong>${currentAppointment.nowServing}</strong>
+          </div>
+
+          <div class="next-line-card">
+            <p>Next in Line</p>
+            <h1>${currentAppointment.nextInLine}</h1>
+            <p>This is the next queue number to be called.</p>
+          </div>
+
+          <div class="card">
+            <p>Your Queue Number</p>
+            <h1 style="color:var(--maroon);font-size:44px;">${currentAppointment.queue}</h1>
+            <span class="status-pill">Waiting</span>
+          </div>
+        </div>
+
+        <div class="card gold-card">
+          <p><b>There are ${currentAppointment.ahead} students ahead of you.</b></p>
+          <p>Please be ready when your number is near or next in line.</p>
+        </div>
+
+        <div class="card">
+          <h2>Progress</h2>
+
+          <div class="step done">
+            <div class="dot"></div>
+            <span>Appointment Confirmed</span>
+          </div>
+
+          <div class="step active">
+            <div class="dot"></div>
+            <span>Waiting</span>
+          </div>
+
+          <div class="step">
+            <div class="dot"></div>
+            <span>Now Serving</span>
+          </div>
+
+          <div class="step">
+            <div class="dot"></div>
+            <span>Completed</span>
+          </div>
+        </div>
+
+        <button class="btn">Refresh Status</button>
+        <button class="btn btn-outline" onclick="showScreen('feedback')">Finish / Give Feedback</button>
+      `;
+
+      showScreen("queue");
+    }
+
+    function openReschedule() {
+      document.getElementById("rescheduleOffice").innerText = currentAppointment.office;
+      document.getElementById("rescheduleCurrentDate").innerText =
+        currentAppointment.date + " · " + currentAppointment.time;
+
+      document.getElementById("newAppointmentDate").value = currentAppointment.date;
+      document.getElementById("newAppointmentTime").value = currentAppointment.time;
+
+      showScreen("reschedule");
+    }
+
+    function confirmReschedule() {
+      const newDate = document.getElementById("newAppointmentDate").value;
+      const newTime = document.getElementById("newAppointmentTime").value;
+
+      currentAppointment.date = newDate;
+      currentAppointment.time = newTime;
+      currentAppointment.status = "Upcoming";
+
+      updatePassDetails();
+      showAppointmentScreen();
+    }
+
+    function cancelAppointment() {
+      currentAppointment.status = "Cancelled";
+      updatePassDetails();
+      showAppointmentScreen();
+    }
+
+    function completeAppointment() {
+      currentAppointment.status = "Completed";
+      updatePassDetails();
+      showScreen("thankYou");
     }
 
     function printPass() {
@@ -1407,14 +1794,8 @@
     }
 
     function getStatusClass(status) {
-      if (status === "Serving") {
-        return "status-serving";
-      }
-
-      if (status === "Completed") {
-        return "status-completed";
-      }
-
+      if (status === "Serving") return "status-serving";
+      if (status === "Completed") return "status-completed";
       return "status-waiting";
     }
 
