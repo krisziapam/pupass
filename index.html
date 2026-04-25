@@ -17,7 +17,6 @@
       --muted: #666666;
       --border: #E6E6E6;
       --green: #2E7D32;
-      --orange: #F9A825;
       --red: #B00020;
     }
 
@@ -34,7 +33,6 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
       padding: 20px;
     }
 
@@ -45,7 +43,6 @@
       border-radius: 28px;
       overflow: hidden;
       box-shadow: 0 16px 40px rgba(0,0,0,0.18);
-      position: relative;
     }
 
     .screen {
@@ -62,7 +59,7 @@
       background: var(--maroon);
       color: white;
       text-align: center;
-      padding: 80px 24px 32px;
+      padding-top: 70px;
     }
 
     .logo-circle {
@@ -71,44 +68,38 @@
       border-radius: 50%;
       background: white;
       color: var(--maroon);
-      margin: 0 auto 26px;
+      margin: 0 auto 24px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-weight: 800;
+      font-weight: 900;
       font-size: 28px;
       border: 5px solid var(--gold);
     }
 
+    .small-logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: white;
+      color: var(--maroon);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      border: 3px solid var(--gold);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
     .app-title {
       font-size: 44px;
-      font-weight: 800;
-      letter-spacing: -1px;
+      font-weight: 900;
       margin-bottom: 8px;
     }
 
     .app-title span {
       color: var(--gold);
-    }
-
-    .subtitle {
-      font-size: 15px;
-      line-height: 1.4;
-      opacity: 0.95;
-      margin-bottom: 18px;
-    }
-
-    .tagline {
-      color: var(--light-gold);
-      font-size: 14px;
-      line-height: 1.5;
-      margin-bottom: 70px;
-    }
-
-    .footer-text {
-      margin-top: 70px;
-      font-size: 12px;
-      opacity: 0.85;
     }
 
     h1 {
@@ -119,13 +110,37 @@
 
     h2 {
       font-size: 20px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
     }
 
     p {
       font-size: 14px;
       color: var(--muted);
       line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .splash p {
+      color: white;
+    }
+
+    .tagline {
+      color: var(--light-gold) !important;
+      margin-top: 14px;
+      margin-bottom: 50px;
+      padding: 0 20px;
     }
 
     .header {
@@ -146,22 +161,6 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .small-logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: white;
-      color: var(--maroon);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      border: 3px solid var(--gold);
-      font-size: 15px;
-      flex-shrink: 0;
     }
 
     .card {
@@ -178,27 +177,9 @@
       border: 1px solid #F1D47A;
     }
 
-    .input-box {
-      width: 100%;
-      height: 52px;
-      background: white;
-      border: 1px solid #dddddd;
-      border-radius: 12px;
-      padding: 0 14px;
-      margin-bottom: 14px;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    textarea.input-box {
-      height: 110px;
-      padding-top: 14px;
-      resize: none;
-    }
-
     .btn {
       width: 100%;
-      height: 52px;
+      min-height: 52px;
       border: none;
       border-radius: 14px;
       background: var(--maroon);
@@ -207,6 +188,7 @@
       font-size: 16px;
       cursor: pointer;
       margin-top: 10px;
+      padding: 12px 16px;
     }
 
     .btn:hover {
@@ -222,6 +204,24 @@
       background: white;
       color: var(--maroon);
       border: 1px solid var(--maroon);
+    }
+
+    .input-box {
+      width: 100%;
+      height: 52px;
+      background: white;
+      border: 1px solid #dddddd;
+      border-radius: 12px;
+      padding: 0 14px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    textarea.input-box {
+      height: 100px;
+      padding-top: 14px;
+      resize: none;
     }
 
     .link {
@@ -252,12 +252,14 @@
       border-radius: 16px;
       padding: 16px;
       border: 1px solid var(--border);
-      min-height: 130px;
+      min-height: 135px;
       cursor: pointer;
+      transition: 0.2s ease;
     }
 
     .service-card:hover {
       border-color: var(--gold);
+      transform: translateY(-2px);
     }
 
     .icon {
@@ -269,14 +271,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
+      font-weight: 900;
       margin-bottom: 10px;
-    }
-
-    .service-card h3 {
-      font-size: 15px;
-      margin-bottom: 6px;
-      color: var(--text);
     }
 
     .service-card p {
@@ -286,7 +282,7 @@
 
     .section-title {
       font-size: 17px;
-      font-weight: 800;
+      font-weight: 900;
       margin: 18px 0 10px;
     }
 
@@ -356,6 +352,11 @@
       align-items: center;
     }
 
+    .pass-top p {
+      color: white;
+      font-size: 12px;
+    }
+
     .pass-body {
       padding: 24px 18px;
       text-align: center;
@@ -413,10 +414,6 @@
       margin-top: 8px;
     }
 
-    .progress {
-      margin-top: 12px;
-    }
-
     .step {
       display: flex;
       align-items: center;
@@ -450,7 +447,7 @@
     }
 
     .stars {
-      font-size: 36px;
+      font-size: 34px;
       color: var(--gold);
       text-align: center;
       margin: 16px 0;
@@ -536,87 +533,128 @@
         min-height: 100vh;
       }
     }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        display: block;
+      }
+
+      .phone {
+        width: 100%;
+        box-shadow: none;
+        border-radius: 0;
+        min-height: auto;
+      }
+
+      .screen {
+        display: none !important;
+      }
+
+      #pass {
+        display: block !important;
+        padding: 20px;
+        min-height: auto;
+      }
+
+      #pass .back,
+      #pass .btn,
+      #pass .muted-center {
+        display: none !important;
+      }
+
+      .queue-pass {
+        box-shadow: none;
+        border: 2px solid #800000;
+      }
+    }
   </style>
 </head>
 
 <body>
   <main class="phone">
 
-    <!-- SCREEN 1: SPLASH -->
+    <!-- SCREEN 1: SPLASH / ROLE SELECTION -->
     <section id="splash" class="screen splash active">
       <div class="logo-circle">PUP</div>
       <div class="app-title">PU<span>Pass</span></div>
-      <p class="subtitle">Student Appointment & Queue Pass System</p>
+      <p>Student Appointment & Queue Pass System</p>
       <p class="tagline">Book your slot. Get your pass. Skip the long line.</p>
-      <button class="btn btn-gold" onclick="showScreen('login')">Get Started</button>
-      <p class="footer-text">Polytechnic University of the Philippines</p>
+
+      <button class="btn btn-gold" onclick="continueAsStudent()">Continue as Student</button>
+      <button class="btn btn-outline" onclick="selectAdmin()" style="margin-top:14px;">Continue as Admin</button>
+
+      <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
     </section>
 
-    <!-- SCREEN 2: LOGIN -->
-    <section id="login" class="screen">
+    <!-- SCREEN 2: ADMIN LOGIN -->
+    <section id="adminLogin" class="screen">
+      <div class="back" onclick="showScreen('splash')">← Back</div>
+
       <div style="text-align:center; margin-top: 35px;">
         <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
-        <h1>Welcome to PUPass</h1>
-        <p>Log in using your student account to continue.</p>
+        <h1>Admin Login</h1>
+        <p>Log in using your staff account to manage appointments.</p>
       </div>
 
       <div style="margin-top: 38px;">
-        <input class="input-box" type="text" placeholder="Student Number" />
+        <input class="input-box" type="text" placeholder="Admin Username" />
         <input class="input-box" type="password" placeholder="Password" />
-        <button class="btn" onclick="showScreen('dashboard')">Log In</button>
+
+        <button class="btn" onclick="showScreen('admin')">Log In</button>
+
         <div class="link">Forgot Password?</div>
-        <p class="muted-center">For PUP students and staff use only.</p>
-        <p class="muted-center">Don’t have an account? <b>Create Account</b></p>
+        <p class="muted-center">For authorized PUP staff only.</p>
       </div>
     </section>
 
-    <!-- SCREEN 3: DASHBOARD -->
+    <!-- SCREEN 3: STUDENT DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
             <h1>Hello, Isko/Iska!</h1>
-            <p>What service do you need today?</p>
+            <p>Book a student service appointment without logging in.</p>
           </div>
         </div>
       </div>
 
       <div class="card gold-card">
-        <h2>Current Queue Status</h2>
-        <p>No active queue yet.</p>
-        <p>Book an appointment to get your digital queue pass.</p>
-        <span class="status-pill">Available</span>
+        <h2>Quick Appointment</h2>
+        <p>No login needed. Enter your appointment details, confirm your schedule, and save or screenshot your queue pass.</p>
+        <span class="status-pill">Student Access</span>
       </div>
 
       <button class="btn btn-gold" onclick="showScreen('services')">Book Appointment</button>
 
       <div class="section-title">Quick Access</div>
       <div class="quick-row">
-        <div class="quick-card">My Appointments</div>
-        <div class="quick-card">Queue Pass</div>
+        <div class="quick-card">Appointment Pass</div>
+        <div class="quick-card">Queue Status</div>
         <div class="quick-card">Notifications</div>
-        <div class="quick-card">Profile</div>
+        <div class="quick-card">Help</div>
       </div>
 
       <div class="section-title">Popular Services</div>
       <div class="grid">
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('registrar')">
           <div class="icon">R</div>
           <h3>Registrar</h3>
           <p>Documents and enrollment concerns</p>
         </div>
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('cashier')">
           <div class="icon">C</div>
           <h3>Cashier</h3>
           <p>Payment and assessment concerns</p>
         </div>
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('library')">
           <div class="icon">L</div>
           <h3>Library</h3>
           <p>Clearance and borrowing concerns</p>
         </div>
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('guidance')">
           <div class="icon">G</div>
           <h3>Guidance</h3>
           <p>Counseling appointments</p>
@@ -625,9 +663,9 @@
 
       <div class="bottom-nav">
         <div>Home</div>
-        <div>Appointments</div>
+        <div>Services</div>
         <div>Queue</div>
-        <div>Profile</div>
+        <div>Help</div>
       </div>
     </section>
 
@@ -638,85 +676,90 @@
       <p>Choose the office or department you want to visit.</p>
 
       <div class="grid">
-        <div class="service-card" onclick="showScreen('book')">
+        <div class="service-card" onclick="selectService('registrar')">
           <div class="icon">R</div>
           <h3>Registrar</h3>
           <p>Document request, COR, TOR, and enrollment concerns</p>
         </div>
 
-        <div class="service-card" onclick="showScreen('book')">
+        <div class="service-card" onclick="selectService('cashier')">
           <div class="icon">C</div>
           <h3>Cashier</h3>
           <p>Payment, assessment, and receipt concerns</p>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('library')">
           <div class="icon">L</div>
           <h3>Library</h3>
           <p>Clearance, borrowing, and library account concerns</p>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('guidance')">
           <div class="icon">G</div>
           <h3>Guidance Office</h3>
           <p>Counseling and student support appointment</p>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('studentAffairs')">
           <div class="icon">S</div>
           <h3>Student Affairs</h3>
           <p>ID concerns, student activities, and assistance</p>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" onclick="selectService('scholarship')">
           <div class="icon">₱</div>
           <h3>Scholarship</h3>
           <p>Scholarship application and inquiry</p>
         </div>
       </div>
-
-      <button class="btn" onclick="showScreen('book')">Continue</button>
     </section>
 
     <!-- SCREEN 5: BOOK APPOINTMENT -->
     <section id="book" class="screen">
       <div class="back" onclick="showScreen('services')">← Back</div>
       <h1>Book Appointment</h1>
-      <p>Fill out the details of your visit.</p>
+      <p>Fill out your student and appointment details.</p>
 
       <div class="card">
         <p>Selected Service</p>
-        <h2>Registrar Office</h2>
-        <p>Document request and enrollment-related concerns.</p>
+        <h2 id="selectedOffice">Registrar Office</h2>
+        <p id="selectedDescription">Document request and enrollment-related concerns.</p>
       </div>
 
+      <label>Student Name</label>
+      <input class="input-box" type="text" id="studentName" value="Maria Santos" />
+
+      <label>Student Number</label>
+      <input class="input-box" type="text" id="studentNumber" value="2022-00001-MN-0" />
+
+      <label>Course / Year</label>
+      <input class="input-box" type="text" id="studentCourse" value="BSIT - 3rd Year" />
+
       <label>Request Type</label>
-      <select class="input-box">
-        <option>Certificate of Registration</option>
-        <option>Transcript of Records</option>
-        <option>Enrollment Concern</option>
-        <option>Document Request</option>
-      </select>
+      <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
 
       <label>Appointment Date</label>
-      <input class="input-box" type="text" value="May 10, 2026" />
+      <input class="input-box" type="text" id="appointmentDate" value="May 10, 2026" />
 
       <label>Appointment Time</label>
-      <select class="input-box">
-        <option>10:00 AM</option>
+      <select class="input-box" id="appointmentTime">
+        <option>8:00 AM</option>
+        <option>9:00 AM</option>
+        <option selected>10:00 AM</option>
         <option>11:00 AM</option>
         <option>1:00 PM</option>
         <option>2:00 PM</option>
+        <option>3:00 PM</option>
       </select>
 
       <label>Purpose of Visit</label>
-      <textarea class="input-box">Request for Certificate of Registration</textarea>
+      <textarea class="input-box" id="purposeText"></textarea>
 
       <div class="card gold-card">
         <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
       </div>
 
-      <button class="btn" onclick="showScreen('confirm')">Review Appointment</button>
+      <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
     </section>
 
     <!-- SCREEN 6: CONFIRMATION -->
@@ -727,32 +770,44 @@
 
       <div class="card">
         <div class="detail-row">
+          <span>Student Name</span>
+          <span id="confirmStudentName">Maria Santos</span>
+        </div>
+        <div class="detail-row">
+          <span>Student No.</span>
+          <span id="confirmStudentNumber">2022-00001-MN-0</span>
+        </div>
+        <div class="detail-row">
+          <span>Course / Year</span>
+          <span id="confirmStudentCourse">BSIT - 3rd Year</span>
+        </div>
+        <div class="detail-row">
           <span>Office</span>
-          <span>Registrar</span>
+          <span id="confirmOffice">Registrar</span>
         </div>
         <div class="detail-row">
           <span>Request Type</span>
-          <span>Certificate of Registration</span>
+          <span id="confirmRequest">Certificate of Registration</span>
         </div>
         <div class="detail-row">
           <span>Date</span>
-          <span>May 10, 2026</span>
+          <span id="confirmDate">May 10, 2026</span>
         </div>
         <div class="detail-row">
           <span>Time</span>
-          <span>10:00 AM</span>
+          <span id="confirmTime">10:00 AM</span>
         </div>
         <div class="detail-row">
           <span>Purpose</span>
-          <span>Request for COR</span>
+          <span id="confirmPurpose">Request for COR</span>
         </div>
       </div>
 
       <div class="card gold-card">
-        <p>Please arrive 10 minutes before your schedule. Your queue pass will be generated after confirmation.</p>
+        <p>Your queue pass will be generated after confirmation. You may print, save as PDF, or screenshot your pass.</p>
       </div>
 
-      <button class="btn" onclick="showScreen('pass')">Confirm Booking</button>
+      <button class="btn" onclick="generatePass()">Confirm Booking</button>
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
@@ -760,32 +815,44 @@
     <section id="pass" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Your Digital Queue Pass</h1>
-      <p>Show this pass when you arrive at the office.</p>
+      <p>Save, print, or screenshot this pass and show it at the office.</p>
 
       <div class="queue-pass">
         <div class="pass-top">
           <div>
             <strong>PUPass</strong>
-            <p style="color:white;font-size:12px;">Confirmed Appointment</p>
+            <p>Confirmed Appointment</p>
           </div>
-          <div class="small-logo" style="width:42px;height:42px;font-size:13px;">PUP</div>
+          <div class="small-logo">PUP</div>
         </div>
 
         <div class="pass-body">
           <div class="queue-label">Queue Number</div>
-          <div class="queue-number">R-025</div>
+          <div class="queue-number" id="passQueue">R-025</div>
 
           <div class="detail-row">
+            <span>Student</span>
+            <span id="passStudentName">Maria Santos</span>
+          </div>
+          <div class="detail-row">
+            <span>Student No.</span>
+            <span id="passStudentNumber">2022-00001-MN-0</span>
+          </div>
+          <div class="detail-row">
             <span>Office</span>
-            <span>Registrar</span>
+            <span id="passOffice">Registrar</span>
+          </div>
+          <div class="detail-row">
+            <span>Request</span>
+            <span id="passRequest">Certificate of Registration</span>
           </div>
           <div class="detail-row">
             <span>Date</span>
-            <span>May 10, 2026</span>
+            <span id="passDate">May 10, 2026</span>
           </div>
           <div class="detail-row">
             <span>Time</span>
-            <span>10:00 AM</span>
+            <span id="passTime">10:00 AM</span>
           </div>
           <div class="detail-row">
             <span>Status</span>
@@ -797,11 +864,13 @@
           </div>
 
           <div class="qr">QR</div>
-          <p style="font-size:12px;">Scan at the office counter</p>
+          <p style="font-size:12px;">Scan or present this pass at the office counter.</p>
         </div>
       </div>
 
+      <button class="btn btn-gold" onclick="printPass()">Print / Save Queue Pass</button>
       <button class="btn" onclick="showScreen('queue')">View Queue Status</button>
+      <p class="muted-center">You may also take a screenshot of this pass.</p>
     </section>
 
     <!-- SCREEN 8: QUEUE STATUS -->
@@ -812,12 +881,12 @@
 
       <div class="now-serving">
         <p>Now Serving</p>
-        <strong>R-020</strong>
+        <strong id="nowServing">R-020</strong>
       </div>
 
       <div class="card">
         <p>Your Queue Number</p>
-        <h1 style="color:var(--maroon);font-size:44px;">R-025</h1>
+        <h1 id="yourQueue" style="color:var(--maroon);font-size:44px;">R-025</h1>
         <span class="status-pill">Waiting</span>
       </div>
 
@@ -828,23 +897,21 @@
 
       <div class="card">
         <h2>Progress</h2>
-        <div class="progress">
-          <div class="step done">
-            <div class="dot"></div>
-            <span>Appointment Confirmed</span>
-          </div>
-          <div class="step active">
-            <div class="dot"></div>
-            <span>Waiting</span>
-          </div>
-          <div class="step">
-            <div class="dot"></div>
-            <span>Now Serving</span>
-          </div>
-          <div class="step">
-            <div class="dot"></div>
-            <span>Completed</span>
-          </div>
+        <div class="step done">
+          <div class="dot"></div>
+          <span>Appointment Confirmed</span>
+        </div>
+        <div class="step active">
+          <div class="dot"></div>
+          <span>Waiting</span>
+        </div>
+        <div class="step">
+          <div class="dot"></div>
+          <span>Now Serving</span>
+        </div>
+        <div class="step">
+          <div class="dot"></div>
+          <span>Completed</span>
         </div>
       </div>
 
@@ -875,11 +942,20 @@
 
       <textarea class="input-box" placeholder="Write your comments or suggestions here..."></textarea>
 
-      <button class="btn" onclick="showScreen('dashboard')">Submit Feedback</button>
-      <button class="btn btn-outline" onclick="showScreen('admin')">View Admin Dashboard</button>
+      <button class="btn" onclick="showScreen('thankYou')">Submit Feedback</button>
     </section>
 
-    <!-- SCREEN 10: ADMIN DASHBOARD -->
+    <!-- SCREEN 10: THANK YOU -->
+    <section id="thankYou" class="screen">
+      <div style="text-align:center; margin-top: 100px;">
+        <div class="logo-circle">✓</div>
+        <h1>Thank you!</h1>
+        <p>Your feedback has been submitted successfully.</p>
+        <button class="btn btn-gold" onclick="showScreen('dashboard')">Back to Home</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 11: ADMIN DASHBOARD -->
     <section id="admin" class="screen">
       <div class="header">
         <div class="header-row">
@@ -919,32 +995,227 @@
       </div>
 
       <div class="list-item">
-        <strong>R-021</strong>
-        <p>Juan Dela Cruz · Registrar</p>
+        <strong>C-014</strong>
+        <p>Juan Dela Cruz · Cashier</p>
         <span class="status-pill">Waiting</span>
       </div>
 
       <div class="list-item">
-        <strong>R-022</strong>
-        <p>Ana Reyes · Cashier</p>
+        <strong>L-008</strong>
+        <p>Ana Reyes · Library</p>
+        <span class="status-pill">Waiting</span>
+      </div>
+
+      <div class="list-item">
+        <strong>G-006</strong>
+        <p>Mark Rivera · Guidance Office</p>
         <span class="status-pill">Waiting</span>
       </div>
 
       <button class="btn">Mark as Serving</button>
-      <button class="btn btn-outline" onclick="showScreen('dashboard')">Back to Student View</button>
+      <button class="btn btn-outline">Mark as Completed</button>
+      <button class="btn btn-outline" onclick="showScreen('splash')">Log Out</button>
     </section>
 
   </main>
 
   <script>
+    let selectedServiceKey = "registrar";
+
+    const services = {
+      registrar: {
+        office: "Registrar Office",
+        shortOffice: "Registrar",
+        description: "Document request and enrollment-related concerns.",
+        queue: "R-025",
+        nowServing: "R-020",
+        requests: [
+          "Certificate of Registration",
+          "Transcript of Records",
+          "Enrollment Concern",
+          "Document Request"
+        ]
+      },
+      cashier: {
+        office: "Cashier Office",
+        shortOffice: "Cashier",
+        description: "Payment, assessment, receipt, and student account concerns.",
+        queue: "C-014",
+        nowServing: "C-009",
+        requests: [
+          "Tuition Payment Concern",
+          "Assessment Inquiry",
+          "Receipt Request",
+          "Balance Verification"
+        ]
+      },
+      library: {
+        office: "Library",
+        shortOffice: "Library",
+        description: "Clearance, borrowing, returning, and library account concerns.",
+        queue: "L-008",
+        nowServing: "L-003",
+        requests: [
+          "Library Clearance",
+          "Borrowing Concern",
+          "Returning Concern",
+          "Library Account Verification"
+        ]
+      },
+      guidance: {
+        office: "Guidance Office",
+        shortOffice: "Guidance",
+        description: "Counseling, student support, and guidance appointments.",
+        queue: "G-006",
+        nowServing: "G-002",
+        requests: [
+          "Counseling Appointment",
+          "Student Support Request",
+          "Good Moral Request",
+          "Academic Concern"
+        ]
+      },
+      studentAffairs: {
+        office: "Student Affairs Office",
+        shortOffice: "Student Affairs",
+        description: "Student ID concerns, student activities, and assistance.",
+        queue: "S-011",
+        nowServing: "S-006",
+        requests: [
+          "Student ID Concern",
+          "Student Activity Inquiry",
+          "Organization Concern",
+          "Student Assistance Request"
+        ]
+      },
+      scholarship: {
+        office: "Scholarship Office",
+        shortOffice: "Scholarship",
+        description: "Scholarship application, renewal, and inquiry.",
+        queue: "SCH-010",
+        nowServing: "SCH-005",
+        requests: [
+          "Scholarship Application",
+          "Scholarship Renewal",
+          "Scholarship Requirement Inquiry",
+          "Grant Status Follow-up"
+        ]
+      }
+    };
+
     function showScreen(screenId) {
       const screens = document.querySelectorAll(".screen");
       screens.forEach(screen => screen.classList.remove("active"));
 
-      const selectedScreen = document.getElementById(screenId);
-      selectedScreen.classList.add("active");
-
+      document.getElementById(screenId).classList.add("active");
       window.scrollTo(0, 0);
+    }
+
+    function continueAsStudent() {
+      showScreen("dashboard");
+    }
+
+    function selectAdmin() {
+      showScreen("adminLogin");
+    }
+
+    function selectService(serviceKey) {
+      selectedServiceKey = serviceKey;
+      const service = services[serviceKey];
+
+      document.getElementById("selectedOffice").innerText = service.office;
+      document.getElementById("selectedDescription").innerText = service.description;
+
+      const requestSelect = document.getElementById("requestType");
+      requestSelect.innerHTML = "";
+
+      service.requests.forEach(function(request) {
+        const option = document.createElement("option");
+        option.textContent = request;
+        option.value = request;
+        requestSelect.appendChild(option);
+      });
+
+      updatePurpose();
+      showScreen("book");
+    }
+
+    function updatePurpose() {
+      const requestType = document.getElementById("requestType").value;
+      document.getElementById("purposeText").value = "Request for " + requestType;
+    }
+
+    function prepareConfirmation() {
+      const service = services[selectedServiceKey];
+
+      const studentName = document.getElementById("studentName").value;
+      const studentNumber = document.getElementById("studentNumber").value;
+      const studentCourse = document.getElementById("studentCourse").value;
+      const requestType = document.getElementById("requestType").value;
+      const date = document.getElementById("appointmentDate").value;
+      const time = document.getElementById("appointmentTime").value;
+      const purpose = document.getElementById("purposeText").value;
+
+      document.getElementById("confirmStudentName").innerText = studentName;
+      document.getElementById("confirmStudentNumber").innerText = studentNumber;
+      document.getElementById("confirmStudentCourse").innerText = studentCourse;
+      document.getElementById("confirmOffice").innerText = service.shortOffice;
+      document.getElementById("confirmRequest").innerText = requestType;
+      document.getElementById("confirmDate").innerText = date;
+      document.getElementById("confirmTime").innerText = time;
+      document.getElementById("confirmPurpose").innerText = purpose;
+
+      showScreen("confirm");
+    }
+
+    function generatePass() {
+      const service = services[selectedServiceKey];
+
+      const studentName = document.getElementById("studentName").value;
+      const studentNumber = document.getElementById("studentNumber").value;
+      const requestType = document.getElementById("requestType").value;
+      const date = document.getElementById("appointmentDate").value;
+      const time = document.getElementById("appointmentTime").value;
+
+      document.getElementById("passQueue").innerText = service.queue;
+      document.getElementById("passStudentName").innerText = studentName;
+      document.getElementById("passStudentNumber").innerText = studentNumber;
+      document.getElementById("passOffice").innerText = service.shortOffice;
+      document.getElementById("passRequest").innerText = requestType;
+      document.getElementById("passDate").innerText = date;
+      document.getElementById("passTime").innerText = time;
+
+      document.getElementById("nowServing").innerText = service.nowServing;
+      document.getElementById("yourQueue").innerText = service.queue;
+
+      showScreen("pass");
+    }
+
+    function printPass() {
+      window.print();
+    }
+
+    window.onload = function() {
+      selectServiceDataOnly("registrar");
+    };
+
+    function selectServiceDataOnly(serviceKey) {
+      selectedServiceKey = serviceKey;
+      const service = services[serviceKey];
+
+      const requestSelect = document.getElementById("requestType");
+      requestSelect.innerHTML = "";
+
+      service.requests.forEach(function(request) {
+        const option = document.createElement("option");
+        option.textContent = request;
+        option.value = request;
+        requestSelect.appendChild(option);
+      });
+
+      document.getElementById("selectedOffice").innerText = service.office;
+      document.getElementById("selectedDescription").innerText = service.description;
+      updatePurpose();
     }
   </script>
 </body>
