@@ -464,6 +464,21 @@
       margin-top: 8px;
     }
 
+    .next-line-card {
+      background: white;
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .next-line-card h1 {
+      color: var(--maroon);
+      font-size: 38px;
+      margin: 6px 0;
+    }
+
     .step {
       display: flex;
       align-items: center;
@@ -632,7 +647,6 @@
 <body>
   <main class="phone">
 
-    <!-- SCREEN 1: SPLASH / ROLE SELECTION -->
     <section id="splash" class="screen splash active">
       <div class="logo-circle">PUP</div>
       <div class="app-title">PU<span>Pass</span></div>
@@ -645,7 +659,6 @@
       <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
     </section>
 
-    <!-- SCREEN 2: ADMIN LOGIN -->
     <section id="adminLogin" class="screen">
       <div class="back" onclick="showScreen('splash')">← Back</div>
 
@@ -666,21 +679,20 @@
       </div>
     </section>
 
-    <!-- SCREEN 3: STUDENT DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
             <h1>Hello, Isko/Iska!</h1>
-            <p>Book a student service appointment with student number verification.</p>
+            <p>Book an appointment with student number verification.</p>
           </div>
         </div>
       </div>
 
       <div class="card gold-card">
         <h2>Quick Appointment</h2>
-        <p>No login needed, but your student number is required for verification before generating a queue pass.</p>
+        <p>No login needed, but your student number is required before generating a queue pass.</p>
         <span class="status-pill">Student Access</span>
       </div>
 
@@ -726,7 +738,6 @@
       </div>
     </section>
 
-    <!-- SCREEN 4: SELECT SERVICE -->
     <section id="services" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Back</div>
       <h1>Select a Service</h1>
@@ -771,7 +782,6 @@
       </div>
     </section>
 
-    <!-- SCREEN 5: BOOK APPOINTMENT -->
     <section id="book" class="screen">
       <div class="back" onclick="showScreen('services')">← Back</div>
       <h1>Book Appointment</h1>
@@ -820,7 +830,6 @@
       <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
     </section>
 
-    <!-- SCREEN 6: CONFIRMATION -->
     <section id="confirm" class="screen">
       <div class="back" onclick="showScreen('book')">← Back</div>
       <h1>Confirm Your Appointment</h1>
@@ -829,15 +838,15 @@
       <div class="card">
         <div class="detail-row">
           <span>Student Name</span>
-          <span id="confirmStudentName">Maria Santos</span>
+          <span id="confirmStudentName">Student</span>
         </div>
         <div class="detail-row">
           <span>Student No.</span>
-          <span id="confirmStudentNumber">2022-00001-MN-0</span>
+          <span id="confirmStudentNumber">Required</span>
         </div>
         <div class="detail-row">
           <span>Course / Year</span>
-          <span id="confirmStudentCourse">BSIT - 3rd Year</span>
+          <span id="confirmStudentCourse">Not specified</span>
         </div>
         <div class="detail-row">
           <span>Office</span>
@@ -869,7 +878,6 @@
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
-    <!-- SCREEN 7: DIGITAL QUEUE PASS -->
     <section id="pass" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Your Digital Queue Pass</h1>
@@ -890,11 +898,11 @@
 
           <div class="detail-row">
             <span>Student</span>
-            <span id="passStudentName">Maria Santos</span>
+            <span id="passStudentName">Student</span>
           </div>
           <div class="detail-row">
             <span>Student No.</span>
-            <span id="passStudentNumber">2022-00001-MN-0</span>
+            <span id="passStudentNumber">Required</span>
           </div>
           <div class="detail-row">
             <span>Office</span>
@@ -931,7 +939,6 @@
       <p class="muted-center">You may also take a screenshot of this pass.</p>
     </section>
 
-    <!-- SCREEN 8: QUEUE STATUS -->
     <section id="queue" class="screen">
       <div class="back" onclick="showScreen('pass')">← Back</div>
       <h1>Queue Status</h1>
@@ -942,6 +949,12 @@
         <strong id="nowServing">R-020</strong>
       </div>
 
+      <div class="next-line-card">
+        <p>Next in Line</p>
+        <h1 id="nextInLine">R-021</h1>
+        <p>This is the next queue number to be called.</p>
+      </div>
+
       <div class="card">
         <p>Your Queue Number</p>
         <h1 id="yourQueue" style="color:var(--maroon);font-size:44px;">R-025</h1>
@@ -949,8 +962,8 @@
       </div>
 
       <div class="card gold-card">
-        <p><b>There are 5 students ahead of you.</b></p>
-        <p>Please be ready when your number is called.</p>
+        <p><b id="studentsAheadText">There are 4 students ahead of you.</b></p>
+        <p>Please be ready when your number is near or next in line.</p>
       </div>
 
       <div class="card">
@@ -977,7 +990,6 @@
       <button class="btn btn-outline" onclick="showScreen('feedback')">Finish / Give Feedback</button>
     </section>
 
-    <!-- SCREEN 9: FEEDBACK -->
     <section id="feedback" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>How was your experience?</h1>
@@ -1003,7 +1015,6 @@
       <button class="btn" onclick="showScreen('thankYou')">Submit Feedback</button>
     </section>
 
-    <!-- SCREEN 10: THANK YOU -->
     <section id="thankYou" class="screen">
       <div style="text-align:center; margin-top: 100px;">
         <div class="logo-circle">✓</div>
@@ -1013,7 +1024,6 @@
       </div>
     </section>
 
-    <!-- SCREEN 11: ADMIN DASHBOARD -->
     <section id="admin" class="screen">
       <div class="header">
         <div class="header-row">
@@ -1062,6 +1072,8 @@
         description: "Document request and enrollment-related concerns.",
         queue: "R-025",
         nowServing: "R-020",
+        nextInLine: "R-021",
+        ahead: 4,
         requests: [
           "Certificate of Registration",
           "Transcript of Records",
@@ -1075,6 +1087,8 @@
         description: "Payment, assessment, receipt, and student account concerns.",
         queue: "C-014",
         nowServing: "C-009",
+        nextInLine: "C-010",
+        ahead: 3,
         requests: [
           "Tuition Payment Concern",
           "Assessment Inquiry",
@@ -1088,6 +1102,8 @@
         description: "Clearance, borrowing, returning, and library account concerns.",
         queue: "L-008",
         nowServing: "L-003",
+        nextInLine: "L-004",
+        ahead: 2,
         requests: [
           "Library Clearance",
           "Borrowing Concern",
@@ -1101,6 +1117,8 @@
         description: "Counseling, student support, and guidance appointments.",
         queue: "G-006",
         nowServing: "G-002",
+        nextInLine: "G-003",
+        ahead: 2,
         requests: [
           "Counseling Appointment",
           "Student Support Request",
@@ -1114,6 +1132,8 @@
         description: "Student ID concerns, student activities, and assistance.",
         queue: "S-011",
         nowServing: "S-006",
+        nextInLine: "S-007",
+        ahead: 3,
         requests: [
           "Student ID Concern",
           "Student Activity Inquiry",
@@ -1127,6 +1147,8 @@
         description: "Scholarship application, renewal, and inquiry.",
         queue: "SCH-010",
         nowServing: "SCH-005",
+        nextInLine: "SCH-006",
+        ahead: 3,
         requests: [
           "Scholarship Application",
           "Scholarship Renewal",
@@ -1144,6 +1166,14 @@
         service: "Registrar",
         request: "Certificate of Registration",
         status: "Serving"
+      },
+      {
+        queue: "R-021",
+        student: "Carlo Santos",
+        studentNumber: "2022-00005-MN-0",
+        service: "Registrar",
+        request: "Document Request",
+        status: "Waiting"
       },
       {
         queue: "C-014",
@@ -1281,7 +1311,10 @@
       document.getElementById("passTime").innerText = time;
 
       document.getElementById("nowServing").innerText = service.nowServing;
+      document.getElementById("nextInLine").innerText = service.nextInLine;
       document.getElementById("yourQueue").innerText = service.queue;
+      document.getElementById("studentsAheadText").innerText =
+        "There are " + service.ahead + " students ahead of you.";
 
       showScreen("pass");
     }
