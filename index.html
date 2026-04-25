@@ -750,6 +750,19 @@
           <label>Full Name <span style="color:var(--red);">*</span></label>
           <input class="input-box" type="text" id="fullNameInput" placeholder="Enter your full name" />
           <div class="error-text" id="fullNameError">Full Name is required.</div>
+ <label>Campus / Site <span style="color:var(--red);">*</span></label>
+<select class="input-box" id="campusInput">
+  <option value="">Select your campus/site</option>
+  <option>PUP Main / Sta. Mesa</option>
+  <option>PUP Taguig</option>
+  <option>PUP San Juan</option>
+  <option>PUP Parañaque</option>
+  <option>PUP Quezon City</option>
+  <option>PUP Bataan</option>
+  <option>PUP Sta. Maria</option>
+  <option>PUP Other Campus / Branch</option>
+</select>
+<div class="error-text" id="campusError">Campus / Site is required.</div>
 
           <div class="card gold-card">
             <p><b>Note:</b> Dummy student accounts are accepted for prototype testing. No password is required.</p>
@@ -908,6 +921,10 @@
               <span>Full Name</span>
               <span id="bookFullName">Student</span>
             </div>
+            <div class="detail-row">
+  <span>Campus / Site</span>
+  <span id="bookCampus">Campus</span>
+</div>
           </div>
 
           <div class="card">
@@ -962,6 +979,10 @@
           <span id="confirmFullName">Student</span>
         </div>
         <div class="detail-row">
+  <span>Campus / Site</span>
+  <span id="confirmCampus">Campus</span>
+</div>
+        <div class="detail-row">
           <span>Office</span>
           <span id="confirmOffice">Registrar</span>
         </div>
@@ -983,7 +1004,7 @@
         </div>
       </div>
 
-      <button class="btn" onclick="generatePass()">Confirm Booking</button>
+<button class="btn" onclick="saveBookingToFirestore()">Confirm Booking</button>
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
@@ -1209,9 +1230,10 @@
     let selectedServiceKey = "registrar";
 
     let verifiedStudent = {
-      studentId: "",
-      fullName: ""
-    };
+  studentId: "",
+  fullName: "",
+  campus: ""
+};
 
     let currentAppointment = {
       exists: false,
@@ -1341,47 +1363,62 @@
     }
 
     function studentLogin() {
-      const studentIdInput = document.getElementById("studentIdInput");
-      const fullNameInput = document.getElementById("fullNameInput");
-      const studentIdError = document.getElementById("studentIdError");
-      const fullNameError = document.getElementById("fullNameError");
+  const studentIdInput = document.getElementById("studentIdInput");
+  const fullNameInput = document.getElementById("fullNameInput");
+  const campusInput = document.getElementById("campusInput");
 
-      const studentId = studentIdInput.value.trim();
-      const fullName = fullNameInput.value.trim();
+  const studentIdError = document.getElementById("studentIdError");
+  const fullNameError = document.getElementById("fullNameError");
+  const campusError = document.getElementById("campusError");
 
-      let valid = true;
+  const studentId = studentIdInput.value.trim();
+  const fullName = fullNameInput.value.trim();
+  const campus = campusInput.value.trim();
 
-      if (studentId === "") {
-        studentIdInput.classList.add("input-error");
-        studentIdError.style.display = "block";
-        valid = false;
-      } else {
-        studentIdInput.classList.remove("input-error");
-        studentIdError.style.display = "none";
-      }
+  let valid = true;
 
-      if (fullName === "") {
-        fullNameInput.classList.add("input-error");
-        fullNameError.style.display = "block";
-        valid = false;
-      } else {
-        fullNameInput.classList.remove("input-error");
-        fullNameError.style.display = "none";
-      }
+  if (studentId === "") {
+    studentIdInput.classList.add("input-error");
+    studentIdError.style.display = "block";
+    valid = false;
+  } else {
+    studentIdInput.classList.remove("input-error");
+    studentIdError.style.display = "none";
+  }
 
-      if (!valid) return;
+  if (fullName === "") {
+    fullNameInput.classList.add("input-error");
+    fullNameError.style.display = "block";
+    valid = false;
+  } else {
+    fullNameInput.classList.remove("input-error");
+    fullNameError.style.display = "none";
+  }
 
-      verifiedStudent.studentId = studentId;
-      verifiedStudent.fullName = fullName;
+  if (campus === "") {
+    campusInput.classList.add("input-error");
+    campusError.style.display = "block";
+    valid = false;
+  } else {
+    campusInput.classList.remove("input-error");
+    campusError.style.display = "none";
+  }
 
-      document.getElementById("studentGreeting").innerText = "Hello, " + fullName + "!";
-      document.getElementById("verifiedStudentText").innerText = studentId + " · " + fullName;
+  if (!valid) return;
 
-      document.getElementById("bookStudentId").innerText = studentId;
-      document.getElementById("bookFullName").innerText = fullName;
+  verifiedStudent.studentId = studentId;
+  verifiedStudent.fullName = fullName;
+  verifiedStudent.campus = campus;
 
-      showScreen("dashboard");
-    }
+  document.getElementById("studentGreeting").innerText = "Hello, " + fullName + "!";
+  document.getElementById("verifiedStudentText").innerText = studentId + " · " + fullName + " · " + campus;
+
+  document.getElementById("bookStudentId").innerText = studentId;
+  document.getElementById("bookFullName").innerText = fullName;
+  document.getElementById("bookCampus").innerText = campus;
+
+  showScreen("dashboard");
+}
 
     function ensureStudentLoggedIn() {
       if (verifiedStudent.studentId === "" || verifiedStudent.fullName === "") {
@@ -1435,6 +1472,7 @@
 
       document.getElementById("confirmStudentId").innerText = verifiedStudent.studentId;
       document.getElementById("confirmFullName").innerText = verifiedStudent.fullName;
+      document.getElementById("confirmCampus").innerText = verifiedStudent.campus;
       document.getElementById("confirmOffice").innerText = service.shortOffice;
       document.getElementById("confirmRequest").innerText = requestType;
       document.getElementById("confirmDate").innerText = date;
@@ -1868,5 +1906,199 @@
       updatePurpose();
     }
   </script>
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDmwYAkrKO2oGso3vEasf4sPAgEEf9XUJY",
+  authDomain: "pupass-4b720.firebaseapp.com",
+  projectId: "pupass-4b720",
+  storageBucket: "pupass-4b720.firebasestorage.app",
+  messagingSenderId: "970440433085",
+  appId: "1:970440433085:web:8118f63daaa8a7bf2806d4",
+  measurementId: "G-KX94LB7KHG"
+};
+
+  firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
+<script>
+  function getText(id) {
+    const element = document.getElementById(id);
+    return element ? element.innerText.trim() : "";
+  }
+
+  function createQueueNumber(office) {
+    let prefix = "Q";
+
+    if (office === "Registrar") prefix = "R";
+    if (office === "Cashier") prefix = "C";
+    if (office === "Library") prefix = "L";
+    if (office === "Guidance") prefix = "G";
+    if (office === "Student Affairs") prefix = "S";
+    if (office === "Scholarship") prefix = "SCH";
+
+    const number = Math.floor(Math.random() * 900) + 100;
+    return prefix + "-" + number;
+  }
+
+  async function saveBookingToFirestore() {
+  const studentId = getText("confirmStudentId");
+const fullName = getText("confirmFullName");
+const campus = getText("confirmCampus");
+const office = getText("confirmOffice");
+    const requestType = getText("confirmRequest");
+    const appointmentDate = getText("confirmDate");
+    const appointmentTime = getText("confirmTime");
+    const purpose = getText("confirmPurpose");
+    const queueNumber = createQueueNumber(office);
+
+    if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDate || !appointmentTime || !purpose) {
+      alert("Some appointment details are missing. Please review your booking again.");
+      return;
+    }
+
+    try {
+     await db.collection("appointments").add({
+  studentId: studentId,
+  fullName: fullName,
+  campus: campus,
+  office: office,
+        requestType: requestType,
+        appointmentDate: appointmentDate,
+        appointmentTime: appointmentTime,
+        purpose: purpose,
+        queueNumber: queueNumber,
+        status: "Waiting",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      services[selectedServiceKey].queue = queueNumber;
+      generatePass();
+    } catch (error) {
+      console.error("Error saving booking:", error);
+      alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
+    }
+  }
+
+  let adminFirestoreUnsubscribe = null;
+
+  function renderAdminAppointments() {
+    const list = document.getElementById("adminAppointmentList");
+
+    if (!list) {
+      return;
+    }
+
+    list.innerHTML = `
+      <div class="card">
+        <p>Loading appointments from Firebase...</p>
+      </div>
+    `;
+
+    if (adminFirestoreUnsubscribe) {
+      adminFirestoreUnsubscribe();
+    }
+
+    adminFirestoreUnsubscribe = db.collection("appointments")
+      .orderBy("createdAt", "desc")
+      .onSnapshot(function(snapshot) {
+        list.innerHTML = "";
+
+        let total = 0;
+        let waiting = 0;
+        let serving = 0;
+        let completed = 0;
+
+        if (snapshot.empty) {
+          list.innerHTML = `
+            <div class="card gold-card">
+              <h2>No Appointments Yet</h2>
+              <p>Student bookings will appear here after they confirm an appointment.</p>
+            </div>
+          `;
+        }
+
+        snapshot.forEach(function(doc) {
+          const item = doc.data();
+          const appointmentId = doc.id;
+
+          total++;
+
+          if (item.status === "Waiting") waiting++;
+          if (item.status === "Serving") serving++;
+          if (item.status === "Completed") completed++;
+
+          const appointmentCard = document.createElement("div");
+          appointmentCard.className = "list-item";
+
+          let actionButtons = "";
+
+          if (item.status === "Waiting") {
+            actionButtons = `
+              <button class="btn btn-small btn-blue" onclick="updateAdminStatus('${appointmentId}', 'Serving')">Now Serving</button>
+              <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+              <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+            `;
+          } else if (item.status === "Serving") {
+            actionButtons = `
+              <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+              <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+            `;
+          } else if (item.status === "Cancelled") {
+            actionButtons = `
+              <button class="btn btn-small btn-outline" disabled>Cancelled</button>
+            `;
+          } else {
+            actionButtons = `
+              <button class="btn btn-small btn-outline" disabled>Completed</button>
+            `;
+          }
+
+          appointmentCard.innerHTML = `
+            <strong>${item.queueNumber || ""}</strong>
+            <p>${item.fullName || ""} · ${item.campus || "No campus"} · ${item.office || ""}</p>
+            <p style="font-size:12px;">Student ID: ${item.studentId || ""}</p>
+            <p style="font-size:12px;">Request: ${item.requestType || ""}</p>
+            <p style="font-size:12px;">Date: ${item.appointmentDate || ""} · ${item.appointmentTime || ""}</p>
+            <span class="status-pill ${getStatusClass(item.status)}">${item.status || "Waiting"}</span>
+            <div class="admin-actions">
+              ${actionButtons}
+            </div>
+          `;
+
+          list.appendChild(appointmentCard);
+        });
+
+        document.getElementById("adminTotal").innerText = total;
+        document.getElementById("adminWaiting").innerText = waiting;
+        document.getElementById("adminServing").innerText = serving;
+        document.getElementById("adminCompleted").innerText = completed;
+      }, function(error) {
+        console.error("Error loading admin appointments:", error);
+        list.innerHTML = `
+          <div class="card">
+            <h2>Could not load appointments</h2>
+            <p>Please check your Firebase rules and internet connection.</p>
+          </div>
+        `;
+      });
+  }
+
+  async function updateAdminStatus(appointmentId, newStatus) {
+    try {
+      await db.collection("appointments").doc(appointmentId).update({
+        status: newStatus
+      });
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+      alert("Status was not updated.");
+    }
+  }
+</script>
+
 </body>
 </html>
