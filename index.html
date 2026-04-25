@@ -647,18 +647,50 @@
 <body>
   <main class="phone">
 
+    <!-- SPLASH -->
     <section id="splash" class="screen splash active">
       <div class="logo-circle">PUP</div>
       <div class="app-title">PU<span>Pass</span></div>
       <p>Student Appointment & Queue Pass System</p>
       <p class="tagline">Book your slot. Get your pass. Skip the long line.</p>
 
-      <button class="btn btn-gold" onclick="continueAsStudent()">Continue as Student</button>
+      <button class="btn btn-gold" onclick="showScreen('studentVerify')">Continue as Student</button>
       <button class="btn btn-outline" onclick="selectAdmin()" style="margin-top:14px;">Continue as Admin</button>
 
       <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
     </section>
 
+    <!-- STUDENT VERIFICATION -->
+    <section id="studentVerify" class="screen">
+      <div class="back" onclick="showScreen('splash')">← Back</div>
+
+      <div style="text-align:center; margin-top: 35px;">
+        <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
+        <h1>Student Verification</h1>
+        <p>Enter your full name and student number before booking an appointment.</p>
+      </div>
+
+      <div style="margin-top: 34px;">
+        <label>Full Name <span style="color:var(--red);">*</span></label>
+        <input class="input-box" type="text" id="verifyFullName" placeholder="Enter your full name" />
+        <div class="error-text" id="fullNameError">Full name is required.</div>
+
+        <label>Student Number <span style="color:var(--red);">*</span></label>
+        <input class="input-box" type="text" id="verifyStudentNumber" placeholder="Required e.g., 2022-00001-MN-0" />
+        <div class="error-text" id="verifyStudentNumberError">Student number is required for verification.</div>
+
+        <label>Course / Year</label>
+        <input class="input-box" type="text" id="verifyCourse" placeholder="e.g., BSIT - 3rd Year" />
+
+        <div class="card gold-card">
+          <p><b>Note:</b> Students do not need to log in, but full name and student number are required before accessing the booking page.</p>
+        </div>
+
+        <button class="btn" onclick="verifyStudent()">Verify and Continue</button>
+      </div>
+    </section>
+
+    <!-- ADMIN LOGIN -->
     <section id="adminLogin" class="screen">
       <div class="back" onclick="showScreen('splash')">← Back</div>
 
@@ -679,21 +711,22 @@
       </div>
     </section>
 
+    <!-- DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
-            <h1>Hello, Isko/Iska!</h1>
-            <p>Book an appointment with student number verification.</p>
+            <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
+            <p>Book an appointment with your verified student details.</p>
           </div>
         </div>
       </div>
 
       <div class="card gold-card">
-        <h2>Quick Appointment</h2>
-        <p>No login needed, but your student number is required before generating a queue pass.</p>
-        <span class="status-pill">Student Access</span>
+        <h2>Verified Student</h2>
+        <p id="verifiedStudentText">Full Name and Student Number verified.</p>
+        <span class="status-pill">Verified</span>
       </div>
 
       <button class="btn btn-gold" onclick="showScreen('services')">Book Appointment</button>
@@ -738,6 +771,7 @@
       </div>
     </section>
 
+    <!-- SELECT SERVICE -->
     <section id="services" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Back</div>
       <h1>Select a Service</h1>
@@ -782,26 +816,33 @@
       </div>
     </section>
 
+    <!-- BOOK APPOINTMENT -->
     <section id="book" class="screen">
       <div class="back" onclick="showScreen('services')">← Back</div>
       <h1>Book Appointment</h1>
-      <p>Fill out your student and appointment details.</p>
+      <p>Your verified student details will be used for this appointment.</p>
+
+      <div class="card gold-card">
+        <h2>Student Details</h2>
+        <div class="detail-row">
+          <span>Full Name</span>
+          <span id="bookStudentName">Student</span>
+        </div>
+        <div class="detail-row">
+          <span>Student No.</span>
+          <span id="bookStudentNumber">Required</span>
+        </div>
+        <div class="detail-row">
+          <span>Course / Year</span>
+          <span id="bookStudentCourse">Not specified</span>
+        </div>
+      </div>
 
       <div class="card">
         <p>Selected Service</p>
         <h2 id="selectedOffice">Registrar Office</h2>
         <p id="selectedDescription">Document request and enrollment-related concerns.</p>
       </div>
-
-      <label>Student Name</label>
-      <input class="input-box" type="text" id="studentName" placeholder="Enter your full name" />
-
-      <label>Student Number <span style="color:var(--red);">*</span></label>
-      <input class="input-box" type="text" id="studentNumber" placeholder="Required e.g., 2022-00001-MN-0" />
-      <div class="error-text" id="studentNumberError">Student number is required for verification.</div>
-
-      <label>Course / Year</label>
-      <input class="input-box" type="text" id="studentCourse" placeholder="e.g., BSIT - 3rd Year" />
 
       <label>Request Type</label>
       <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
@@ -824,12 +865,13 @@
       <textarea class="input-box" id="purposeText"></textarea>
 
       <div class="card gold-card">
-        <p><b>Verification:</b> A valid student number is required before your appointment pass can be generated.</p>
+        <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
       </div>
 
       <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
     </section>
 
+    <!-- CONFIRMATION -->
     <section id="confirm" class="screen">
       <div class="back" onclick="showScreen('book')">← Back</div>
       <h1>Confirm Your Appointment</h1>
@@ -878,6 +920,7 @@
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
+    <!-- PASS -->
     <section id="pass" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Your Digital Queue Pass</h1>
@@ -939,6 +982,7 @@
       <p class="muted-center">You may also take a screenshot of this pass.</p>
     </section>
 
+    <!-- QUEUE STATUS -->
     <section id="queue" class="screen">
       <div class="back" onclick="showScreen('pass')">← Back</div>
       <h1>Queue Status</h1>
@@ -990,6 +1034,7 @@
       <button class="btn btn-outline" onclick="showScreen('feedback')">Finish / Give Feedback</button>
     </section>
 
+    <!-- FEEDBACK -->
     <section id="feedback" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>How was your experience?</h1>
@@ -1015,6 +1060,7 @@
       <button class="btn" onclick="showScreen('thankYou')">Submit Feedback</button>
     </section>
 
+    <!-- THANK YOU -->
     <section id="thankYou" class="screen">
       <div style="text-align:center; margin-top: 100px;">
         <div class="logo-circle">✓</div>
@@ -1024,6 +1070,7 @@
       </div>
     </section>
 
+    <!-- ADMIN DASHBOARD -->
     <section id="admin" class="screen">
       <div class="header">
         <div class="header-row">
@@ -1064,6 +1111,12 @@
 
   <script>
     let selectedServiceKey = "registrar";
+
+    let verifiedStudent = {
+      fullName: "",
+      studentNumber: "",
+      course: ""
+    };
 
     const services = {
       registrar: {
@@ -1209,12 +1262,67 @@
       window.scrollTo(0, 0);
     }
 
-    function continueAsStudent() {
+    function selectAdmin() {
+      showScreen("adminLogin");
+    }
+
+    function verifyStudent() {
+      const fullNameInput = document.getElementById("verifyFullName");
+      const studentNumberInput = document.getElementById("verifyStudentNumber");
+      const courseInput = document.getElementById("verifyCourse");
+
+      const fullNameError = document.getElementById("fullNameError");
+      const studentNumberError = document.getElementById("verifyStudentNumberError");
+
+      const fullName = fullNameInput.value.trim();
+      const studentNumber = studentNumberInput.value.trim();
+      const course = courseInput.value.trim() || "Not specified";
+
+      let valid = true;
+
+      if (fullName === "") {
+        fullNameInput.classList.add("input-error");
+        fullNameError.style.display = "block";
+        valid = false;
+      } else {
+        fullNameInput.classList.remove("input-error");
+        fullNameError.style.display = "none";
+      }
+
+      if (studentNumber === "") {
+        studentNumberInput.classList.add("input-error");
+        studentNumberError.style.display = "block";
+        valid = false;
+      } else {
+        studentNumberInput.classList.remove("input-error");
+        studentNumberError.style.display = "none";
+      }
+
+      if (!valid) {
+        return;
+      }
+
+      verifiedStudent.fullName = fullName;
+      verifiedStudent.studentNumber = studentNumber;
+      verifiedStudent.course = course;
+
+      document.getElementById("studentGreeting").innerText = "Hello, " + fullName + "!";
+      document.getElementById("verifiedStudentText").innerText = fullName + " · " + studentNumber;
+
+      document.getElementById("bookStudentName").innerText = fullName;
+      document.getElementById("bookStudentNumber").innerText = studentNumber;
+      document.getElementById("bookStudentCourse").innerText = course;
+
       showScreen("dashboard");
     }
 
-    function selectAdmin() {
-      showScreen("adminLogin");
+    function ensureStudentVerified() {
+      if (verifiedStudent.fullName === "" || verifiedStudent.studentNumber === "") {
+        showScreen("studentVerify");
+        return false;
+      }
+
+      return true;
     }
 
     function openAdminDashboard() {
@@ -1223,6 +1331,10 @@
     }
 
     function selectService(serviceKey) {
+      if (!ensureStudentVerified()) {
+        return;
+      }
+
       selectedServiceKey = serviceKey;
       const service = services[serviceKey];
 
@@ -1248,42 +1360,17 @@
       document.getElementById("purposeText").value = "Request for " + requestType;
     }
 
-    function validateStudentNumber() {
-      const studentNumberInput = document.getElementById("studentNumber");
-      const studentNumberError = document.getElementById("studentNumberError");
-      const studentNumber = studentNumberInput.value.trim();
-
-      if (studentNumber === "") {
-        studentNumberInput.classList.add("input-error");
-        studentNumberError.style.display = "block";
-        return false;
-      }
-
-      studentNumberInput.classList.remove("input-error");
-      studentNumberError.style.display = "none";
-      return true;
-    }
-
     function prepareConfirmation() {
-      const isStudentNumberValid = validateStudentNumber();
-
-      if (!isStudentNumberValid) {
-        return;
-      }
-
       const service = services[selectedServiceKey];
 
-      const studentName = document.getElementById("studentName").value.trim() || "Student";
-      const studentNumber = document.getElementById("studentNumber").value.trim();
-      const studentCourse = document.getElementById("studentCourse").value.trim() || "Not specified";
       const requestType = document.getElementById("requestType").value;
       const date = document.getElementById("appointmentDate").value;
       const time = document.getElementById("appointmentTime").value;
       const purpose = document.getElementById("purposeText").value;
 
-      document.getElementById("confirmStudentName").innerText = studentName;
-      document.getElementById("confirmStudentNumber").innerText = studentNumber;
-      document.getElementById("confirmStudentCourse").innerText = studentCourse;
+      document.getElementById("confirmStudentName").innerText = verifiedStudent.fullName;
+      document.getElementById("confirmStudentNumber").innerText = verifiedStudent.studentNumber;
+      document.getElementById("confirmStudentCourse").innerText = verifiedStudent.course;
       document.getElementById("confirmOffice").innerText = service.shortOffice;
       document.getElementById("confirmRequest").innerText = requestType;
       document.getElementById("confirmDate").innerText = date;
@@ -1296,15 +1383,13 @@
     function generatePass() {
       const service = services[selectedServiceKey];
 
-      const studentName = document.getElementById("studentName").value.trim() || "Student";
-      const studentNumber = document.getElementById("studentNumber").value.trim();
       const requestType = document.getElementById("requestType").value;
       const date = document.getElementById("appointmentDate").value;
       const time = document.getElementById("appointmentTime").value;
 
       document.getElementById("passQueue").innerText = service.queue;
-      document.getElementById("passStudentName").innerText = studentName;
-      document.getElementById("passStudentNumber").innerText = studentNumber;
+      document.getElementById("passStudentName").innerText = verifiedStudent.fullName;
+      document.getElementById("passStudentNumber").innerText = verifiedStudent.studentNumber;
       document.getElementById("passOffice").innerText = service.shortOffice;
       document.getElementById("passRequest").innerText = requestType;
       document.getElementById("passDate").innerText = date;
@@ -1393,8 +1478,18 @@
     window.onload = function() {
       selectServiceDataOnly("registrar");
 
-      document.getElementById("studentNumber").addEventListener("input", function() {
-        validateStudentNumber();
+      document.getElementById("verifyFullName").addEventListener("input", function() {
+        if (this.value.trim() !== "") {
+          this.classList.remove("input-error");
+          document.getElementById("fullNameError").style.display = "none";
+        }
+      });
+
+      document.getElementById("verifyStudentNumber").addEventListener("input", function() {
+        if (this.value.trim() !== "") {
+          this.classList.remove("input-error");
+          document.getElementById("verifyStudentNumberError").style.display = "none";
+        }
       });
     };
 
