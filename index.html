@@ -1181,6 +1181,7 @@
 <input class="input-box" type="password" id="adminPassword" placeholder="Password" />
 
 <button class="btn" onclick="adminLogin()">Log In</button>
+<button class="btn btn-outline" onclick="resetAdminPassword()">Forgot Password?</button>
 
 <button class="btn btn-outline" onclick="showAdminCreateForm()">Create Admin Account</button>
 
@@ -2103,7 +2104,7 @@ const office = getText("confirmOffice");
       });
   }
 
-  async function updateAdminStatus(appointmentId, newStatus) {
+    async function updateAdminStatus(appointmentId, newStatus) {
     try {
       await db.collection("appointments").doc(appointmentId).update({
         status: newStatus
@@ -2143,6 +2144,23 @@ const office = getText("confirmOffice");
     } catch (error) {
       console.error("Admin login error:", error);
       alert("Invalid admin email or password.");
+    }
+  }
+
+  async function resetAdminPassword() {
+    const email = document.getElementById("adminEmail").value.trim();
+
+    if (!email) {
+      alert("Please enter your admin email first.");
+      return;
+    }
+
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("Password reset email sent. Please check your inbox or spam folder.");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      alert("Could not send password reset email. Please check if the email is registered.");
     }
   }
 
