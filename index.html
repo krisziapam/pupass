@@ -8,17 +8,17 @@
   <style>
     :root {
       --maroon: #800000;
-      --dark-maroon: #5A0000;
-      --gold: #FFC107;
-      --light-gold: #FFF4CC;
-      --bg: #F7F7F7;
-      --white: #FFFFFF;
+      --dark-maroon: #5a0000;
+      --gold: #ffc107;
+      --light-gold: #fff4cc;
+      --bg: #f7f7f7;
+      --white: #ffffff;
       --text: #222222;
       --muted: #666666;
-      --border: #E6E6E6;
-      --green: #2E7D32;
-      --red: #B00020;
-      --blue: #1565C0;
+      --border: #e6e6e6;
+      --green: #2e7d32;
+      --red: #b00020;
+      --blue: #1565c0;
     }
 
     * {
@@ -43,7 +43,7 @@
       background: var(--bg);
       border-radius: 28px;
       overflow: hidden;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
     }
 
     .screen {
@@ -170,12 +170,12 @@
       padding: 18px;
       margin-bottom: 16px;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
     }
 
     .gold-card {
       background: var(--light-gold);
-      border: 1px solid #F1D47A;
+      border: 1px solid #f1d47a;
     }
 
     .btn {
@@ -239,6 +239,12 @@
       color: var(--text);
     }
 
+    textarea.input-box {
+      height: 100px;
+      padding-top: 14px;
+      resize: none;
+    }
+
     .input-error {
       border-color: var(--red);
       background: #fff5f5;
@@ -251,21 +257,6 @@
       margin-top: -8px;
       margin-bottom: 12px;
       font-weight: 700;
-    }
-
-    textarea.input-box {
-      height: 100px;
-      padding-top: 14px;
-      resize: none;
-    }
-
-    .link {
-      text-align: center;
-      margin-top: 16px;
-      color: var(--maroon);
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
     }
 
     .muted-center {
@@ -353,12 +344,12 @@
     }
 
     .status-serving {
-      background: #E3F2FD;
+      background: #e3f2fd;
       color: var(--blue);
     }
 
     .status-completed {
-      background: #E8F5E9;
+      background: #e8f5e9;
       color: var(--green);
     }
 
@@ -390,7 +381,7 @@
       overflow: hidden;
       margin-top: 18px;
       border: 1px solid var(--border);
-      box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
     }
 
     .pass-top {
@@ -654,82 +645,58 @@
       <p>Student Appointment & Queue Pass System</p>
       <p class="tagline">Book your slot. Get your pass. Skip the long line.</p>
 
-      <button class="btn btn-gold" onclick="showScreen('studentVerify')">Continue as Student</button>
-      <button class="btn btn-outline" onclick="selectAdmin()" style="margin-top:14px;">Continue as Admin</button>
+      <button class="btn btn-gold" onclick="showScreen('studentLogin')">Continue as Student</button>
+      <button class="btn btn-outline" onclick="showScreen('adminLogin')" style="margin-top:14px;">Continue as Admin</button>
 
       <p style="margin-top:60px;font-size:12px;">Polytechnic University of the Philippines</p>
     </section>
 
-    <!-- STUDENT VERIFICATION -->
-    <section id="studentVerify" class="screen">
+    <!-- STUDENT LOGIN -->
+    <section id="studentLogin" class="screen">
       <div class="back" onclick="showScreen('splash')">← Back</div>
 
       <div style="text-align:center; margin-top: 35px;">
         <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
-        <h1>Student Verification</h1>
-        <p>Enter your full name and student number before booking an appointment.</p>
+        <h1>Student Login</h1>
+        <p>Enter your Student ID Number and Full Name to continue booking.</p>
       </div>
 
       <div style="margin-top: 34px;">
+        <label>Student ID Number <span style="color:var(--red);">*</span></label>
+        <input class="input-box" type="text" id="studentIdInput" placeholder="e.g., 2022-00001-MN-0" />
+        <div class="error-text" id="studentIdError">Student ID Number is required.</div>
+
         <label>Full Name <span style="color:var(--red);">*</span></label>
-        <input class="input-box" type="text" id="verifyFullName" placeholder="Enter your full name" />
-        <div class="error-text" id="fullNameError">Full name is required.</div>
-
-        <label>Student Number <span style="color:var(--red);">*</span></label>
-        <input class="input-box" type="text" id="verifyStudentNumber" placeholder="Required e.g., 2022-00001-MN-0" />
-        <div class="error-text" id="verifyStudentNumberError">Student number is required for verification.</div>
-
-        <label>Course / Year</label>
-        <input class="input-box" type="text" id="verifyCourse" placeholder="e.g., BSIT - 3rd Year" />
+        <input class="input-box" type="text" id="fullNameInput" placeholder="Enter your full name" />
+        <div class="error-text" id="fullNameError">Full Name is required.</div>
 
         <div class="card gold-card">
-          <p><b>Note:</b> Students do not need to log in, but full name and student number are required before accessing the booking page.</p>
+          <p><b>Note:</b> No password is required. Your Student ID Number and Full Name will be used for appointment verification.</p>
         </div>
 
-        <button class="btn" onclick="verifyStudent()">Verify and Continue</button>
+        <button class="btn" onclick="studentLogin()">Continue to Booking</button>
       </div>
     </section>
 
-    <!-- ADMIN LOGIN -->
-    <section id="adminLogin" class="screen">
-      <div class="back" onclick="showScreen('splash')">← Back</div>
-
-      <div style="text-align:center; margin-top: 35px;">
-        <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
-        <h1>Admin Login</h1>
-        <p>Log in using your staff account to manage appointments.</p>
-      </div>
-
-      <div style="margin-top: 38px;">
-        <input class="input-box" type="text" placeholder="Admin Username" />
-        <input class="input-box" type="password" placeholder="Password" />
-
-        <button class="btn" onclick="openAdminDashboard()">Log In</button>
-
-        <div class="link">Forgot Password?</div>
-        <p class="muted-center">For authorized PUP staff only.</p>
-      </div>
-    </section>
-
-    <!-- DASHBOARD -->
+    <!-- STUDENT DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="header">
         <div class="header-row">
           <div class="small-logo">PUP</div>
           <div>
             <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
-            <p>Book an appointment with your verified student details.</p>
+            <p>Book an appointment for PUP student services.</p>
           </div>
         </div>
       </div>
 
       <div class="card gold-card">
-        <h2>Verified Student</h2>
-        <p id="verifiedStudentText">Full Name and Student Number verified.</p>
+        <h2>Student Verified</h2>
+        <p id="verifiedStudentText">Student ID Number and Full Name verified.</p>
         <span class="status-pill">Verified</span>
       </div>
 
-      <button class="btn btn-gold" onclick="showScreen('services')">Book Appointment</button>
+      <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
 
       <div class="section-title">Quick Access</div>
       <div class="quick-row">
@@ -746,16 +713,19 @@
           <h3>Registrar</h3>
           <p>Documents and enrollment concerns</p>
         </div>
+
         <div class="service-card" onclick="selectService('cashier')">
           <div class="icon">C</div>
           <h3>Cashier</h3>
           <p>Payment and assessment concerns</p>
         </div>
+
         <div class="service-card" onclick="selectService('library')">
           <div class="icon">L</div>
           <h3>Library</h3>
           <p>Clearance and borrowing concerns</p>
         </div>
+
         <div class="service-card" onclick="selectService('guidance')">
           <div class="icon">G</div>
           <h3>Guidance</h3>
@@ -824,17 +794,15 @@
 
       <div class="card gold-card">
         <h2>Student Details</h2>
+
+        <div class="detail-row">
+          <span>Student ID</span>
+          <span id="bookStudentId">Required</span>
+        </div>
+
         <div class="detail-row">
           <span>Full Name</span>
-          <span id="bookStudentName">Student</span>
-        </div>
-        <div class="detail-row">
-          <span>Student No.</span>
-          <span id="bookStudentNumber">Required</span>
-        </div>
-        <div class="detail-row">
-          <span>Course / Year</span>
-          <span id="bookStudentCourse">Not specified</span>
+          <span id="bookFullName">Student</span>
         </div>
       </div>
 
@@ -879,33 +847,35 @@
 
       <div class="card">
         <div class="detail-row">
-          <span>Student Name</span>
-          <span id="confirmStudentName">Student</span>
+          <span>Student ID</span>
+          <span id="confirmStudentId">Required</span>
         </div>
+
         <div class="detail-row">
-          <span>Student No.</span>
-          <span id="confirmStudentNumber">Required</span>
+          <span>Full Name</span>
+          <span id="confirmFullName">Student</span>
         </div>
-        <div class="detail-row">
-          <span>Course / Year</span>
-          <span id="confirmStudentCourse">Not specified</span>
-        </div>
+
         <div class="detail-row">
           <span>Office</span>
           <span id="confirmOffice">Registrar</span>
         </div>
+
         <div class="detail-row">
           <span>Request Type</span>
           <span id="confirmRequest">Certificate of Registration</span>
         </div>
+
         <div class="detail-row">
           <span>Date</span>
           <span id="confirmDate">May 10, 2026</span>
         </div>
+
         <div class="detail-row">
           <span>Time</span>
           <span id="confirmTime">10:00 AM</span>
         </div>
+
         <div class="detail-row">
           <span>Purpose</span>
           <span id="confirmPurpose">Request for COR</span>
@@ -940,33 +910,40 @@
           <div class="queue-number" id="passQueue">R-025</div>
 
           <div class="detail-row">
-            <span>Student</span>
-            <span id="passStudentName">Student</span>
+            <span>Student ID</span>
+            <span id="passStudentId">Required</span>
           </div>
+
           <div class="detail-row">
-            <span>Student No.</span>
-            <span id="passStudentNumber">Required</span>
+            <span>Full Name</span>
+            <span id="passFullName">Student</span>
           </div>
+
           <div class="detail-row">
             <span>Office</span>
             <span id="passOffice">Registrar</span>
           </div>
+
           <div class="detail-row">
             <span>Request</span>
             <span id="passRequest">Certificate of Registration</span>
           </div>
+
           <div class="detail-row">
             <span>Date</span>
             <span id="passDate">May 10, 2026</span>
           </div>
+
           <div class="detail-row">
             <span>Time</span>
             <span id="passTime">10:00 AM</span>
           </div>
+
           <div class="detail-row">
             <span>Status</span>
             <span style="color:var(--green);">Confirmed</span>
           </div>
+
           <div class="detail-row">
             <span>Estimated Wait</span>
             <span>15 minutes</span>
@@ -1012,18 +989,22 @@
 
       <div class="card">
         <h2>Progress</h2>
+
         <div class="step done">
           <div class="dot"></div>
           <span>Appointment Confirmed</span>
         </div>
+
         <div class="step active">
           <div class="dot"></div>
           <span>Waiting</span>
         </div>
+
         <div class="step">
           <div class="dot"></div>
           <span>Now Serving</span>
         </div>
+
         <div class="step">
           <div class="dot"></div>
           <span>Completed</span>
@@ -1070,6 +1051,24 @@
       </div>
     </section>
 
+    <!-- ADMIN LOGIN -->
+    <section id="adminLogin" class="screen">
+      <div class="back" onclick="showScreen('splash')">← Back</div>
+
+      <div style="text-align:center; margin-top: 35px;">
+        <div class="logo-circle" style="width:78px;height:78px;font-size:22px;margin-bottom:22px;">PUP</div>
+        <h1>Admin Login</h1>
+        <p>Log in using your staff account to manage appointments.</p>
+      </div>
+
+      <div style="margin-top: 38px;">
+        <input class="input-box" type="text" placeholder="Admin Username" />
+        <input class="input-box" type="password" placeholder="Password" />
+        <button class="btn" onclick="openAdminDashboard()">Log In</button>
+        <p class="muted-center">For authorized PUP staff only.</p>
+      </div>
+    </section>
+
     <!-- ADMIN DASHBOARD -->
     <section id="admin" class="screen">
       <div class="header">
@@ -1087,14 +1086,17 @@
           <p>Today’s Appointments</p>
           <strong id="adminTotal">0</strong>
         </div>
+
         <div class="stat-card">
           <p>Waiting</p>
           <strong id="adminWaiting">0</strong>
         </div>
+
         <div class="stat-card">
           <p>Serving</p>
           <strong id="adminServing">0</strong>
         </div>
+
         <div class="stat-card">
           <p>Completed</p>
           <strong id="adminCompleted">0</strong>
@@ -1113,9 +1115,8 @@
     let selectedServiceKey = "registrar";
 
     let verifiedStudent = {
-      fullName: "",
-      studentNumber: "",
-      course: ""
+      studentId: "",
+      fullName: ""
     };
 
     const services = {
@@ -1215,7 +1216,7 @@
       {
         queue: "R-020",
         student: "Maria Santos",
-        studentNumber: "2022-00001-MN-0",
+        studentId: "2022-00001-MN-0",
         service: "Registrar",
         request: "Certificate of Registration",
         status: "Serving"
@@ -1223,7 +1224,7 @@
       {
         queue: "R-021",
         student: "Carlo Santos",
-        studentNumber: "2022-00005-MN-0",
+        studentId: "2022-00005-MN-0",
         service: "Registrar",
         request: "Document Request",
         status: "Waiting"
@@ -1231,7 +1232,7 @@
       {
         queue: "C-014",
         student: "Juan Dela Cruz",
-        studentNumber: "2022-00002-MN-0",
+        studentId: "2022-00002-MN-0",
         service: "Cashier",
         request: "Assessment Inquiry",
         status: "Waiting"
@@ -1239,7 +1240,7 @@
       {
         queue: "L-008",
         student: "Ana Reyes",
-        studentNumber: "2022-00003-MN-0",
+        studentId: "2022-00003-MN-0",
         service: "Library",
         request: "Library Clearance",
         status: "Waiting"
@@ -1247,7 +1248,7 @@
       {
         queue: "G-006",
         student: "Mark Rivera",
-        studentNumber: "2022-00004-MN-0",
+        studentId: "2022-00004-MN-0",
         service: "Guidance Office",
         request: "Counseling Appointment",
         status: "Waiting"
@@ -1257,28 +1258,29 @@
     function showScreen(screenId) {
       const screens = document.querySelectorAll(".screen");
       screens.forEach(screen => screen.classList.remove("active"));
-
       document.getElementById(screenId).classList.add("active");
       window.scrollTo(0, 0);
     }
 
-    function selectAdmin() {
-      showScreen("adminLogin");
-    }
-
-    function verifyStudent() {
-      const fullNameInput = document.getElementById("verifyFullName");
-      const studentNumberInput = document.getElementById("verifyStudentNumber");
-      const courseInput = document.getElementById("verifyCourse");
-
+    function studentLogin() {
+      const studentIdInput = document.getElementById("studentIdInput");
+      const fullNameInput = document.getElementById("fullNameInput");
+      const studentIdError = document.getElementById("studentIdError");
       const fullNameError = document.getElementById("fullNameError");
-      const studentNumberError = document.getElementById("verifyStudentNumberError");
 
+      const studentId = studentIdInput.value.trim();
       const fullName = fullNameInput.value.trim();
-      const studentNumber = studentNumberInput.value.trim();
-      const course = courseInput.value.trim() || "Not specified";
 
       let valid = true;
+
+      if (studentId === "") {
+        studentIdInput.classList.add("input-error");
+        studentIdError.style.display = "block";
+        valid = false;
+      } else {
+        studentIdInput.classList.remove("input-error");
+        studentIdError.style.display = "none";
+      }
 
       if (fullName === "") {
         fullNameInput.classList.add("input-error");
@@ -1289,49 +1291,41 @@
         fullNameError.style.display = "none";
       }
 
-      if (studentNumber === "") {
-        studentNumberInput.classList.add("input-error");
-        studentNumberError.style.display = "block";
-        valid = false;
-      } else {
-        studentNumberInput.classList.remove("input-error");
-        studentNumberError.style.display = "none";
-      }
-
       if (!valid) {
         return;
       }
 
+      verifiedStudent.studentId = studentId;
       verifiedStudent.fullName = fullName;
-      verifiedStudent.studentNumber = studentNumber;
-      verifiedStudent.course = course;
 
       document.getElementById("studentGreeting").innerText = "Hello, " + fullName + "!";
-      document.getElementById("verifiedStudentText").innerText = fullName + " · " + studentNumber;
+      document.getElementById("verifiedStudentText").innerText = studentId + " · " + fullName;
 
-      document.getElementById("bookStudentName").innerText = fullName;
-      document.getElementById("bookStudentNumber").innerText = studentNumber;
-      document.getElementById("bookStudentCourse").innerText = course;
+      document.getElementById("bookStudentId").innerText = studentId;
+      document.getElementById("bookFullName").innerText = fullName;
 
       showScreen("dashboard");
     }
 
-    function ensureStudentVerified() {
-      if (verifiedStudent.fullName === "" || verifiedStudent.studentNumber === "") {
-        showScreen("studentVerify");
+    function ensureStudentLoggedIn() {
+      if (verifiedStudent.studentId === "" || verifiedStudent.fullName === "") {
+        showScreen("studentLogin");
         return false;
       }
 
       return true;
     }
 
-    function openAdminDashboard() {
-      renderAdminAppointments();
-      showScreen("admin");
+    function goToServices() {
+      if (!ensureStudentLoggedIn()) {
+        return;
+      }
+
+      showScreen("services");
     }
 
     function selectService(serviceKey) {
-      if (!ensureStudentVerified()) {
+      if (!ensureStudentLoggedIn()) {
         return;
       }
 
@@ -1368,9 +1362,8 @@
       const time = document.getElementById("appointmentTime").value;
       const purpose = document.getElementById("purposeText").value;
 
-      document.getElementById("confirmStudentName").innerText = verifiedStudent.fullName;
-      document.getElementById("confirmStudentNumber").innerText = verifiedStudent.studentNumber;
-      document.getElementById("confirmStudentCourse").innerText = verifiedStudent.course;
+      document.getElementById("confirmStudentId").innerText = verifiedStudent.studentId;
+      document.getElementById("confirmFullName").innerText = verifiedStudent.fullName;
       document.getElementById("confirmOffice").innerText = service.shortOffice;
       document.getElementById("confirmRequest").innerText = requestType;
       document.getElementById("confirmDate").innerText = date;
@@ -1388,8 +1381,8 @@
       const time = document.getElementById("appointmentTime").value;
 
       document.getElementById("passQueue").innerText = service.queue;
-      document.getElementById("passStudentName").innerText = verifiedStudent.fullName;
-      document.getElementById("passStudentNumber").innerText = verifiedStudent.studentNumber;
+      document.getElementById("passStudentId").innerText = verifiedStudent.studentId;
+      document.getElementById("passFullName").innerText = verifiedStudent.fullName;
       document.getElementById("passOffice").innerText = service.shortOffice;
       document.getElementById("passRequest").innerText = requestType;
       document.getElementById("passDate").innerText = date;
@@ -1406,6 +1399,11 @@
 
     function printPass() {
       window.print();
+    }
+
+    function openAdminDashboard() {
+      renderAdminAppointments();
+      showScreen("admin");
     }
 
     function getStatusClass(status) {
@@ -1458,7 +1456,7 @@
         appointmentCard.innerHTML = `
           <strong>${item.queue}</strong>
           <p>${item.student} · ${item.service}</p>
-          <p style="font-size:12px;">Student No: ${item.studentNumber}</p>
+          <p style="font-size:12px;">Student ID: ${item.studentId}</p>
           <p style="font-size:12px;">Request: ${item.request}</p>
           <span class="status-pill ${getStatusClass(item.status)}">${item.status}</span>
           <div class="admin-actions">
@@ -1478,17 +1476,17 @@
     window.onload = function() {
       selectServiceDataOnly("registrar");
 
-      document.getElementById("verifyFullName").addEventListener("input", function() {
+      document.getElementById("studentIdInput").addEventListener("input", function() {
         if (this.value.trim() !== "") {
           this.classList.remove("input-error");
-          document.getElementById("fullNameError").style.display = "none";
+          document.getElementById("studentIdError").style.display = "none";
         }
       });
 
-      document.getElementById("verifyStudentNumber").addEventListener("input", function() {
+      document.getElementById("fullNameInput").addEventListener("input", function() {
         if (this.value.trim() !== "") {
           this.classList.remove("input-error");
-          document.getElementById("verifyStudentNumberError").style.display = "none";
+          document.getElementById("fullNameError").style.display = "none";
         }
       });
     };
