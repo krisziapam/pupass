@@ -1177,10 +1177,24 @@
         </div>
 
         <div style="margin-top: 38px;">
-          <input class="input-box" type="text" placeholder="Admin Username" />
-          <input class="input-box" type="password" placeholder="Password" />
-          <button class="btn" onclick="openAdminDashboard()">Log In</button>
-          <p class="muted-center">For authorized PUP staff only.</p>
+<input class="input-box" type="email" id="adminEmail" placeholder="Admin Email" />
+<input class="input-box" type="password" id="adminPassword" placeholder="Password" />
+
+<button class="btn" onclick="adminLogin()">Log In</button>
+
+<button class="btn btn-outline" onclick="showAdminCreateForm()">Create Admin Account</button>
+
+<div id="adminCreateForm" style="display:none; margin-top:20px;">
+  <h2>Create Admin Account</h2>
+
+  <input class="input-box" type="email" id="newAdminEmail" placeholder="New Admin Email" />
+  <input class="input-box" type="password" id="newAdminPassword" placeholder="New Admin Password" />
+  <input class="input-box" type="password" id="adminRegistrationCode" placeholder="Admin Registration Code" />
+
+  <button class="btn btn-gold" onclick="createAdminAccount()">Create Account</button>
+</div>
+
+<p class="muted-center">For authorized PUP staff only.</p>
         </div>
       </div>
     </section>
@@ -1220,8 +1234,8 @@
 
       <div class="section-title">Appointment Queue</div>
       <div id="adminAppointmentList" class="admin-list"></div>
-
-      <button class="btn btn-outline" onclick="showScreen('splash')">Log Out</button>
+<button class="btn btn-outline" onclick="adminLogout()">Log Out</button>
+      
     </section>
 
   </main>
@@ -1909,7 +1923,7 @@
   <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDmwYAkrKO2oGso3vEasf4sPAgEEf9XUJY",
@@ -1921,8 +1935,9 @@ const firebaseConfig = {
   measurementId: "G-KX94LB7KHG"
 };
 
-  firebase.initializeApp(firebaseConfig);
+ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 </script>
 
 <script>
@@ -2097,6 +2112,69 @@ const office = getText("confirmOffice");
       console.error("Error updating appointment:", error);
       alert("Status was not updated.");
     }
+  }
+</script>
+
+<script>
+  const ADMIN_REGISTRATION_CODE = "PUPASS2026";
+
+  function showAdminCreateForm() {
+    const form = document.getElementById("adminCreateForm");
+
+    if (form.style.display === "none") {
+      form.style.display = "block";
+    } else {
+      form.style.display = "none";
+    }
+  }
+
+  async function adminLogin() {
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+
+    if (!email || !password) {
+      alert("Please enter admin email and password.");
+      return;
+    }
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      openAdminDashboard();
+    } catch (error) {
+      console.error("Admin login error:", error);
+      alert("Invalid admin email or password.");
+    }
+  }
+
+  async function createAdminAccount() {
+    const email = document.getElementById("newAdminEmail").value.trim();
+    const password = document.getElementById("newAdminPassword").value;
+    const registrationCode = document.getElementById("adminRegistrationCode").value.trim();
+
+    if (!email || !password || !registrationCode) {
+      alert("Please complete all admin account fields.");
+      return;
+    }
+
+    if (registrationCode !== ADMIN_REGISTRATION_CODE) {
+      alert("Invalid admin registration code.");
+      return;
+    }
+
+    try {
+      await auth.createUserWithEmailAndPassword(email, password);
+
+      alert("Admin account created successfully. You are now logged in.");
+      openAdminDashboard();
+    } catch (error) {
+      console.error("Create admin error:", error);
+      alert("Admin account was not created. The email may already exist or the password may be too weak.");
+    }
+  }
+
+  async function adminLogout() {
+    await auth.signOut();
+    showScreen("splash");
   }
 </script>
 
