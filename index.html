@@ -61,7 +61,6 @@
       background: var(--maroon);
       color: white;
       text-align: center;
-      display: none;
       place-items: center;
       padding: 40px 24px;
     }
@@ -70,9 +69,11 @@
       display: grid;
     }
 
-    .splash-content {
-      max-width: 520px;
+    .splash-content,
+    .login-wrapper {
+      max-width: 460px;
       width: 100%;
+      margin: 0 auto;
     }
 
     .logo-circle {
@@ -619,11 +620,6 @@
       cursor: pointer;
     }
 
-    .login-wrapper {
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
     .center-block {
       text-align: center;
       margin-top: 35px;
@@ -681,21 +677,6 @@
       }
     }
 
-    @media (max-width: 420px) {
-      .grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .service-card {
-        min-height: 130px;
-        padding: 14px;
-      }
-
-      h1 {
-        font-size: 26px;
-      }
-    }
-
     @media print {
       body {
         background: white;
@@ -737,7 +718,6 @@
 <body>
   <main class="app">
 
-    <!-- SPLASH -->
     <section id="splash" class="screen splash active">
       <div class="splash-content">
         <div class="logo-circle">PUP</div>
@@ -752,7 +732,6 @@
       </div>
     </section>
 
-    <!-- STUDENT LOGIN -->
     <section id="studentLogin" class="screen">
       <div class="login-wrapper">
         <div class="back" onclick="showScreen('splash')">← Back</div>
@@ -773,7 +752,7 @@
           <div class="error-text" id="fullNameError">Full Name is required.</div>
 
           <div class="card gold-card">
-            <p><b>Note:</b> No password is required. Your Student ID Number and Full Name will be used for appointment verification.</p>
+            <p><b>Note:</b> Dummy student accounts are accepted for prototype testing. No password is required.</p>
           </div>
 
           <button class="btn" onclick="studentLogin()">Continue to Booking</button>
@@ -781,7 +760,6 @@
       </div>
     </section>
 
-    <!-- STUDENT DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="page-header">
         <div class="header-row">
@@ -862,7 +840,6 @@
       </div>
     </section>
 
-    <!-- SELECT SERVICE -->
     <section id="services" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Back</div>
       <h1>Select a Service</h1>
@@ -914,7 +891,6 @@
       </div>
     </section>
 
-    <!-- BOOK APPOINTMENT -->
     <section id="book" class="screen">
       <div class="back" onclick="showScreen('services')">← Back</div>
       <h1>Book Appointment</h1>
@@ -971,7 +947,6 @@
       </div>
     </section>
 
-    <!-- CONFIRMATION -->
     <section id="confirm" class="screen">
       <div class="back" onclick="showScreen('book')">← Back</div>
       <h1>Confirm Your Appointment</h1>
@@ -1012,7 +987,6 @@
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
-    <!-- PASS -->
     <section id="pass" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Your Digital Queue Pass</h1>
@@ -1081,7 +1055,6 @@
       </div>
     </section>
 
-    <!-- MY APPOINTMENT -->
     <section id="appointment" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>My Appointment</h1>
@@ -1097,7 +1070,6 @@
       </div>
     </section>
 
-    <!-- RESCHEDULE -->
     <section id="reschedule" class="screen">
       <div class="back" onclick="showAppointmentScreen()">← Back</div>
       <h1>Reschedule Appointment</h1>
@@ -1133,7 +1105,6 @@
       </div>
     </section>
 
-    <!-- QUEUE STATUS -->
     <section id="queue" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>Queue Status</h1>
@@ -1149,7 +1120,6 @@
       </div>
     </section>
 
-    <!-- FEEDBACK -->
     <section id="feedback" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
       <h1>How was your experience?</h1>
@@ -1165,7 +1135,6 @@
       <button class="btn" onclick="completeAppointment()">Submit Feedback</button>
     </section>
 
-    <!-- THANK YOU -->
     <section id="thankYou" class="screen">
       <div style="text-align:center; margin-top: 100px;">
         <div class="logo-circle">✓</div>
@@ -1176,7 +1145,6 @@
       </div>
     </section>
 
-    <!-- ADMIN LOGIN -->
     <section id="adminLogin" class="screen">
       <div class="login-wrapper">
         <div class="back" onclick="showScreen('splash')">← Back</div>
@@ -1196,7 +1164,6 @@
       </div>
     </section>
 
-    <!-- ADMIN DASHBOARD -->
     <section id="admin" class="screen">
       <div class="page-header">
         <div class="header-row">
@@ -1269,12 +1236,7 @@
         nowServing: "R-020",
         nextInLine: "R-021",
         ahead: 4,
-        requests: [
-          "Certificate of Registration",
-          "Transcript of Records",
-          "Enrollment Concern",
-          "Document Request"
-        ]
+        requests: ["Certificate of Registration", "Transcript of Records", "Enrollment Concern", "Document Request"]
       },
       cashier: {
         office: "Cashier Office",
@@ -1284,12 +1246,7 @@
         nowServing: "C-009",
         nextInLine: "C-010",
         ahead: 3,
-        requests: [
-          "Tuition Payment Concern",
-          "Assessment Inquiry",
-          "Receipt Request",
-          "Balance Verification"
-        ]
+        requests: ["Tuition Payment Concern", "Assessment Inquiry", "Receipt Request", "Balance Verification"]
       },
       library: {
         office: "Library",
@@ -1299,12 +1256,7 @@
         nowServing: "L-003",
         nextInLine: "L-004",
         ahead: 2,
-        requests: [
-          "Library Clearance",
-          "Borrowing Concern",
-          "Returning Concern",
-          "Library Account Verification"
-        ]
+        requests: ["Library Clearance", "Borrowing Concern", "Returning Concern", "Library Account Verification"]
       },
       guidance: {
         office: "Guidance Office",
@@ -1314,12 +1266,7 @@
         nowServing: "G-002",
         nextInLine: "G-003",
         ahead: 2,
-        requests: [
-          "Counseling Appointment",
-          "Student Support Request",
-          "Good Moral Request",
-          "Academic Concern"
-        ]
+        requests: ["Counseling Appointment", "Student Support Request", "Good Moral Request", "Academic Concern"]
       },
       studentAffairs: {
         office: "Student Affairs Office",
@@ -1329,12 +1276,7 @@
         nowServing: "S-006",
         nextInLine: "S-007",
         ahead: 3,
-        requests: [
-          "Student ID Concern",
-          "Student Activity Inquiry",
-          "Organization Concern",
-          "Student Assistance Request"
-        ]
+        requests: ["Student ID Concern", "Student Activity Inquiry", "Organization Concern", "Student Assistance Request"]
       },
       scholarship: {
         office: "Scholarship Office",
@@ -1344,12 +1286,7 @@
         nowServing: "SCH-005",
         nextInLine: "SCH-006",
         ahead: 3,
-        requests: [
-          "Scholarship Application",
-          "Scholarship Renewal",
-          "Scholarship Requirement Inquiry",
-          "Grant Status Follow-up"
-        ]
+        requests: ["Scholarship Application", "Scholarship Renewal", "Scholarship Requirement Inquiry", "Grant Status Follow-up"]
       }
     };
 
@@ -1507,6 +1444,21 @@
       showScreen("confirm");
     }
 
+    function addStudentToAdminQueue() {
+      const exists = adminAppointments.some(item => item.queue === currentAppointment.queue);
+
+      if (exists) return;
+
+      adminAppointments.push({
+        queue: currentAppointment.queue,
+        student: verifiedStudent.fullName,
+        studentId: verifiedStudent.studentId,
+        service: currentAppointment.office,
+        request: currentAppointment.request,
+        status: "Waiting"
+      });
+    }
+
     function generatePass() {
       const service = services[selectedServiceKey];
 
@@ -1527,6 +1479,7 @@
       currentAppointment.nextInLine = service.nextInLine;
       currentAppointment.ahead = service.ahead;
 
+      addStudentToAdminQueue();
       updatePassDetails();
       showScreen("pass");
     }
@@ -1775,12 +1728,24 @@
     function cancelAppointment() {
       currentAppointment.status = "Cancelled";
       updatePassDetails();
+
+      const studentIndex = adminAppointments.findIndex(item => item.queue === currentAppointment.queue);
+      if (studentIndex !== -1) {
+        adminAppointments[studentIndex].status = "Cancelled";
+      }
+
       showAppointmentScreen();
     }
 
     function completeAppointment() {
       currentAppointment.status = "Completed";
       updatePassDetails();
+
+      const studentIndex = adminAppointments.findIndex(item => item.queue === currentAppointment.queue);
+      if (studentIndex !== -1) {
+        adminAppointments[studentIndex].status = "Completed";
+      }
+
       showScreen("thankYou");
     }
 
@@ -1796,6 +1761,7 @@
     function getStatusClass(status) {
       if (status === "Serving") return "status-serving";
       if (status === "Completed") return "status-completed";
+      if (status === "Cancelled") return "status-cancelled";
       return "status-waiting";
     }
 
@@ -1828,6 +1794,10 @@
           actionButtons = `
             <button class="btn btn-small btn-green" onclick="updateAdminStatus(${index}, 'Completed')">Complete</button>
           `;
+        } else if (item.status === "Cancelled") {
+          actionButtons = `
+            <button class="btn btn-small btn-outline" disabled>Cancelled</button>
+          `;
         } else {
           actionButtons = `
             <button class="btn btn-small btn-outline" disabled>Completed</button>
@@ -1851,6 +1821,13 @@
 
     function updateAdminStatus(index, newStatus) {
       adminAppointments[index].status = newStatus;
+
+      if (adminAppointments[index].queue === currentAppointment.queue) {
+        if (newStatus === "Completed") currentAppointment.status = "Completed";
+        if (newStatus === "Serving") currentAppointment.status = "Now Serving";
+        updatePassDetails();
+      }
+
       renderAdminAppointments();
     }
 
