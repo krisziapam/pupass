@@ -2198,22 +2198,21 @@ const office = getText("confirmOffice");
   }
 </script>
 
-  <script>
+<script>
 /* =====================================================
-   PUPASS FIX:
-   Student ID Number is now the unique student identity.
-
-   Result:
-   - Same student number = same student dashboard data
-   - Existing booking loads when student logs in
+   PUPASS FINAL FIX
+   - Student ID loads existing booking
    - Student cannot create another active booking
-   - Admin status updates reflect on student side
+   - Calendar date defaults to today
+   - Maximum 100 bookings per day
+   - Real QR code works
 ===================================================== */
 
 let currentAppointmentId = "";
 let studentAppointmentUnsubscribe = null;
 
-const ACTIVE_BOOKING_STATUSES = ["Waiting", "Serving"];
+const ACTIVE_BOOKING_STATUSES = ["Waiting", "Serving", "Upcoming", "Now Serving"];
+const DAILY_BOOKING_LIMIT = 100;
 
 function normalizeStudentId(studentId) {
   return String(studentId || "").trim().toUpperCase();
@@ -2240,6 +2239,51 @@ function setStudentError(inputElement, errorElement, hasError) {
   }
 }
 
+function getTodayDateKey() {
+  const today = new Date();
+  const timezoneOffset = today.getTimezoneOffset() * 60000;
+  const localDate = new Date(today.getTime() - timezoneOffset);
+  return localDate.toISOString().split("T")[0];
+}
+
+function formatDateForDisplay(dateKey) {
+  if (!dateKey) return "";
+
+  const parts = dateKey.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  const date = new Date(year, month, day);
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+function setupCalendarDefaults() {
+  const todayKey = getTodayDateKey();
+
+  const appointmentDateInput = document.getElementById("appointmentDate");
+  const newAppointmentDateInput = document.getElementById("newAppointmentDate");
+
+  if (appointmentDateInput) {
+    appointmentDateInput.min = todayKey;
+    if (!appointmentDateInput.value) appointmentDateInput.value = todayKey;
+  }
+
+  if (newAppointmentDateInput) {
+    newAppointmentDateInput.min = todayKey;
+    if (!newAppointmentDateInput.value) newAppointmentDateInput.value = todayKey;
+  }
+}
+
+window.addEventListener("load", function() {
+  setupCalendarDefaults();
+});
+
 function updateStudentHeader() {
   document.getElementById("studentGreeting").innerText =
     "Hello, " + verifiedStudent.fullName + "!";
@@ -2261,6 +2305,7 @@ function clearCurrentAppointment() {
   currentAppointment.office = "";
   currentAppointment.request = "";
   currentAppointment.date = "";
+  currentAppointment.appointmentDateKey = "";
   currentAppointment.time = "";
   currentAppointment.purpose = "";
   currentAppointment.nowServing = "";
@@ -2277,6 +2322,7 @@ function setCurrentAppointmentFromFirestore(appointmentId, item) {
   currentAppointment.office = item.office || "";
   currentAppointment.request = item.requestType || "";
   currentAppointment.date = item.appointmentDate || "";
+  currentAppointment.appointmentDateKey = item.appointmentDateKey || "";
   currentAppointment.time = item.appointmentTime || "";
   currentAppointment.purpose = item.purpose || "";
 
@@ -2372,10 +2418,7 @@ function listenToStudentAppointment(appointmentId) {
     });
 }
 
-/* =====================================================
-   REPLACEMENT: studentLogin()
-   Existing student number loads existing appointment.
-===================================================== */
+/* Student login now loads existing booking by student number */
 async function studentLogin() {
   const studentIdInput = document.getElementById("studentIdInput");
   const fullNameInput = document.getElementById("fullNameInput");
@@ -2451,21 +2494,81 @@ async function studentLogin() {
   }
 }
 
-/* =====================================================
-   REPLACEMENT: saveBookingToFirestore()
-   Prevents duplicate active bookings.
-===================================================== */
+/* Calendar confirmation */
+function prepareConfirmation() {
+  const service = services[selectedServiceKey];
+
+  const requestType = document.getElementById("requestType").value;
+  const dateKey = document.getElementById("appointmentDate").value;
+  const time = document.getElementById("appointmentTime").value;
+  const purpose = document.getElementById("purposeText").value;
+
+  if (!dateKey) {
+    alert("Please select an appointment date.");
+    return;
+  }
+
+  const displayDate = formatDateForDisplay(dateKey);
+
+  document.getElementById("confirmStudentId").innerText = verifiedStudent.studentId;
+  document.getElementById("confirmFullName").innerText = verifiedStudent.fullName;
+  document.getElementById("confirmCampus").innerText = verifiedStudent.campus;
+  document.getElementById("confirmOffice").innerText = service.shortOffice;
+  document.getElementById("confirmRequest").innerText = requestType;
+  document.getElementById("confirmDate").innerText = displayDate;
+  document.getElementById("confirmDate").dataset.dateKey = dateKey;
+  document.getElementById("confirmTime").innerText = time;
+  document.getElementById("confirmPurpose").innerText = purpose;
+
+  showScreen("confirm");
+}
+
+async function countBookingsForDate(dateKey) {
+  const displayDate = formatDateForDisplay(dateKey);
+  const appointmentsMap = {};
+
+  const snapshotByDateKey = await db.collection("appointments")
+    .where("appointmentDateKey", "==", dateKey)
+    .get();
+
+  snapshotByDateKey.forEach(function(doc) {
+    appointmentsMap[doc.id] = doc.data();
+  });
+
+  const snapshotByDisplayDate = await db.collection("appointments")
+    .where("appointmentDate", "==", displayDate)
+    .get();
+
+  snapshotByDisplayDate.forEach(function(doc) {
+    appointmentsMap[doc.id] = doc.data();
+  });
+
+  let count = 0;
+
+  Object.values(appointmentsMap).forEach(function(item) {
+    if (item.status !== "Cancelled") {
+      count++;
+    }
+  });
+
+  return count;
+}
+
+/* Save booking with student-specific check and 100-per-day limit */
 async function saveBookingToFirestore() {
   const studentId = normalizeStudentId(getText("confirmStudentId"));
   const fullName = getText("confirmFullName");
   const campus = getText("confirmCampus");
   const office = getText("confirmOffice");
   const requestType = getText("confirmRequest");
-  const appointmentDate = getText("confirmDate");
+  const appointmentDateKey =
+    document.getElementById("confirmDate").dataset.dateKey ||
+    document.getElementById("appointmentDate").value;
+  const appointmentDate = formatDateForDisplay(appointmentDateKey);
   const appointmentTime = getText("confirmTime");
   const purpose = getText("confirmPurpose");
 
-  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDate || !appointmentTime || !purpose) {
+  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDateKey || !appointmentTime || !purpose) {
     alert("Some appointment details are missing. Please review your booking again.");
     return;
   }
@@ -2482,6 +2585,14 @@ async function saveBookingToFirestore() {
       return;
     }
 
+    const bookingsToday = await countBookingsForDate(appointmentDateKey);
+
+    if (bookingsToday >= DAILY_BOOKING_LIMIT) {
+      alert("Sorry, this date is already fully booked. Please choose another appointment date.");
+      showScreen("book");
+      return;
+    }
+
     const queueNumber = createQueueNumber(office);
 
     const newAppointment = {
@@ -2492,6 +2603,7 @@ async function saveBookingToFirestore() {
       office: office,
       requestType: requestType,
       appointmentDate: appointmentDate,
+      appointmentDateKey: appointmentDateKey,
       appointmentTime: appointmentTime,
       purpose: purpose,
       queueNumber: queueNumber,
@@ -2513,39 +2625,7 @@ async function saveBookingToFirestore() {
   }
 }
 
-/* =====================================================
-   REPLACEMENT: updatePassDetails()
-===================================================== */
-function updatePassDetails() {
-  document.getElementById("passQueue").innerText =
-    currentAppointment.queue || "No Queue";
-
-  document.getElementById("passStudentId").innerText =
-    verifiedStudent.studentId || "";
-
-  document.getElementById("passFullName").innerText =
-    verifiedStudent.fullName || "";
-
-  document.getElementById("passOffice").innerText =
-    currentAppointment.office || "";
-
-  document.getElementById("passRequest").innerText =
-    currentAppointment.request || "";
-
-  document.getElementById("passDate").innerText =
-    currentAppointment.date || "";
-
-  document.getElementById("passTime").innerText =
-    currentAppointment.time || "";
-
-  document.getElementById("passStatus").innerText =
-    currentAppointment.status || "Waiting";
-}
-
-/* =====================================================
-   REPLACEMENT: goToServices()
-   Blocks new booking if student has active booking.
-===================================================== */
+/* Block another active booking */
 function goToServices() {
   if (!ensureStudentLoggedIn()) return;
 
@@ -2555,12 +2635,10 @@ function goToServices() {
     return;
   }
 
+  setupCalendarDefaults();
   showScreen("services");
 }
 
-/* =====================================================
-   REPLACEMENT: showAppointmentScreen()
-===================================================== */
 function showAppointmentScreen() {
   if (!ensureStudentLoggedIn()) return;
 
@@ -2583,7 +2661,7 @@ function showAppointmentScreen() {
   let statusClass = "status-waiting";
   let statusLabel = currentAppointment.status;
 
-  if (currentAppointment.status === "Serving") {
+  if (currentAppointment.status === "Serving" || currentAppointment.status === "Now Serving") {
     statusClass = "status-serving";
     statusLabel = "Now Serving";
   }
@@ -2600,7 +2678,7 @@ function showAppointmentScreen() {
 
   let actionButtons = "";
 
-  if (currentAppointment.status === "Waiting" || currentAppointment.status === "Serving") {
+  if (isActiveBooking(currentAppointment.status)) {
     actionButtons = `
       <button class="btn" onclick="showScreen('pass')">View Queue Pass</button>
       <button class="btn btn-outline" onclick="showQueueFromNav()">View Queue Status</button>
@@ -2653,9 +2731,6 @@ function showAppointmentScreen() {
   showScreen("appointment");
 }
 
-/* =====================================================
-   REPLACEMENT: showQueueFromNav()
-===================================================== */
 async function showQueueFromNav() {
   if (!ensureStudentLoggedIn()) return;
 
@@ -2739,11 +2814,15 @@ async function showQueueFromNav() {
     console.error("Error loading current serving:", error);
   }
 
-  const servingLabel = currentAppointment.status === "Serving"
+  const isServing =
+    currentAppointment.status === "Serving" ||
+    currentAppointment.status === "Now Serving";
+
+  const servingLabel = isServing
     ? "You are now being served"
     : "Waiting";
 
-  const servingClass = currentAppointment.status === "Serving"
+  const servingClass = isServing
     ? "status-serving"
     : "status-waiting";
 
@@ -2775,12 +2854,12 @@ async function showQueueFromNav() {
         <span>Appointment Confirmed</span>
       </div>
 
-      <div class="step ${currentAppointment.status === "Waiting" ? "active" : "done"}">
+      <div class="step ${!isServing ? "active" : "done"}">
         <div class="dot"></div>
         <span>Waiting</span>
       </div>
 
-      <div class="step ${currentAppointment.status === "Serving" ? "active" : ""}">
+      <div class="step ${isServing ? "active" : ""}">
         <div class="dot"></div>
         <span>Now Serving</span>
       </div>
@@ -2797,9 +2876,6 @@ async function showQueueFromNav() {
   showScreen("queue");
 }
 
-/* =====================================================
-   REPLACEMENT: cancelAppointment()
-===================================================== */
 async function cancelAppointment() {
   if (!currentAppointmentId) {
     alert("No appointment selected.");
@@ -2817,9 +2893,6 @@ async function cancelAppointment() {
   }
 }
 
-/* =====================================================
-   REPLACEMENT: updateAdminStatus()
-===================================================== */
 async function updateAdminStatus(appointmentId, newStatus) {
   try {
     await db.collection("appointments").doc(appointmentId).update({
@@ -2831,209 +2904,7 @@ async function updateAdminStatus(appointmentId, newStatus) {
     alert("Status was not updated.");
   }
 }
-  <script>
-/* =====================================================
-   PUPASS DATE + DAILY BOOKING LIMIT FIX
 
-   Result:
-   - Appointment Date becomes current date by default
-   - Student can choose month/date/year using calendar
-   - Maximum of 100 non-cancelled bookings per day
-===================================================== */
-
-const DAILY_BOOKING_LIMIT = 100;
-
-function getTodayDateKey() {
-  const today = new Date();
-  const timezoneOffset = today.getTimezoneOffset() * 60000;
-  const localDate = new Date(today.getTime() - timezoneOffset);
-
-  return localDate.toISOString().split("T")[0];
-}
-
-function formatDateForDisplay(dateKey) {
-  if (!dateKey) return "";
-
-  const parts = dateKey.split("-");
-  const year = Number(parts[0]);
-  const month = Number(parts[1]) - 1;
-  const day = Number(parts[2]);
-
-  const date = new Date(year, month, day);
-
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-}
-
-function setupCalendarDefaults() {
-  const todayKey = getTodayDateKey();
-
-  const appointmentDateInput = document.getElementById("appointmentDate");
-  const newAppointmentDateInput = document.getElementById("newAppointmentDate");
-
-  if (appointmentDateInput) {
-    appointmentDateInput.value = todayKey;
-    appointmentDateInput.min = todayKey;
-  }
-
-  if (newAppointmentDateInput) {
-    newAppointmentDateInput.value = todayKey;
-    newAppointmentDateInput.min = todayKey;
-  }
-}
-
-window.addEventListener("load", function() {
-  setupCalendarDefaults();
-});
-
-/* =====================================================
-   REPLACEMENT: prepareConfirmation()
-   Converts calendar date into readable text.
-===================================================== */
-function prepareConfirmation() {
-  const service = services[selectedServiceKey];
-
-  const requestType = document.getElementById("requestType").value;
-  const dateKey = document.getElementById("appointmentDate").value;
-  const time = document.getElementById("appointmentTime").value;
-  const purpose = document.getElementById("purposeText").value;
-
-  if (!dateKey) {
-    alert("Please select an appointment date.");
-    return;
-  }
-
-  const displayDate = formatDateForDisplay(dateKey);
-
-  document.getElementById("confirmStudentId").innerText = verifiedStudent.studentId;
-  document.getElementById("confirmFullName").innerText = verifiedStudent.fullName;
-  document.getElementById("confirmCampus").innerText = verifiedStudent.campus;
-  document.getElementById("confirmOffice").innerText = service.shortOffice;
-  document.getElementById("confirmRequest").innerText = requestType;
-  document.getElementById("confirmDate").innerText = displayDate;
-  document.getElementById("confirmDate").dataset.dateKey = dateKey;
-  document.getElementById("confirmTime").innerText = time;
-  document.getElementById("confirmPurpose").innerText = purpose;
-
-  showScreen("confirm");
-}
-
-/* =====================================================
-   Counts bookings for selected day.
-   Cancelled bookings are not counted.
-===================================================== */
-async function countBookingsForDate(dateKey) {
-  const displayDate = formatDateForDisplay(dateKey);
-  const appointmentsMap = {};
-
-  const snapshotByDateKey = await db.collection("appointments")
-    .where("appointmentDateKey", "==", dateKey)
-    .get();
-
-  snapshotByDateKey.forEach(function(doc) {
-    appointmentsMap[doc.id] = doc.data();
-  });
-
-  const snapshotByDisplayDate = await db.collection("appointments")
-    .where("appointmentDate", "==", displayDate)
-    .get();
-
-  snapshotByDisplayDate.forEach(function(doc) {
-    appointmentsMap[doc.id] = doc.data();
-  });
-
-  let count = 0;
-
-  Object.values(appointmentsMap).forEach(function(item) {
-    if (item.status !== "Cancelled") {
-      count++;
-    }
-  });
-
-  return count;
-}
-
-/* =====================================================
-   REPLACEMENT: saveBookingToFirestore()
-   Adds 100 bookings per day limit.
-===================================================== */
-async function saveBookingToFirestore() {
-  const studentId = normalizeStudentId(getText("confirmStudentId"));
-  const fullName = getText("confirmFullName");
-  const campus = getText("confirmCampus");
-  const office = getText("confirmOffice");
-  const requestType = getText("confirmRequest");
-  const appointmentDate = getText("confirmDate");
-  const appointmentDateKey =
-    document.getElementById("confirmDate").dataset.dateKey ||
-    document.getElementById("appointmentDate").value;
-
-  const appointmentTime = getText("confirmTime");
-  const purpose = getText("confirmPurpose");
-
-  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDateKey || !appointmentTime || !purpose) {
-    alert("Some appointment details are missing. Please review your booking again.");
-    return;
-  }
-
-  try {
-    const existingAppointment = await getLatestStudentAppointment(studentId, studentId);
-
-    if (existingAppointment && isActiveBooking(existingAppointment.data.status)) {
-      setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
-      listenToStudentAppointment(existingAppointment.id);
-
-      alert("You already have an active booking. Showing your existing appointment instead.");
-      showAppointmentScreen();
-      return;
-    }
-
-    const bookingsToday = await countBookingsForDate(appointmentDateKey);
-
-    if (bookingsToday >= DAILY_BOOKING_LIMIT) {
-      alert("Sorry, this date is already fully booked. Please choose another appointment date.");
-      showScreen("book");
-      return;
-    }
-
-    const queueNumber = createQueueNumber(office);
-
-    const newAppointment = {
-      studentId: studentId,
-      studentKey: studentId,
-      fullName: fullName,
-      campus: campus,
-      office: office,
-      requestType: requestType,
-      appointmentDate: formatDateForDisplay(appointmentDateKey),
-      appointmentDateKey: appointmentDateKey,
-      appointmentTime: appointmentTime,
-      purpose: purpose,
-      queueNumber: queueNumber,
-      status: "Waiting",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    const docRef = await db.collection("appointments").add(newAppointment);
-
-    setCurrentAppointmentFromFirestore(docRef.id, newAppointment);
-    listenToStudentAppointment(docRef.id);
-
-    updatePassDetails();
-    showScreen("pass");
-  } catch (error) {
-    console.error("Error saving booking:", error);
-    alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
-  }
-}
-
-/* =====================================================
-   Optional: update reschedule to use calendar value.
-===================================================== */
 function openReschedule() {
   document.getElementById("rescheduleOffice").innerText = currentAppointment.office;
   document.getElementById("rescheduleCurrentDate").innerText =
@@ -3050,15 +2921,37 @@ function openReschedule() {
 
   showScreen("reschedule");
 }
-</script>  
-</script>
 
-  <script>
-/* =====================================================
-   REAL QR CODE FIX
-   Generates a true scannable QR code for the booking
-===================================================== */
+async function confirmReschedule() {
+  const newDateKey = document.getElementById("newAppointmentDate").value;
+  const newTime = document.getElementById("newAppointmentTime").value;
 
+  if (!newDateKey || !newTime) {
+    alert("Please select a new date and time.");
+    return;
+  }
+
+  if (!currentAppointmentId) {
+    alert("No appointment selected.");
+    return;
+  }
+
+  try {
+    await db.collection("appointments").doc(currentAppointmentId).update({
+      appointmentDate: formatDateForDisplay(newDateKey),
+      appointmentDateKey: newDateKey,
+      appointmentTime: newTime,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showAppointmentScreen();
+  } catch (error) {
+    console.error("Error rescheduling appointment:", error);
+    alert("Appointment was not rescheduled.");
+  }
+}
+
+/* Real QR code */
 function buildQRCodeText() {
   return JSON.stringify({
     appointmentId: currentAppointmentId || "",
@@ -3085,20 +2978,19 @@ function renderQRCode() {
     return;
   }
 
-  const qrText = buildQRCodeText();
+  if (typeof QRCode === "undefined") {
+    qrContainer.innerHTML = "<span style='font-size:12px;color:#b00020;'>QR library not loaded</span>";
+    return;
+  }
 
   new QRCode(qrContainer, {
-    text: qrText,
+    text: buildQRCodeText(),
     width: 130,
     height: 130,
     correctLevel: QRCode.CorrectLevel.M
   });
 }
 
-/* =====================================================
-   OVERRIDE updatePassDetails()
-   This keeps your pass details and adds real QR
-===================================================== */
 function updatePassDetails() {
   document.getElementById("passQueue").innerText =
     currentAppointment.queue || "No Queue";
@@ -3126,7 +3018,20 @@ function updatePassDetails() {
 
   renderQRCode();
 }
+
+/* Render QR when pass screen opens */
+const originalShowScreenForFinalFix = window.showScreen;
+
+window.showScreen = function(screenId) {
+  if (typeof originalShowScreenForFinalFix === "function") {
+    originalShowScreenForFinalFix(screenId);
+  }
+
+  if (screenId === "pass") {
+    setTimeout(renderQRCode, 100);
+  }
+};
 </script>
-  
+
 </body>
 </html>
