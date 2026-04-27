@@ -3674,5 +3674,126 @@ window.openAdminDashboard = function() {
   showScreen("admin");
 };
 </script>
+  <script>
+/* =====================================================
+   ADMIN STAT QUEUE NUMBER PREVIEW
+
+   Result:
+   - Waiting card shows waiting queue numbers
+   - Serving card shows currently serving queue numbers
+   - Does not clutter the dashboard with too many numbers
+===================================================== */
+
+let adminQueueStatsObserver = null;
+
+function ensureAdminQueueNumberStats() {
+  const waitingCount = document.getElementById("adminWaiting");
+  const servingCount = document.getElementById("adminServing");
+
+  if (waitingCount && !document.getElementById("adminWaitingQueues")) {
+    waitingCount.insertAdjacentHTML(
+      "afterend",
+      `<p id="adminWaitingQueues" style="font-size:12px;margin-top:6px;color:var(--muted);">Next: None</p>`
+    );
+  }
+
+  if (servingCount && !document.getElementById("adminServingQueues")) {
+    servingCount.insertAdjacentHTML(
+      "afterend",
+      `<p id="adminServingQueues" style="font-size:12px;margin-top:6px;color:var(--muted);">Now Serving: None</p>`
+    );
+  }
+}
+
+function formatAdminQueuePreview(queueList) {
+  if (!queueList.length) return "None";
+
+  if (queueList.length <= 3) {
+    return queueList.join(", ");
+  }
+
+  return queueList.slice(0, 3).join(", ") + " +" + (queueList.length - 3) + " more";
+}
+
+function updateAdminQueueNumberStats() {
+  ensureAdminQueueNumberStats();
+
+  const waitingLabel = document.getElementById("adminWaitingQueues");
+  const servingLabel = document.getElementById("adminServingQueues");
+
+  const cards = document.querySelectorAll("#adminAppointmentList .list-item");
+
+  const waitingQueues = [];
+  const servingQueues = [];
+
+  cards.forEach(function(card) {
+    const queue = card.querySelector("strong")
+      ? card.querySelector("strong").innerText.trim()
+      : "";
+
+    const status = card.querySelector(".status-pill")
+      ? card.querySelector(".status-pill").innerText.trim()
+      : "";
+
+    if (!queue) return;
+
+    if (status === "Waiting") {
+      waitingQueues.push(queue);
+    }
+
+    if (status === "Serving") {
+      servingQueues.push(queue);
+    }
+  });
+
+  if (waitingLabel) {
+    waitingLabel.innerText = "Next: " + formatAdminQueuePreview(waitingQueues);
+  }
+
+  if (servingLabel) {
+    servingLabel.innerText = "Now Serving: " + formatAdminQueuePreview(servingQueues);
+  }
+}
+
+function watchAdminQueueListForStats() {
+  const list = document.getElementById("adminAppointmentList");
+
+  if (!list) return;
+
+  if (adminQueueStatsObserver) {
+    adminQueueStatsObserver.disconnect();
+  }
+
+  adminQueueStatsObserver = new MutationObserver(function() {
+    updateAdminQueueNumberStats();
+  });
+
+  adminQueueStatsObserver.observe(list, {
+    childList: true,
+    subtree: true
+  });
+
+  updateAdminQueueNumberStats();
+}
+
+window.addEventListener("load", function() {
+  ensureAdminQueueNumberStats();
+  watchAdminQueueListForStats();
+});
+
+const originalOpenAdminDashboardForQueueStats = window.openAdminDashboard;
+
+window.openAdminDashboard = function() {
+  if (typeof originalOpenAdminDashboardForQueueStats === "function") {
+    originalOpenAdminDashboardForQueueStats();
+  }
+
+  setTimeout(function() {
+    ensureAdminQueueNumberStats();
+    watchAdminQueueListForStats();
+    updateAdminQueueNumberStats();
+  }, 300);
+};
+</script>
 </body>
 </html>
