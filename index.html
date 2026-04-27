@@ -76,35 +76,30 @@
       margin: 0 auto;
     }
 
-    .logo-circle {
-      width: 92px;
-      height: 92px;
-      border-radius: 50%;
-      background: white;
-      color: var(--maroon);
-      margin: 0 auto 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 900;
-      font-size: 28px;
-      border: 5px solid var(--gold);
-    }
+   .logo-circle {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: white;
+  margin: 0 auto 24px;
+  display: block;
+  object-fit: contain;
+}
 
-    .small-logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: white;
-      color: var(--maroon);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      border: 3px solid var(--gold);
-      font-size: 14px;
-      flex-shrink: 0;
-    }
+.small-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: white;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pass-top .small-logo {
+  width: 48px;
+  height: 48px;
+}
 
     .app-title {
       font-size: 50px;
