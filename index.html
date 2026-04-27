@@ -3795,21 +3795,25 @@ window.openAdminDashboard = function() {
   }, 300);
 };
 </script>
-  <script>
+<script>
 /* =====================================================
-   PUPASS SUPPORT TICKET SYSTEM
-   - Student Help creates one active ticket
-   - Admin can respond or close ticket
-   - Closed tickets go to archive
-   - Admin can search open tickets and archive
-   - Prevents student from creating multiple active tickets
+   PUPASS TECHNICAL ERROR REPORT SYSTEM
+
+   Result:
+   - Help becomes "Report Technical Error"
+   - Students can report system/access problems only
+   - Admin sees Open Technical Error Reports
+   - Admin can mark as Investigating, Resolved, or Closed
+   - Closed reports go to Archive
+   - Admin can search open and archived reports
+   - Student cannot create many open technical reports at once
 ===================================================== */
 
-let supportTicketsUnsubscribe = null;
-let adminTicketView = "open";
-let adminTicketSearch = "";
+let technicalReportsUnsubscribe = null;
+let adminTechnicalReportView = "open";
+let adminTechnicalReportSearch = "";
 
-function ticketSafeText(value) {
+function techSafeText(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -3818,7 +3822,7 @@ function ticketSafeText(value) {
     .replaceAll("'", "&#039;");
 }
 
-function formatTicketDate(value) {
+function formatTechDate(value) {
   if (!value) return "Just now";
 
   try {
@@ -3836,8 +3840,9 @@ function formatTicketDate(value) {
   }
 }
 
-function createTicketNumber() {
+function createTechnicalReportNumber() {
   const date = new Date();
+
   const datePart =
     date.getFullYear().toString() +
     String(date.getMonth() + 1).padStart(2, "0") +
@@ -3845,11 +3850,11 @@ function createTicketNumber() {
 
   const randomPart = Math.floor(Math.random() * 9000) + 1000;
 
-  return "TCK-" + datePart + "-" + randomPart;
+  return "TECH-" + datePart + "-" + randomPart;
 }
 
-/* Make Notifications and Help cards clickable */
-function connectSupportQuickCards() {
+/* Make Notifications and Help clickable */
+function connectTechnicalHelpQuickCards() {
   const cards = document.querySelectorAll(".quick-card");
 
   cards.forEach(function(card) {
@@ -3865,8 +3870,8 @@ function connectSupportQuickCards() {
   });
 }
 
-/* Create Help and Notifications screens if they do not exist */
-function ensureSupportScreens() {
+/* Create Notifications and Technical Help screens */
+function ensureTechnicalHelpScreens() {
   const feedbackScreen = document.getElementById("feedback");
   if (!feedbackScreen) return;
 
@@ -3893,34 +3898,39 @@ function ensureSupportScreens() {
     feedbackScreen.insertAdjacentHTML("beforebegin", `
       <section id="help" class="screen">
         <div class="back" onclick="showScreen('dashboard')">← Home</div>
-        <h1>Help Center</h1>
-        <p>Send one active support ticket to the admin.</p>
+        <h1>Report Technical Error</h1>
+        <p>Use this page only for system or website problems while using PUPass.</p>
 
-        <div id="studentActiveTicketBox"></div>
-
-        <div class="card">
-          <h2>Create Support Ticket</h2>
-          <p>You can create a new ticket only when you have no active open ticket.</p>
-
-          <label>Concern Type</label>
-          <select class="input-box" id="helpConcernType">
-            <option>Appointment Concern</option>
-            <option>Queue Status Concern</option>
-            <option>Cancellation Concern</option>
-            <option>Student Information Concern</option>
-            <option>Other Concern</option>
-          </select>
-
-          <label>Message</label>
-          <textarea class="input-box" id="helpMessage" placeholder="Type your concern here..."></textarea>
-
-          <button class="btn" onclick="sendHelpTicket()">Submit Ticket</button>
-        </div>
+        <div id="studentActiveTechnicalReportBox"></div>
 
         <div class="card gold-card">
-          <h2>Reminder</h2>
-          <p>For active queue updates, use Queue Status.</p>
-          <p>For completed or cancelled bookings, use Notifications.</p>
+          <h2>What should be reported here?</h2>
+          <p>Report login errors, booking errors, queue status problems, QR code problems, calendar problems, or buttons that are not working.</p>
+          <p>Do not use this for regular office concerns. For appointment status, use My Appointment or Queue Status.</p>
+        </div>
+
+        <div class="card">
+          <h2>Create Technical Error Report</h2>
+
+          <label>Error Area</label>
+          <select class="input-box" id="technicalErrorArea">
+            <option>Student Login Error</option>
+            <option>Booking Appointment Error</option>
+            <option>Queue Status Not Updating</option>
+            <option>QR Code Error</option>
+            <option>Calendar / Date Error</option>
+            <option>Admin Status Not Reflecting</option>
+            <option>Button / Navigation Not Working</option>
+            <option>Other Technical Error</option>
+          </select>
+
+          <label>What happened?</label>
+          <textarea class="input-box" id="technicalErrorDescription" placeholder="Example: I clicked Confirm Booking but it did not continue."></textarea>
+
+          <label>Steps before the error</label>
+          <textarea class="input-box" id="technicalErrorSteps" placeholder="Example: I logged in, selected Registrar, chose date, then clicked Confirm Booking."></textarea>
+
+          <button class="btn" onclick="submitTechnicalErrorReport()">Submit Technical Report</button>
         </div>
 
         <div class="bottom-nav">
@@ -3935,9 +3945,564 @@ function ensureSupportScreens() {
 }
 
 window.addEventListener("load", function() {
-  ensureSupportScreens();
-  connectSupportQuickCards();
+  ensureTechnicalHelpScreens();
+  connectTechnicalHelpQuickCards();
 });
+
+/* =====================================================
+   STUDENT: Booking History
+===================================================== */
+
+async function showNotificationsScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  ensureTechnicalHelpScreens();
+
+  const content = document.getElementById("notificationsContent");
+
+  content.innerHTML = `
+    <div class="card">
+      <p>Loading booking history...</p>
+    </div>
+  `;
+
+  showScreen("notifications");
+
+  try {
+    const appointments = await getStudentAppointments(
+      verifiedStudent.studentId,
+      verifiedStudent.studentId
+    );
+
+    const history = appointments.filter(function(item) {
+      const status = item.data.status || "";
+      return status === "Completed" || status === "Cancelled";
+    });
+
+    if (!history.length) {
+      content.innerHTML = `
+        <div class="card gold-card">
+          <h2>No Booking History Yet</h2>
+          <p>Completed and cancelled bookings will appear here.</p>
+          <span class="status-pill">No History</span>
+        </div>
+      `;
+      return;
+    }
+
+    content.innerHTML = history.map(function(item) {
+      const booking = item.data;
+      const status = booking.status || "";
+      const statusClass = status === "Cancelled"
+        ? "status-cancelled"
+        : "status-completed";
+
+      return `
+        <div class="card">
+          <h2>${techSafeText(booking.office || "Appointment")}</h2>
+
+          <div class="detail-row">
+            <span>Status</span>
+            <span><span class="status-pill ${statusClass}">${techSafeText(status)}</span></span>
+          </div>
+
+          <div class="detail-row">
+            <span>Queue Number</span>
+            <span>${techSafeText(booking.queueNumber || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Request</span>
+            <span>${techSafeText(booking.requestType || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Date</span>
+            <span>${techSafeText(booking.appointmentDate || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Time</span>
+            <span>${techSafeText(booking.appointmentTime || "")}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Error loading booking history:", error);
+
+    content.innerHTML = `
+      <div class="card">
+        <h2>Could not load booking history</h2>
+        <p>Please check Firebase rules or internet connection.</p>
+      </div>
+    `;
+  }
+}
+
+/* =====================================================
+   STUDENT: Technical Error Report
+===================================================== */
+
+async function getStudentActiveTechnicalReport() {
+  const snapshot = await db.collection("technicalReports")
+    .where("studentId", "==", verifiedStudent.studentId)
+    .get();
+
+  let activeReport = null;
+
+  snapshot.forEach(function(doc) {
+    const item = doc.data();
+
+    if (item.archived !== true && item.status !== "Closed" && item.status !== "Resolved") {
+      activeReport = {
+        id: doc.id,
+        data: item
+      };
+    }
+  });
+
+  return activeReport;
+}
+
+function renderStudentTechnicalReportBox(report) {
+  const box = document.getElementById("studentActiveTechnicalReportBox");
+  if (!box) return;
+
+  if (!report) {
+    box.innerHTML = `
+      <div class="card gold-card">
+        <h2>No Active Technical Report</h2>
+        <p>You may submit a new technical error report below.</p>
+        <span class="status-pill">No Active Report</span>
+      </div>
+    `;
+    return;
+  }
+
+  const item = report.data;
+  const status = item.status || "Open";
+
+  let statusClass = "status-waiting";
+
+  if (status === "Investigating") {
+    statusClass = "status-serving";
+  }
+
+  if (status === "Resolved") {
+    statusClass = "status-completed";
+  }
+
+  box.innerHTML = `
+    <div class="card gold-card">
+      <h2>Active Technical Report</h2>
+
+      <div class="detail-row">
+        <span>Report Number</span>
+        <span>${techSafeText(item.reportNumber || report.id)}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Status</span>
+        <span><span class="status-pill ${statusClass}">${techSafeText(status)}</span></span>
+      </div>
+
+      <div class="detail-row">
+        <span>Error Area</span>
+        <span>${techSafeText(item.errorArea || "")}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Problem</span>
+        <span>${techSafeText(item.description || "")}</span>
+      </div>
+
+      ${
+        item.adminResponse
+          ? `
+            <div class="detail-row">
+              <span>Admin Response</span>
+              <span>${techSafeText(item.adminResponse)}</span>
+            </div>
+          `
+          : ""
+      }
+
+      <p style="margin-top:12px;">
+        You cannot create another technical report until this is resolved or closed by admin.
+      </p>
+    </div>
+  `;
+}
+
+async function showHelpScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  ensureTechnicalHelpScreens();
+  showScreen("help");
+
+  try {
+    const report = await getStudentActiveTechnicalReport();
+    renderStudentTechnicalReportBox(report);
+  } catch (error) {
+    console.error("Error loading active technical report:", error);
+  }
+}
+
+async function submitTechnicalErrorReport() {
+  if (!ensureStudentLoggedIn()) return;
+
+  const errorArea = document.getElementById("technicalErrorArea").value;
+  const description = document.getElementById("technicalErrorDescription").value.trim();
+  const steps = document.getElementById("technicalErrorSteps").value.trim();
+
+  if (!description) {
+    alert("Please describe the technical problem.");
+    return;
+  }
+
+  if (!steps) {
+    alert("Please describe the steps before the error happened.");
+    return;
+  }
+
+  try {
+    const activeReport = await getStudentActiveTechnicalReport();
+
+    if (activeReport) {
+      renderStudentTechnicalReportBox(activeReport);
+      alert("You already have an active technical report. Please wait for admin to resolve or close it.");
+      return;
+    }
+
+    const reportNumber = createTechnicalReportNumber();
+
+    await db.collection("technicalReports").add({
+      reportNumber: reportNumber,
+      studentId: verifiedStudent.studentId,
+      fullName: verifiedStudent.fullName,
+      campus: verifiedStudent.campus,
+      errorArea: errorArea,
+      description: description,
+      steps: steps,
+      adminResponse: "",
+      status: "Open",
+      archived: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    document.getElementById("technicalErrorDescription").value = "";
+    document.getElementById("technicalErrorSteps").value = "";
+
+    alert("Technical report submitted. Report Number: " + reportNumber);
+
+    const newReport = await getStudentActiveTechnicalReport();
+    renderStudentTechnicalReportBox(newReport);
+  } catch (error) {
+    console.error("Error submitting technical report:", error);
+    alert("Technical report was not submitted. Please check Firebase rules.");
+  }
+}
+
+/* =====================================================
+   ADMIN: Technical Error Report Inbox
+===================================================== */
+
+function ensureAdminTechnicalReportInbox() {
+  const adminScreen = document.getElementById("admin");
+  if (!adminScreen) return null;
+
+  let inbox = document.getElementById("adminTechnicalReportInbox");
+
+  if (!inbox) {
+    const logoutButton = adminScreen.querySelector("button[onclick='adminLogout()']");
+
+    const html = `
+      <div class="section-title">Technical Error Reports</div>
+
+      <div class="card">
+        <h2>Report View</h2>
+        <p>Open and investigating reports appear in the main view. Closed reports go to Archive.</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+          <button id="adminTechOpenBtn" class="btn btn-small btn-gold" onclick="setAdminTechnicalReportView('open')">Open Reports</button>
+          <button id="adminTechArchiveBtn" class="btn btn-small btn-outline" onclick="setAdminTechnicalReportView('archive')">Archive</button>
+        </div>
+
+        <input
+          class="input-box"
+          id="adminTechnicalReportSearch"
+          placeholder="Search report number, student name, student ID, error area..."
+          style="margin-top:14px;"
+          oninput="setAdminTechnicalReportSearch(this.value)"
+        />
+      </div>
+
+      <div id="adminTechnicalReportInbox" class="admin-list"></div>
+    `;
+
+    if (logoutButton) {
+      logoutButton.insertAdjacentHTML("beforebegin", html);
+    } else {
+      adminScreen.insertAdjacentHTML("beforeend", html);
+    }
+
+    inbox = document.getElementById("adminTechnicalReportInbox");
+  }
+
+  return inbox;
+}
+
+function setAdminTechnicalReportView(view) {
+  adminTechnicalReportView = view;
+
+  const openBtn = document.getElementById("adminTechOpenBtn");
+  const archiveBtn = document.getElementById("adminTechArchiveBtn");
+
+  if (openBtn) {
+    openBtn.className = view === "open"
+      ? "btn btn-small btn-gold"
+      : "btn btn-small btn-outline";
+  }
+
+  if (archiveBtn) {
+    archiveBtn.className = view === "archive"
+      ? "btn btn-small btn-gold"
+      : "btn btn-small btn-outline";
+  }
+
+  renderAdminTechnicalReportInbox();
+}
+
+function setAdminTechnicalReportSearch(value) {
+  adminTechnicalReportSearch = String(value || "").toLowerCase().trim();
+  renderAdminTechnicalReportInbox();
+}
+
+function technicalReportMatchesSearch(item) {
+  if (!adminTechnicalReportSearch) return true;
+
+  const combined = [
+    item.reportNumber,
+    item.studentId,
+    item.fullName,
+    item.campus,
+    item.errorArea,
+    item.description,
+    item.steps,
+    item.adminResponse,
+    item.status
+  ].join(" ").toLowerCase();
+
+  return combined.includes(adminTechnicalReportSearch);
+}
+
+function renderTechnicalReportCard(reportId, item) {
+  const status = item.status || "Open";
+  const isArchived = item.archived === true || status === "Closed";
+
+  let statusClass = "status-waiting";
+
+  if (status === "Investigating") {
+    statusClass = "status-serving";
+  }
+
+  if (status === "Resolved") {
+    statusClass = "status-completed";
+  }
+
+  if (status === "Closed") {
+    statusClass = "status-cancelled";
+  }
+
+  const actionButtons = isArchived
+    ? `
+      <button class="btn btn-small btn-outline" onclick="reopenTechnicalReport('${reportId}')">Reopen</button>
+    `
+    : `
+      <button class="btn btn-small btn-blue" onclick="markTechnicalReportInvestigating('${reportId}')">Investigating</button>
+      <button class="btn btn-small btn-green" onclick="respondTechnicalReport('${reportId}')">Respond / Resolve</button>
+      <button class="btn btn-small btn-outline" onclick="closeTechnicalReport('${reportId}')">Close</button>
+    `;
+
+  return `
+    <div class="list-item">
+      <strong>${techSafeText(item.reportNumber || reportId)}</strong>
+
+      <p>${techSafeText(item.fullName || "")} · ${techSafeText(item.campus || "")}</p>
+      <p style="font-size:12px;">Student ID: ${techSafeText(item.studentId || "")}</p>
+      <p style="font-size:12px;">Error Area: ${techSafeText(item.errorArea || "")}</p>
+      <p style="font-size:12px;">Created: ${techSafeText(formatTechDate(item.createdAt))}</p>
+
+      <p style="font-size:12px;margin-top:8px;"><b>Problem:</b> ${techSafeText(item.description || "")}</p>
+      <p style="font-size:12px;margin-top:8px;"><b>Steps:</b> ${techSafeText(item.steps || "")}</p>
+
+      ${
+        item.adminResponse
+          ? `<p style="font-size:12px;margin-top:8px;"><b>Admin Response:</b> ${techSafeText(item.adminResponse)}</p>`
+          : ""
+      }
+
+      <span class="status-pill ${statusClass}">${techSafeText(status)}</span>
+
+      <div class="admin-actions">
+        ${actionButtons}
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminTechnicalReportInbox() {
+  const inbox = ensureAdminTechnicalReportInbox();
+  if (!inbox) return;
+
+  inbox.innerHTML = `
+    <div class="card">
+      <p>Loading technical reports...</p>
+    </div>
+  `;
+
+  if (technicalReportsUnsubscribe) {
+    technicalReportsUnsubscribe();
+  }
+
+  technicalReportsUnsubscribe = db.collection("technicalReports")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(function(snapshot) {
+      const reports = [];
+
+      snapshot.forEach(function(doc) {
+        reports.push({
+          id: doc.id,
+          data: doc.data()
+        });
+      });
+
+      const filteredReports = reports.filter(function(record) {
+        const item = record.data;
+        const isArchived = item.archived === true || item.status === "Closed";
+
+        if (adminTechnicalReportView === "open" && isArchived) return false;
+        if (adminTechnicalReportView === "archive" && !isArchived) return false;
+
+        return technicalReportMatchesSearch(item);
+      });
+
+      if (!filteredReports.length) {
+        inbox.innerHTML = `
+          <div class="card gold-card">
+            <h2>${adminTechnicalReportView === "archive" ? "No Archived Reports" : "No Open Technical Reports"}</h2>
+            <p>No technical reports found for this view.</p>
+          </div>
+        `;
+        return;
+      }
+
+      inbox.innerHTML = filteredReports.map(function(record) {
+        return renderTechnicalReportCard(record.id, record.data);
+      }).join("");
+    }, function(error) {
+      console.error("Error loading technical reports:", error);
+
+      inbox.innerHTML = `
+        <div class="card">
+          <h2>Could not load technical reports</h2>
+          <p>Please check Firebase rules for the technicalReports collection.</p>
+        </div>
+      `;
+    });
+}
+
+async function markTechnicalReportInvestigating(reportId) {
+  try {
+    await db.collection("technicalReports").doc(reportId).update({
+      status: "Investigating",
+      archived: false,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error updating technical report:", error);
+    alert("Report was not updated.");
+  }
+}
+
+async function respondTechnicalReport(reportId) {
+  const response = prompt("Type admin response or resolution note:");
+
+  if (!response || !response.trim()) {
+    return;
+  }
+
+  try {
+    await db.collection("technicalReports").doc(reportId).update({
+      adminResponse: response.trim(),
+      status: "Resolved",
+      archived: false,
+      resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error responding to technical report:", error);
+    alert("Response was not saved.");
+  }
+}
+
+async function closeTechnicalReport(reportId) {
+  const confirmClose = confirm("Close this technical report and move it to Archive?");
+
+  if (!confirmClose) return;
+
+  try {
+    await db.collection("technicalReports").doc(reportId).update({
+      status: "Closed",
+      archived: true,
+      closedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error closing technical report:", error);
+    alert("Report was not closed.");
+  }
+}
+
+async function reopenTechnicalReport(reportId) {
+  const confirmReopen = confirm("Reopen this archived technical report?");
+
+  if (!confirmReopen) return;
+
+  try {
+    await db.collection("technicalReports").doc(reportId).update({
+      status: "Open",
+      archived: false,
+      reopenedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    adminTechnicalReportView = "open";
+    renderAdminTechnicalReportInbox();
+  } catch (error) {
+    console.error("Error reopening technical report:", error);
+    alert("Report was not reopened.");
+  }
+}
+
+/* Load technical report inbox when admin dashboard opens */
+const previousOpenAdminDashboardForTechnicalReports = window.openAdminDashboard;
+
+window.openAdminDashboard = function() {
+  if (typeof previousOpenAdminDashboardForTechnicalReports === "function") {
+    previousOpenAdminDashboardForTechnicalReports();
+  } else {
+    renderAdminAppointments();
+    showScreen("admin");
+  }
+
+  setTimeout(function() {
+    renderAdminTechnicalReportInbox();
+  }, 300);
+};
+</script>
 
 /* =====================================================
    STUDENT: Booking History
