@@ -4442,6 +4442,344 @@ window.addEventListener("load", function() {
   ensureDashboardOfficeQueueMonitor();
 });
 </script>
+
+  <script>
+/* =====================================================
+   PUPASS ADMIN ACTIVE QUEUE + ARCHIVE VIEW
+   - Active Queue shows Waiting / Serving / Upcoming only
+   - Archive shows Completed / Cancelled / No-show
+   - Completed and Cancelled records are not deleted
+===================================================== */
+
+let selectedAdminQueueView =
+  localStorage.getItem("pupass_admin_queue_view") || "active";
+
+const ADMIN_ACTIVE_STATUSES = [
+  "Waiting",
+  "Serving",
+  "Now Serving",
+  "Upcoming"
+];
+
+const ADMIN_ARCHIVE_STATUSES = [
+  "Completed",
+  "Cancelled",
+  "No-show"
+];
+
+function adminEscapeText(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getAdminStatusClass(status) {
+  if (status === "Serving" || status === "Now Serving") return "status-serving";
+  if (status === "Completed") return "status-completed";
+  if (status === "Cancelled" || status === "No-show") return "status-cancelled";
+  return "status-waiting";
+}
+
+function getAdminQueueSequenceValue(item) {
+  if (item && item.queueSequence) return Number(item.queueSequence);
+
+  const queueNumber = String(item && item.queueNumber ? item.queueNumber : "");
+  const match = queueNumber.match(/(\d+)$/);
+
+  if (match) return Number(match[1]);
+
+  return 999999;
+}
+
+function getAdminCreatedMillis(item) {
+  if (!item || !item.createdAt) return 0;
+
+  if (item.createdAt.toMillis) {
+    return item.createdAt.toMillis();
+  }
+
+  return new Date(item.createdAt).getTime() || 0;
+}
+
+function isAdminArchivedAppointment(item) {
+  const status = item.status || "Waiting";
+
+  return item.archived === true ||
+    ADMIN_ARCHIVE_STATUSES.includes(status);
+}
+
+function isAdminActiveAppointment(item) {
+  const status = item.status || "Waiting";
+
+  return !isAdminArchivedAppointment(item) &&
+    ADMIN_ACTIVE_STATUSES.includes(status);
+}
+
+function ensureAdminQueueViewUI() {
+  const filterBox = document.getElementById("adminOfficeFilterBox");
+  if (!filterBox) return;
+
+  if (!document.getElementById("adminQueueViewBox")) {
+    filterBox.insertAdjacentHTML("beforeend", `
+      <div id="adminQueueViewBox" style="margin-top:18px;">
+        <h2 style="font-size:18px;margin-bottom:8px;">Queue View</h2>
+        <p>Use Active Queue for current students. Use Archive for completed or cancelled records.</p>
+
+        <div id="adminQueueViewButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+      </div>
+    `);
+  }
+
+  renderAdminQueueViewButtons();
+}
+
+function renderAdminQueueViewButtons() {
+  const container = document.getElementById("adminQueueViewButtons");
+  if (!container) return;
+
+  container.innerHTML = `
+    <button
+      class="btn btn-small ${selectedAdminQueueView === "active" ? "btn-gold" : "btn-outline"}"
+      onclick="setAdminQueueView('active')"
+    >
+      Active Queue
+    </button>
+
+    <button
+      class="btn btn-small ${selectedAdminQueueView === "archive" ? "btn-gold" : "btn-outline"}"
+      onclick="setAdminQueueView('archive')"
+    >
+      Archive
+    </button>
+  `;
+}
+
+function setAdminQueueView(view) {
+  selectedAdminQueueView = view;
+  localStorage.setItem("pupass_admin_queue_view", view);
+  renderAdminAppointments();
+}
+
+function updateAdminStatLabels() {
+  const totalCardLabel = document.querySelector("#adminTotal")?.parentElement?.querySelector("p");
+  const completedCardLabel = document.querySelector("#adminCompleted")?.parentElement?.querySelector("p");
+
+  if (totalCardLabel) {
+    totalCardLabel.innerText = "Active Queue";
+  }
+
+  if (completedCardLabel) {
+    completedCardLabel.innerText = "Archived";
+  }
+}
+
+/* Replacement admin renderer */
+function renderAdminAppointments() {
+  const list = document.getElementById("adminAppointmentList");
+  if (!list) return;
+
+  ensureAdminOfficeFilterUI();
+  ensureAdminQueueViewUI();
+  ensureAdminQueueNumberStats();
+  updateAdminStatLabels();
+
+  list.innerHTML = `
+    <div class="card">
+      <p>Loading appointments from Firebase...</p>
+    </div>
+  `;
+
+  if (adminFirestoreUnsubscribe) {
+    adminFirestoreUnsubscribe();
+  }
+
+  adminFirestoreUnsubscribe = db.collection("appointments")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(function(snapshot) {
+      const allAppointments = [];
+
+      snapshot.forEach(function(doc) {
+        allAppointments.push({
+          id: doc.id,
+          data: doc.data()
+        });
+      });
+
+      const officeAppointments = allAppointments.filter(function(record) {
+        return adminOfficeMatches(record.data.office);
+      });
+
+      const activeAppointments = officeAppointments.filter(function(record) {
+        return isAdminActiveAppointment(record.data);
+      });
+
+      const archivedAppointments = officeAppointments.filter(function(record) {
+        return isAdminArchivedAppointment(record.data);
+      });
+
+      const visibleAppointments =
+        selectedAdminQueueView === "archive"
+          ? archivedAppointments
+          : activeAppointments;
+
+      activeAppointments.sort(function(a, b) {
+        const aStatus = a.data.status || "Waiting";
+        const bStatus = b.data.status || "Waiting";
+
+        const statusOrder = {
+          "Serving": 1,
+          "Now Serving": 1,
+          "Waiting": 2,
+          "Upcoming": 3
+        };
+
+        const aOrder = statusOrder[aStatus] || 99;
+        const bOrder = statusOrder[bStatus] || 99;
+
+        if (aOrder !== bOrder) return aOrder - bOrder;
+
+        return getAdminQueueSequenceValue(a.data) - getAdminQueueSequenceValue(b.data);
+      });
+
+      archivedAppointments.sort(function(a, b) {
+        return getAdminCreatedMillis(b.data) - getAdminCreatedMillis(a.data);
+      });
+
+      const waiting = activeAppointments.filter(function(record) {
+        return record.data.status === "Waiting" || record.data.status === "Upcoming";
+      }).length;
+
+      const serving = activeAppointments.filter(function(record) {
+        return record.data.status === "Serving" || record.data.status === "Now Serving";
+      }).length;
+
+      document.getElementById("adminTotal").innerText = activeAppointments.length;
+      document.getElementById("adminWaiting").innerText = waiting;
+      document.getElementById("adminServing").innerText = serving;
+      document.getElementById("adminCompleted").innerText = archivedAppointments.length;
+
+      list.innerHTML = "";
+
+      if (!visibleAppointments.length) {
+        list.innerHTML = `
+          <div class="card gold-card">
+            <h2>
+              ${selectedAdminQueueView === "archive" ? "No Archived Records" : "No Active Queue"}
+            </h2>
+            <p>
+              ${selectedAdminQueueView === "archive"
+                ? "Completed and cancelled appointments will appear here."
+                : "Waiting and serving appointments will appear here."}
+            </p>
+          </div>
+        `;
+
+        renderAdminOfficeFilterButtons();
+        renderAdminQueueViewButtons();
+        updateAdminQueueNumberStats();
+        return;
+      }
+
+      visibleAppointments.forEach(function(record) {
+        const item = record.data;
+        const appointmentId = record.id;
+        const status = item.status || "Waiting";
+
+        const card = document.createElement("div");
+        card.className = "list-item";
+
+        let actionButtons = "";
+
+        if (selectedAdminQueueView === "archive") {
+          actionButtons = `
+            <button class="btn btn-small btn-outline" disabled>Archived</button>
+          `;
+        } else if (status === "Waiting" || status === "Upcoming") {
+          actionButtons = `
+            <button class="btn btn-small btn-blue" onclick="updateAdminStatus('${appointmentId}', 'Serving')">Now Serving</button>
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        } else if (status === "Serving" || status === "Now Serving") {
+          actionButtons = `
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        }
+
+        card.innerHTML = `
+          <strong>${adminEscapeText(item.queueNumber || "")}</strong>
+
+          <p>
+            ${adminEscapeText(item.fullName || "")}
+            · ${adminEscapeText(item.campus || "No campus")}
+            · ${adminEscapeText(item.office || "")}
+          </p>
+
+          <p style="font-size:12px;">Student ID: ${adminEscapeText(item.studentId || "")}</p>
+          <p style="font-size:12px;">Request: ${adminEscapeText(item.requestType || "")}</p>
+          <p style="font-size:12px;">Date: ${adminEscapeText(item.appointmentDate || "")} · ${adminEscapeText(item.appointmentTime || "")}</p>
+
+          <span class="status-pill ${getAdminStatusClass(status)}">
+            ${adminEscapeText(status)}
+          </span>
+
+          <div class="admin-actions">
+            ${actionButtons}
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+
+      renderAdminOfficeFilterButtons();
+      renderAdminQueueViewButtons();
+      updateAdminQueueNumberStats();
+      watchAdminQueueListForStats();
+    }, function(error) {
+      console.error("Error loading admin appointments:", error);
+
+      list.innerHTML = `
+        <div class="card">
+          <h2>Could not load appointments</h2>
+          <p>Please check your Firebase rules and internet connection.</p>
+        </div>
+      `;
+    });
+}
+
+/* Replacement status updater */
+async function updateAdminStatus(appointmentId, newStatus) {
+  const archiveStatuses = ["Completed", "Cancelled", "No-show"];
+  const shouldArchive = archiveStatuses.includes(newStatus);
+
+  const updateData = {
+    status: newStatus,
+    archived: shouldArchive,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (newStatus === "Completed") {
+    updateData.completedAt = firebase.firestore.FieldValue.serverTimestamp();
+    updateData.archivedAt = firebase.firestore.FieldValue.serverTimestamp();
+  }
+
+  if (newStatus === "Cancelled" || newStatus === "No-show") {
+    updateData.cancelledAt = firebase.firestore.FieldValue.serverTimestamp();
+    updateData.archivedAt = firebase.firestore.FieldValue.serverTimestamp();
+  }
+
+  try {
+    await db.collection("appointments").doc(appointmentId).update(updateData);
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    alert("Status was not updated.");
+  }
+}
+</script>
   
 </body>
 </html>
