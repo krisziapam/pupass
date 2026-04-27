@@ -4107,5 +4107,341 @@ async function saveBookingToFirestore() {
   }
 }
 </script>
+
+  <script>
+/* =====================================================
+   PUPASS DASHBOARD OFFICE QUEUE MONITOR
+
+   Result:
+   - Uses empty dashboard space for live queue monitoring
+   - Shows queue only for the student's booked office
+   - Example: Library booking = Library queue only
+   - Shows Current Serving, Next in Line, Your Queue
+   - Calculates how many students are ahead
+   - Shows Waiting, You are next, Now Serving, Completed, Cancelled/No-show
+===================================================== */
+
+let dashboardOfficeQueueRefreshTimer = null;
+
+function getQueueSequenceValue(item) {
+  if (item && item.queueSequence) {
+    return Number(item.queueSequence);
+  }
+
+  const queueNumber = String(item && item.queueNumber ? item.queueNumber : "");
+  const match = queueNumber.match(/(\d+)$/);
+
+  if (match) {
+    return Number(match[1]);
+  }
+
+  return 999999;
+}
+
+function formatQueuePosition(positionNumber) {
+  if (!positionNumber || positionNumber < 1) return "-";
+
+  const lastDigit = positionNumber % 10;
+  const lastTwoDigits = positionNumber % 100;
+
+  if (lastDigit === 1 && lastTwoDigits !== 11) return positionNumber + "st";
+  if (lastDigit === 2 && lastTwoDigits !== 12) return positionNumber + "nd";
+  if (lastDigit === 3 && lastTwoDigits !== 13) return positionNumber + "rd";
+
+  return positionNumber + "th";
+}
+
+function isSameDashboardQueueDate(item) {
+  if (!item) return false;
+
+  if (currentAppointment.appointmentDateKey && item.appointmentDateKey) {
+    return item.appointmentDateKey === currentAppointment.appointmentDateKey;
+  }
+
+  if (currentAppointment.date && item.appointmentDate) {
+    return item.appointmentDate === currentAppointment.date;
+  }
+
+  return true;
+}
+
+function ensureDashboardOfficeQueueMonitor() {
+  const dashboard = document.getElementById("dashboard");
+  if (!dashboard) return null;
+
+  let monitor = document.getElementById("dashboardOfficeQueueMonitor");
+
+  if (!monitor) {
+    const bottomNav = dashboard.querySelector(".bottom-nav");
+
+    const monitorHtml = `
+      <div id="dashboardOfficeQueueMonitor" class="card" style="display:none;margin-top:22px;">
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <h2>My Office Queue Monitor</h2>
+            <p id="dashboardQueueMonitorSubtitle">
+              Live queue status for your booked office.
+            </p>
+          </div>
+
+          <button class="btn btn-small btn-outline" onclick="showQueueFromNav()">
+            View Full Queue
+          </button>
+        </div>
+
+        <div class="queue-grid" style="margin-top:16px;">
+          <div class="now-serving">
+            <p>Current Serving</p>
+            <strong id="dashboardOfficeCurrentServing">None</strong>
+          </div>
+
+          <div class="next-line-card">
+            <p>Next in Line</p>
+            <h1 id="dashboardOfficeNextQueue">None</h1>
+            <p id="dashboardOfficeNextText">Waiting queue for your office.</p>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <p>Your Queue Number</p>
+            <h1 id="dashboardOfficeYourQueue" style="color:var(--maroon);font-size:44px;margin:6px 0;">-</h1>
+            <span id="dashboardOfficeStatus" class="status-pill">No Booking</span>
+          </div>
+        </div>
+
+        <div class="card gold-card" style="margin-top:16px;margin-bottom:0;">
+          <div class="detail-row">
+            <span>Booked Office</span>
+            <span id="dashboardOfficeName">-</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Appointment Date</span>
+            <span id="dashboardOfficeDate">-</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Your Position</span>
+            <span id="dashboardOfficePosition">-</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Students Ahead</span>
+            <span id="dashboardOfficeAhead">-</span>
+          </div>
+
+          <p id="dashboardOfficeQueueMessage" style="margin-top:12px;font-weight:700;color:var(--maroon);"></p>
+        </div>
+      </div>
+    `;
+
+    if (bottomNav) {
+      bottomNav.insertAdjacentHTML("beforebegin", monitorHtml);
+    } else {
+      dashboard.insertAdjacentHTML("beforeend", monitorHtml);
+    }
+
+    monitor = document.getElementById("dashboardOfficeQueueMonitor");
+  }
+
+  return monitor;
+}
+
+function setDashboardOfficeStatus(statusText, statusClass, messageText) {
+  const status = document.getElementById("dashboardOfficeStatus");
+  const message = document.getElementById("dashboardOfficeQueueMessage");
+
+  if (status) {
+    status.className = "status-pill " + statusClass;
+    status.innerText = statusText;
+  }
+
+  if (message) {
+    message.innerText = messageText || "";
+  }
+}
+
+async function loadDashboardOfficeQueueMonitor() {
+  const monitor = ensureDashboardOfficeQueueMonitor();
+  if (!monitor) return;
+
+  if (!currentAppointment.exists) {
+    monitor.style.display = "none";
+    return;
+  }
+
+  monitor.style.display = "block";
+
+  const officeName = currentAppointment.office || "-";
+  const appointmentDate = currentAppointment.date || "-";
+  const studentQueue = currentAppointment.queue || "-";
+  const studentStatus = currentAppointment.status || "Waiting";
+
+  document.getElementById("dashboardOfficeName").innerText = officeName;
+  document.getElementById("dashboardOfficeDate").innerText = appointmentDate;
+  document.getElementById("dashboardOfficeYourQueue").innerText = studentQueue;
+
+  document.getElementById("dashboardQueueMonitorSubtitle").innerText =
+    "Live queue status for " + officeName + ".";
+
+  let currentServing = "None";
+  let nextInLine = "None";
+  let positionText = "-";
+  let studentsAheadText = "-";
+
+  try {
+    const snapshot = await db.collection("appointments")
+      .where("office", "==", officeName)
+      .get();
+
+    const waitingList = [];
+    const servingList = [];
+
+    snapshot.forEach(function(doc) {
+      const item = doc.data();
+      item._id = doc.id;
+
+      if (!isSameDashboardQueueDate(item)) return;
+
+      if (item.status === "Serving" || item.status === "Now Serving") {
+        servingList.push(item);
+      }
+
+      if (item.status === "Waiting") {
+        waitingList.push(item);
+      }
+    });
+
+    waitingList.sort(function(a, b) {
+      return getQueueSequenceValue(a) - getQueueSequenceValue(b);
+    });
+
+    servingList.sort(function(a, b) {
+      return getQueueSequenceValue(a) - getQueueSequenceValue(b);
+    });
+
+    if (servingList.length) {
+      currentServing = servingList[0].queueNumber || "None";
+    }
+
+    if (waitingList.length) {
+      nextInLine = waitingList[0].queueNumber || "None";
+    }
+
+    const studentIndex = waitingList.findIndex(function(item) {
+      return item._id === currentAppointmentId ||
+        item.queueNumber === currentAppointment.queue ||
+        normalizeStudentId(item.studentId) === normalizeStudentId(verifiedStudent.studentId);
+    });
+
+    if (studentIndex !== -1) {
+      const positionNumber = studentIndex + 1;
+      const studentsAhead = studentIndex;
+
+      positionText = formatQueuePosition(positionNumber) + " in waiting line";
+      studentsAheadText = String(studentsAhead);
+    }
+  } catch (error) {
+    console.error("Error loading office queue monitor:", error);
+  }
+
+  document.getElementById("dashboardOfficeCurrentServing").innerText = currentServing;
+  document.getElementById("dashboardOfficeNextQueue").innerText = nextInLine;
+  document.getElementById("dashboardOfficePosition").innerText = positionText;
+  document.getElementById("dashboardOfficeAhead").innerText = studentsAheadText;
+
+  if (studentStatus === "Serving" || studentStatus === "Now Serving") {
+    setDashboardOfficeStatus(
+      "Now Serving",
+      "status-serving",
+      "Please proceed to the " + officeName + " counter."
+    );
+    return;
+  }
+
+  if (studentStatus === "Completed") {
+    setDashboardOfficeStatus(
+      "Completed",
+      "status-completed",
+      "Your appointment has already been completed."
+    );
+    return;
+  }
+
+  if (studentStatus === "Cancelled") {
+    setDashboardOfficeStatus(
+      "Cancelled / No-show",
+      "status-cancelled",
+      "Your queue is no longer active. You may book again if needed."
+    );
+    return;
+  }
+
+  if (nextInLine !== "None" && nextInLine === currentAppointment.queue) {
+    setDashboardOfficeStatus(
+      "You are next",
+      "status-serving",
+      "Please prepare your documents. Your queue number is next to be called."
+    );
+    return;
+  }
+
+  setDashboardOfficeStatus(
+    "Waiting",
+    "status-waiting",
+    "Please monitor this dashboard. Your status will update when your number is near."
+  );
+}
+
+function startDashboardOfficeQueueAutoRefresh() {
+  if (dashboardOfficeQueueRefreshTimer) {
+    clearInterval(dashboardOfficeQueueRefreshTimer);
+  }
+
+  loadDashboardOfficeQueueMonitor();
+
+  dashboardOfficeQueueRefreshTimer = setInterval(function() {
+    if (typeof getActiveScreenId === "function" && getActiveScreenId() === "dashboard") {
+      loadDashboardOfficeQueueMonitor();
+    }
+  }, 15000);
+}
+
+/* Keep queue sequence available in currentAppointment */
+const previousSetCurrentAppointmentForOfficeQueue = window.setCurrentAppointmentFromFirestore;
+
+window.setCurrentAppointmentFromFirestore = function(appointmentId, item) {
+  if (typeof previousSetCurrentAppointmentForOfficeQueue === "function") {
+    previousSetCurrentAppointmentForOfficeQueue(appointmentId, item);
+  }
+
+  currentAppointment.queueSequence =
+    item.queueSequence || getQueueSequenceValue(item);
+
+  if (typeof getActiveScreenId === "function" && getActiveScreenId() === "dashboard") {
+    setTimeout(loadDashboardOfficeQueueMonitor, 300);
+  }
+};
+
+/* Refresh the monitor whenever dashboard opens */
+const previousShowScreenForOfficeQueue = window.showScreen;
+
+window.showScreen = function(screenId) {
+  if (typeof previousShowScreenForOfficeQueue === "function") {
+    previousShowScreenForOfficeQueue(screenId);
+  }
+
+  if (screenId === "dashboard") {
+    setTimeout(function() {
+      ensureDashboardOfficeQueueMonitor();
+      startDashboardOfficeQueueAutoRefresh();
+    }, 300);
+  }
+};
+
+window.addEventListener("load", function() {
+  ensureDashboardOfficeQueueMonitor();
+});
+</script>
+  
 </body>
 </html>
