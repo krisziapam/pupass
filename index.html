@@ -3429,6 +3429,250 @@ window.openAdminDashboard = function() {
   showScreen("admin");
 };
 </script>
-  
+  <script>
+/* =====================================================
+   ADMIN OFFICE FILTER FIX
+
+   Result:
+   - Admin can filter queue by office/service
+   - Registrar admin can click Registrar only
+   - Stats update based on selected office
+   - Works with your Firebase appointments
+===================================================== */
+
+let selectedAdminOfficeFilter =
+  localStorage.getItem("pupass_admin_office_filter") || "Registrar";
+
+const ADMIN_OFFICE_FILTERS = [
+  "All",
+  "Registrar",
+  "Cashier",
+  "Library",
+  "Guidance",
+  "Student Affairs",
+  "Scholarship"
+];
+
+function normalizeOfficeName(office) {
+  const value = String(office || "").toLowerCase();
+
+  if (value.includes("registrar")) return "Registrar";
+  if (value.includes("cashier")) return "Cashier";
+  if (value.includes("library")) return "Library";
+  if (value.includes("guidance")) return "Guidance";
+  if (value.includes("student affairs")) return "Student Affairs";
+  if (value.includes("scholarship")) return "Scholarship";
+
+  return office || "Unknown";
+}
+
+function officeMatchesFilter(office, selectedOffice) {
+  if (selectedOffice === "All") return true;
+  return normalizeOfficeName(office) === selectedOffice;
+}
+
+function ensureAdminOfficeFilterUI() {
+  const appointmentList = document.getElementById("adminAppointmentList");
+
+  if (!appointmentList) return;
+
+  let filterBox = document.getElementById("adminOfficeFilterBox");
+
+  if (!filterBox) {
+    appointmentList.insertAdjacentHTML("beforebegin", `
+      <div id="adminOfficeFilterBox" class="card" style="margin-bottom:18px;">
+        <h2>Filter by Office</h2>
+        <p>Select which office queue you want to manage.</p>
+
+        <div id="adminOfficeFilterButtons"
+          style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+        </div>
+
+        <p id="adminOfficeFilterLabel"
+          style="margin-top:12px;font-weight:700;color:var(--maroon);">
+        </p>
+      </div>
+    `);
+
+    filterBox = document.getElementById("adminOfficeFilterBox");
+  }
+
+  renderAdminOfficeFilterButtons();
+}
+
+function renderAdminOfficeFilterButtons() {
+  const buttonContainer = document.getElementById("adminOfficeFilterButtons");
+  const label = document.getElementById("adminOfficeFilterLabel");
+
+  if (!buttonContainer) return;
+
+  buttonContainer.innerHTML = ADMIN_OFFICE_FILTERS.map(function(office) {
+    const isActive = selectedAdminOfficeFilter === office;
+
+    return `
+      <button
+        class="btn btn-small ${isActive ? "btn-gold" : "btn-outline"}"
+        onclick="setAdminOfficeFilter('${office}')">
+        ${office}
+      </button>
+    `;
+  }).join("");
+
+  if (label) {
+    label.innerText = "Currently showing: " + selectedAdminOfficeFilter;
+  }
+}
+
+function setAdminOfficeFilter(office) {
+  selectedAdminOfficeFilter = office;
+  localStorage.setItem("pupass_admin_office_filter", office);
+  renderAdminAppointments();
+}
+
+/* =====================================================
+   REPLACEMENT: renderAdminAppointments()
+   Adds office filtering to the admin dashboard.
+===================================================== */
+
+function renderAdminAppointments() {
+  const list = document.getElementById("adminAppointmentList");
+
+  if (!list) return;
+
+  ensureAdminOfficeFilterUI();
+
+  list.innerHTML = `
+    <div class="card">
+      <p>Loading appointments from Firebase...</p>
+    </div>
+  `;
+
+  if (adminFirestoreUnsubscribe) {
+    adminFirestoreUnsubscribe();
+  }
+
+  adminFirestoreUnsubscribe = db.collection("appointments")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(function(snapshot) {
+      list.innerHTML = "";
+
+      const allAppointments = [];
+
+      snapshot.forEach(function(doc) {
+        allAppointments.push({
+          id: doc.id,
+          data: doc.data()
+        });
+      });
+
+      const filteredAppointments = allAppointments.filter(function(record) {
+        return officeMatchesFilter(record.data.office, selectedAdminOfficeFilter);
+      });
+
+      let total = 0;
+      let waiting = 0;
+      let serving = 0;
+      let completed = 0;
+
+      filteredAppointments.forEach(function(record) {
+        const item = record.data;
+
+        total++;
+
+        if (item.status === "Waiting") waiting++;
+        if (item.status === "Serving") serving++;
+        if (item.status === "Completed") completed++;
+      });
+
+      document.getElementById("adminTotal").innerText = total;
+      document.getElementById("adminWaiting").innerText = waiting;
+      document.getElementById("adminServing").innerText = serving;
+      document.getElementById("adminCompleted").innerText = completed;
+
+      if (!filteredAppointments.length) {
+        list.innerHTML = `
+          <div class="card gold-card">
+            <h2>No ${selectedAdminOfficeFilter} Appointments</h2>
+            <p>No appointments found for this office filter.</p>
+          </div>
+        `;
+
+        renderAdminOfficeFilterButtons();
+        return;
+      }
+
+      filteredAppointments.forEach(function(record) {
+        const item = record.data;
+        const appointmentId = record.id;
+
+        const appointmentCard = document.createElement("div");
+        appointmentCard.className = "list-item";
+
+        let actionButtons = "";
+
+        if (item.status === "Waiting") {
+          actionButtons = `
+            <button class="btn btn-small btn-blue" onclick="updateAdminStatus('${appointmentId}', 'Serving')">Now Serving</button>
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        } else if (item.status === "Serving") {
+          actionButtons = `
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        } else if (item.status === "Cancelled") {
+          actionButtons = `
+            <button class="btn btn-small btn-outline" disabled>Cancelled</button>
+          `;
+        } else {
+          actionButtons = `
+            <button class="btn btn-small btn-outline" disabled>Completed</button>
+          `;
+        }
+
+        appointmentCard.innerHTML = `
+          <strong>${item.queueNumber || ""}</strong>
+          <p>${item.fullName || ""} · ${item.campus || "No campus"} · ${item.office || ""}</p>
+          <p style="font-size:12px;">Student ID: ${item.studentId || ""}</p>
+          <p style="font-size:12px;">Request: ${item.requestType || ""}</p>
+          <p style="font-size:12px;">Date: ${item.appointmentDate || ""} · ${item.appointmentTime || ""}</p>
+          <span class="status-pill ${getStatusClass(item.status)}">${item.status || "Waiting"}</span>
+          <div class="admin-actions">
+            ${actionButtons}
+          </div>
+        `;
+
+        list.appendChild(appointmentCard);
+      });
+
+      renderAdminOfficeFilterButtons();
+    }, function(error) {
+      console.error("Error loading admin appointments:", error);
+
+      list.innerHTML = `
+        <div class="card">
+          <h2>Could not load appointments</h2>
+          <p>Please check your Firebase rules and internet connection.</p>
+        </div>
+      `;
+    });
+}
+
+/* =====================================================
+   Keep admin dashboard opening correctly.
+   If you added Contact Messages before, this keeps it too.
+===================================================== */
+
+window.openAdminDashboard = function() {
+  renderAdminAppointments();
+
+  if (typeof renderAdminContactMessages === "function") {
+    renderAdminContactMessages();
+  }
+
+  showScreen("admin");
+};
+</script>
 </body>
 </html>
