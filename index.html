@@ -443,23 +443,24 @@
       margin-bottom: 16px;
     }
 
-    .qr {
-      width: 110px;
-      height: 110px;
-      background:
-        linear-gradient(90deg, #111 10px, transparent 10px) 0 0 / 22px 22px,
-        linear-gradient(#111 10px, transparent 10px) 0 0 / 22px 22px,
-        #f4f4f4;
-      border: 8px solid white;
-      outline: 1px solid #cccccc;
-      margin: 18px auto 6px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 11px;
-      color: white;
-      font-weight: 700;
-    }
+  .qr {
+  width: 150px;
+  height: 150px;
+  background: white;
+  border: 1px solid #cccccc;
+  margin: 18px auto 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.qr img,
+.qr canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
 
     .queue-grid {
       display: grid;
@@ -1057,8 +1058,8 @@
                 <span style="color:var(--green);" id="passStatus">Confirmed</span>
               </div>
 
-              <div class="qr">QR</div>
-              <p style="font-size:12px;">Scan or present this pass at the office counter.</p>
+              <div id="qrcode" class="qr"></div>
+<p style="font-size:12px;">Scan or present this pass at the office counter.</p>
             </div>
           </div>
         </div>
@@ -1925,6 +1926,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDmwYAkrKO2oGso3vEasf4sPAgEEf9XUJY",
@@ -3049,6 +3051,81 @@ function openReschedule() {
   showScreen("reschedule");
 }
 </script>  
+</script>
+
+  <script>
+/* =====================================================
+   REAL QR CODE FIX
+   Generates a true scannable QR code for the booking
+===================================================== */
+
+function buildQRCodeText() {
+  return JSON.stringify({
+    appointmentId: currentAppointmentId || "",
+    studentId: verifiedStudent.studentId || "",
+    fullName: verifiedStudent.fullName || "",
+    campus: verifiedStudent.campus || "",
+    queueNumber: currentAppointment.queue || "",
+    office: currentAppointment.office || "",
+    request: currentAppointment.request || "",
+    date: currentAppointment.date || "",
+    time: currentAppointment.time || "",
+    status: currentAppointment.status || ""
+  });
+}
+
+function renderQRCode() {
+  const qrContainer = document.getElementById("qrcode");
+  if (!qrContainer) return;
+
+  qrContainer.innerHTML = "";
+
+  if (!currentAppointment.exists) {
+    qrContainer.innerHTML = "<span style='font-size:12px;color:#666;'>No QR yet</span>";
+    return;
+  }
+
+  const qrText = buildQRCodeText();
+
+  new QRCode(qrContainer, {
+    text: qrText,
+    width: 130,
+    height: 130,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+/* =====================================================
+   OVERRIDE updatePassDetails()
+   This keeps your pass details and adds real QR
+===================================================== */
+function updatePassDetails() {
+  document.getElementById("passQueue").innerText =
+    currentAppointment.queue || "No Queue";
+
+  document.getElementById("passStudentId").innerText =
+    verifiedStudent.studentId || "";
+
+  document.getElementById("passFullName").innerText =
+    verifiedStudent.fullName || "";
+
+  document.getElementById("passOffice").innerText =
+    currentAppointment.office || "";
+
+  document.getElementById("passRequest").innerText =
+    currentAppointment.request || "";
+
+  document.getElementById("passDate").innerText =
+    currentAppointment.date || "";
+
+  document.getElementById("passTime").innerText =
+    currentAppointment.time || "";
+
+  document.getElementById("passStatus").innerText =
+    currentAppointment.status || "Waiting";
+
+  renderQRCode();
+}
 </script>
   
 </body>
