@@ -1107,7 +1107,7 @@
 
         <div>
           <label>New Appointment Date</label>
-          <input class="input-box" type="text" id="newAppointmentDate" value="May 15, 2026" />
+<input class="input-box" type="date" id="newAppointmentDate" />
 
           <label>New Appointment Time</label>
           <select class="input-box" id="newAppointmentTime">
@@ -2829,6 +2829,226 @@ async function updateAdminStatus(appointmentId, newStatus) {
     alert("Status was not updated.");
   }
 }
+  <script>
+/* =====================================================
+   PUPASS DATE + DAILY BOOKING LIMIT FIX
+
+   Result:
+   - Appointment Date becomes current date by default
+   - Student can choose month/date/year using calendar
+   - Maximum of 100 non-cancelled bookings per day
+===================================================== */
+
+const DAILY_BOOKING_LIMIT = 100;
+
+function getTodayDateKey() {
+  const today = new Date();
+  const timezoneOffset = today.getTimezoneOffset() * 60000;
+  const localDate = new Date(today.getTime() - timezoneOffset);
+
+  return localDate.toISOString().split("T")[0];
+}
+
+function formatDateForDisplay(dateKey) {
+  if (!dateKey) return "";
+
+  const parts = dateKey.split("-");
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  const date = new Date(year, month, day);
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+function setupCalendarDefaults() {
+  const todayKey = getTodayDateKey();
+
+  const appointmentDateInput = document.getElementById("appointmentDate");
+  const newAppointmentDateInput = document.getElementById("newAppointmentDate");
+
+  if (appointmentDateInput) {
+    appointmentDateInput.value = todayKey;
+    appointmentDateInput.min = todayKey;
+  }
+
+  if (newAppointmentDateInput) {
+    newAppointmentDateInput.value = todayKey;
+    newAppointmentDateInput.min = todayKey;
+  }
+}
+
+window.addEventListener("load", function() {
+  setupCalendarDefaults();
+});
+
+/* =====================================================
+   REPLACEMENT: prepareConfirmation()
+   Converts calendar date into readable text.
+===================================================== */
+function prepareConfirmation() {
+  const service = services[selectedServiceKey];
+
+  const requestType = document.getElementById("requestType").value;
+  const dateKey = document.getElementById("appointmentDate").value;
+  const time = document.getElementById("appointmentTime").value;
+  const purpose = document.getElementById("purposeText").value;
+
+  if (!dateKey) {
+    alert("Please select an appointment date.");
+    return;
+  }
+
+  const displayDate = formatDateForDisplay(dateKey);
+
+  document.getElementById("confirmStudentId").innerText = verifiedStudent.studentId;
+  document.getElementById("confirmFullName").innerText = verifiedStudent.fullName;
+  document.getElementById("confirmCampus").innerText = verifiedStudent.campus;
+  document.getElementById("confirmOffice").innerText = service.shortOffice;
+  document.getElementById("confirmRequest").innerText = requestType;
+  document.getElementById("confirmDate").innerText = displayDate;
+  document.getElementById("confirmDate").dataset.dateKey = dateKey;
+  document.getElementById("confirmTime").innerText = time;
+  document.getElementById("confirmPurpose").innerText = purpose;
+
+  showScreen("confirm");
+}
+
+/* =====================================================
+   Counts bookings for selected day.
+   Cancelled bookings are not counted.
+===================================================== */
+async function countBookingsForDate(dateKey) {
+  const displayDate = formatDateForDisplay(dateKey);
+  const appointmentsMap = {};
+
+  const snapshotByDateKey = await db.collection("appointments")
+    .where("appointmentDateKey", "==", dateKey)
+    .get();
+
+  snapshotByDateKey.forEach(function(doc) {
+    appointmentsMap[doc.id] = doc.data();
+  });
+
+  const snapshotByDisplayDate = await db.collection("appointments")
+    .where("appointmentDate", "==", displayDate)
+    .get();
+
+  snapshotByDisplayDate.forEach(function(doc) {
+    appointmentsMap[doc.id] = doc.data();
+  });
+
+  let count = 0;
+
+  Object.values(appointmentsMap).forEach(function(item) {
+    if (item.status !== "Cancelled") {
+      count++;
+    }
+  });
+
+  return count;
+}
+
+/* =====================================================
+   REPLACEMENT: saveBookingToFirestore()
+   Adds 100 bookings per day limit.
+===================================================== */
+async function saveBookingToFirestore() {
+  const studentId = normalizeStudentId(getText("confirmStudentId"));
+  const fullName = getText("confirmFullName");
+  const campus = getText("confirmCampus");
+  const office = getText("confirmOffice");
+  const requestType = getText("confirmRequest");
+  const appointmentDate = getText("confirmDate");
+  const appointmentDateKey =
+    document.getElementById("confirmDate").dataset.dateKey ||
+    document.getElementById("appointmentDate").value;
+
+  const appointmentTime = getText("confirmTime");
+  const purpose = getText("confirmPurpose");
+
+  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDateKey || !appointmentTime || !purpose) {
+    alert("Some appointment details are missing. Please review your booking again.");
+    return;
+  }
+
+  try {
+    const existingAppointment = await getLatestStudentAppointment(studentId, studentId);
+
+    if (existingAppointment && isActiveBooking(existingAppointment.data.status)) {
+      setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
+      listenToStudentAppointment(existingAppointment.id);
+
+      alert("You already have an active booking. Showing your existing appointment instead.");
+      showAppointmentScreen();
+      return;
+    }
+
+    const bookingsToday = await countBookingsForDate(appointmentDateKey);
+
+    if (bookingsToday >= DAILY_BOOKING_LIMIT) {
+      alert("Sorry, this date is already fully booked. Please choose another appointment date.");
+      showScreen("book");
+      return;
+    }
+
+    const queueNumber = createQueueNumber(office);
+
+    const newAppointment = {
+      studentId: studentId,
+      studentKey: studentId,
+      fullName: fullName,
+      campus: campus,
+      office: office,
+      requestType: requestType,
+      appointmentDate: formatDateForDisplay(appointmentDateKey),
+      appointmentDateKey: appointmentDateKey,
+      appointmentTime: appointmentTime,
+      purpose: purpose,
+      queueNumber: queueNumber,
+      status: "Waiting",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await db.collection("appointments").add(newAppointment);
+
+    setCurrentAppointmentFromFirestore(docRef.id, newAppointment);
+    listenToStudentAppointment(docRef.id);
+
+    updatePassDetails();
+    showScreen("pass");
+  } catch (error) {
+    console.error("Error saving booking:", error);
+    alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
+  }
+}
+
+/* =====================================================
+   Optional: update reschedule to use calendar value.
+===================================================== */
+function openReschedule() {
+  document.getElementById("rescheduleOffice").innerText = currentAppointment.office;
+  document.getElementById("rescheduleCurrentDate").innerText =
+    currentAppointment.date + " · " + currentAppointment.time;
+
+  const newAppointmentDateInput = document.getElementById("newAppointmentDate");
+
+  if (newAppointmentDateInput) {
+    newAppointmentDateInput.value =
+      currentAppointment.appointmentDateKey || getTodayDateKey();
+  }
+
+  document.getElementById("newAppointmentTime").value = currentAppointment.time;
+
+  showScreen("reschedule");
+}
+</script>  
 </script>
   
 </body>
