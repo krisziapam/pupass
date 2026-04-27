@@ -3033,5 +3033,402 @@ window.showScreen = function(screenId) {
 };
 </script>
 
+  <script>
+/* =====================================================
+   PUPASS NOTIFICATIONS HISTORY + HELP CONTACT FIX
+
+   Result:
+   - Notifications shows only Completed and Cancelled bookings
+   - Waiting and Serving stay in My Appointment / Queue Status
+   - Help shows FAQ and Contact Admin form
+   - Admin dashboard gets Contact Messages inbox
+===================================================== */
+
+let adminContactMessagesUnsubscribe = null;
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatFirebaseDateTime(value) {
+  if (!value) return "Just now";
+
+  try {
+    const date = value.toDate ? value.toDate() : new Date(value);
+
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  } catch {
+    return "Just now";
+  }
+}
+
+function ensureHistoryAndHelpScreens() {
+  const feedbackScreen = document.getElementById("feedback");
+
+  if (!feedbackScreen) return;
+
+  if (!document.getElementById("notifications")) {
+    feedbackScreen.insertAdjacentHTML("beforebegin", `
+      <section id="notifications" class="screen">
+        <div class="back" onclick="showScreen('dashboard')">← Home</div>
+        <h1>Booking History</h1>
+        <p>Only completed and cancelled bookings are shown here.</p>
+
+        <div id="notificationsContent"></div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+          <div class="nav-item" onclick="goToServices()">Services</div>
+          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+        </div>
+      </section>
+    `);
+  }
+
+  if (!document.getElementById("help")) {
+    feedbackScreen.insertAdjacentHTML("beforebegin", `
+      <section id="help" class="screen">
+        <div class="back" onclick="showScreen('dashboard')">← Home</div>
+        <h1>Help Center</h1>
+        <p>Read common questions or send a message to the admin.</p>
+
+        <div class="card gold-card">
+          <h2>How to use PUPass</h2>
+          <p>1. Log in using your Student ID Number.</p>
+          <p>2. Choose a service.</p>
+          <p>3. Select your appointment date and time.</p>
+          <p>4. Confirm your booking.</p>
+          <p>5. Track your queue status or save your digital queue pass.</p>
+        </div>
+
+        <div class="card">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="detail-row">
+            <span>Can I book more than once?</span>
+            <span>No, not while you have an active booking.</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Where can I see my current queue?</span>
+            <span>Open Queue Status.</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Where can I see old bookings?</span>
+            <span>Open Notifications.</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Can I book again after completion?</span>
+            <span>Yes.</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Contact Admin</h2>
+          <p>Send a message to the admin if you need help with your appointment.</p>
+
+          <label>Concern Type</label>
+          <select class="input-box" id="helpConcernType">
+            <option>Appointment Concern</option>
+            <option>Queue Status Concern</option>
+            <option>Cancellation Concern</option>
+            <option>Student Information Concern</option>
+            <option>Other Concern</option>
+          </select>
+
+          <label>Message</label>
+          <textarea class="input-box" id="helpMessage" placeholder="Type your concern here..."></textarea>
+
+          <button class="btn" onclick="sendHelpMessage()">Send Message to Admin</button>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+          <div class="nav-item" onclick="goToServices()">Services</div>
+          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+        </div>
+      </section>
+    `);
+  }
+}
+
+window.addEventListener("load", function() {
+  ensureHistoryAndHelpScreens();
+});
+
+/* =====================================================
+   STUDENT: Booking History
+   Only Completed and Cancelled bookings are shown.
+===================================================== */
+
+async function showNotificationsScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  ensureHistoryAndHelpScreens();
+
+  const content = document.getElementById("notificationsContent");
+
+  content.innerHTML = `
+    <div class="card">
+      <p>Loading your booking history...</p>
+    </div>
+  `;
+
+  showScreen("notifications");
+
+  try {
+    const appointments = await getStudentAppointments(
+      verifiedStudent.studentId,
+      verifiedStudent.studentId
+    );
+
+    const history = appointments.filter(function(item) {
+      const status = item.data.status || "";
+      return status === "Completed" || status === "Cancelled";
+    });
+
+    if (!history.length) {
+      content.innerHTML = `
+        <div class="card gold-card">
+          <h2>No Booking History Yet</h2>
+          <p>Completed and cancelled bookings will appear here.</p>
+          <span class="status-pill">No History</span>
+        </div>
+      `;
+      return;
+    }
+
+    content.innerHTML = history.map(function(item) {
+      const booking = item.data;
+      const status = booking.status || "Completed";
+      const statusClass = status === "Cancelled"
+        ? "status-cancelled"
+        : "status-completed";
+
+      return `
+        <div class="card">
+          <h2>${escapeHtml(booking.office || "Appointment")}</h2>
+
+          <div class="detail-row">
+            <span>Status</span>
+            <span><span class="status-pill ${statusClass}">${escapeHtml(status)}</span></span>
+          </div>
+
+          <div class="detail-row">
+            <span>Queue Number</span>
+            <span>${escapeHtml(booking.queueNumber || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Request</span>
+            <span>${escapeHtml(booking.requestType || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Date</span>
+            <span>${escapeHtml(booking.appointmentDate || "")}</span>
+          </div>
+
+          <div class="detail-row">
+            <span>Time</span>
+            <span>${escapeHtml(booking.appointmentTime || "")}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Error loading booking history:", error);
+
+    content.innerHTML = `
+      <div class="card">
+        <h2>Could not load history</h2>
+        <p>Please check your internet connection or Firebase rules.</p>
+      </div>
+    `;
+  }
+}
+
+/* =====================================================
+   STUDENT: Help / Contact Admin
+===================================================== */
+
+function showHelpScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  ensureHistoryAndHelpScreens();
+  showScreen("help");
+}
+
+async function sendHelpMessage() {
+  if (!ensureStudentLoggedIn()) return;
+
+  const concernType = document.getElementById("helpConcernType").value;
+  const message = document.getElementById("helpMessage").value.trim();
+
+  if (!message) {
+    alert("Please type your message before sending.");
+    return;
+  }
+
+  try {
+    await db.collection("supportMessages").add({
+      studentId: verifiedStudent.studentId,
+      fullName: verifiedStudent.fullName,
+      campus: verifiedStudent.campus,
+      concernType: concernType,
+      message: message,
+      status: "New",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    document.getElementById("helpMessage").value = "";
+    alert("Your message was sent to the admin.");
+  } catch (error) {
+    console.error("Error sending help message:", error);
+    alert("Message was not sent. Please check Firebase setup and rules.");
+  }
+}
+
+/* =====================================================
+   ADMIN: Contact Messages Inbox
+   Admin only sees this inside the admin dashboard.
+===================================================== */
+
+function ensureAdminContactMessagesSection() {
+  const adminScreen = document.getElementById("admin");
+  if (!adminScreen) return null;
+
+  let container = document.getElementById("adminContactMessages");
+
+  if (!container) {
+    const logoutButton = adminScreen.querySelector("button[onclick='adminLogout()']");
+
+    if (logoutButton) {
+      logoutButton.insertAdjacentHTML("beforebegin", `
+        <div class="section-title">Contact Messages</div>
+        <div id="adminContactMessages" class="admin-list"></div>
+      `);
+    } else {
+      adminScreen.insertAdjacentHTML("beforeend", `
+        <div class="section-title">Contact Messages</div>
+        <div id="adminContactMessages" class="admin-list"></div>
+      `);
+    }
+
+    container = document.getElementById("adminContactMessages");
+  }
+
+  return container;
+}
+
+function renderAdminContactMessages() {
+  const container = ensureAdminContactMessagesSection();
+
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="card">
+      <p>Loading contact messages...</p>
+    </div>
+  `;
+
+  if (adminContactMessagesUnsubscribe) {
+    adminContactMessagesUnsubscribe();
+  }
+
+  adminContactMessagesUnsubscribe = db.collection("supportMessages")
+    .orderBy("createdAt", "desc")
+    .limit(20)
+    .onSnapshot(function(snapshot) {
+      container.innerHTML = "";
+
+      if (snapshot.empty) {
+        container.innerHTML = `
+          <div class="card gold-card">
+            <h2>No Contact Messages</h2>
+            <p>Student help messages will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      snapshot.forEach(function(doc) {
+        const item = doc.data();
+        const messageId = doc.id;
+
+        const status = item.status || "New";
+        const statusClass = status === "Resolved"
+          ? "status-completed"
+          : status === "Read"
+            ? "status-serving"
+            : "status-waiting";
+
+        const card = document.createElement("div");
+        card.className = "list-item";
+
+        card.innerHTML = `
+          <strong>${escapeHtml(item.concernType || "Student Concern")}</strong>
+          <p>${escapeHtml(item.fullName || "")} · ${escapeHtml(item.campus || "")}</p>
+          <p style="font-size:12px;">Student ID: ${escapeHtml(item.studentId || "")}</p>
+          <p style="font-size:12px;">Sent: ${escapeHtml(formatFirebaseDateTime(item.createdAt))}</p>
+          <p style="font-size:12px;margin-top:8px;">${escapeHtml(item.message || "")}</p>
+
+          <span class="status-pill ${statusClass}">${escapeHtml(status)}</span>
+
+          <div class="admin-actions">
+            <button class="btn btn-small btn-blue" onclick="updateSupportMessageStatus('${messageId}', 'Read')">Mark Read</button>
+            <button class="btn btn-small btn-green" onclick="updateSupportMessageStatus('${messageId}', 'Resolved')">Resolve</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }, function(error) {
+      console.error("Error loading contact messages:", error);
+
+      container.innerHTML = `
+        <div class="card">
+          <h2>Could not load contact messages</h2>
+          <p>Please check Firebase rules and internet connection.</p>
+        </div>
+      `;
+    });
+}
+
+async function updateSupportMessageStatus(messageId, newStatus) {
+  try {
+    await db.collection("supportMessages").doc(messageId).update({
+      status: newStatus,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error updating contact message:", error);
+    alert("Contact message status was not updated.");
+  }
+}
+
+/* Replace admin dashboard opener so admin also sees contact messages */
+window.openAdminDashboard = function() {
+  renderAdminAppointments();
+  renderAdminContactMessages();
+  showScreen("admin");
+};
+</script>
+  
 </body>
 </html>
