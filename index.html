@@ -2196,5 +2196,640 @@ const office = getText("confirmOffice");
   }
 </script>
 
+  <script>
+/* =====================================================
+   PUPASS FIX:
+   Student ID Number is now the unique student identity.
+
+   Result:
+   - Same student number = same student dashboard data
+   - Existing booking loads when student logs in
+   - Student cannot create another active booking
+   - Admin status updates reflect on student side
+===================================================== */
+
+let currentAppointmentId = "";
+let studentAppointmentUnsubscribe = null;
+
+const ACTIVE_BOOKING_STATUSES = ["Waiting", "Serving"];
+
+function normalizeStudentId(studentId) {
+  return String(studentId || "").trim().toUpperCase();
+}
+
+function isActiveBooking(status) {
+  return ACTIVE_BOOKING_STATUSES.includes(status);
+}
+
+function getActiveScreenId() {
+  const screen = document.querySelector(".screen.active");
+  return screen ? screen.id : "";
+}
+
+function setStudentError(inputElement, errorElement, hasError) {
+  if (!inputElement || !errorElement) return;
+
+  if (hasError) {
+    inputElement.classList.add("input-error");
+    errorElement.style.display = "block";
+  } else {
+    inputElement.classList.remove("input-error");
+    errorElement.style.display = "none";
+  }
+}
+
+function updateStudentHeader() {
+  document.getElementById("studentGreeting").innerText =
+    "Hello, " + verifiedStudent.fullName + "!";
+
+  document.getElementById("verifiedStudentText").innerText =
+    verifiedStudent.studentId + " · " + verifiedStudent.fullName + " · " + verifiedStudent.campus;
+
+  document.getElementById("bookStudentId").innerText = verifiedStudent.studentId;
+  document.getElementById("bookFullName").innerText = verifiedStudent.fullName;
+  document.getElementById("bookCampus").innerText = verifiedStudent.campus;
+}
+
+function clearCurrentAppointment() {
+  currentAppointmentId = "";
+
+  currentAppointment.exists = false;
+  currentAppointment.status = "None";
+  currentAppointment.queue = "";
+  currentAppointment.office = "";
+  currentAppointment.request = "";
+  currentAppointment.date = "";
+  currentAppointment.time = "";
+  currentAppointment.purpose = "";
+  currentAppointment.nowServing = "";
+  currentAppointment.nextInLine = "";
+  currentAppointment.ahead = 0;
+}
+
+function setCurrentAppointmentFromFirestore(appointmentId, item) {
+  currentAppointmentId = appointmentId;
+
+  currentAppointment.exists = true;
+  currentAppointment.status = item.status || "Waiting";
+  currentAppointment.queue = item.queueNumber || "";
+  currentAppointment.office = item.office || "";
+  currentAppointment.request = item.requestType || "";
+  currentAppointment.date = item.appointmentDate || "";
+  currentAppointment.time = item.appointmentTime || "";
+  currentAppointment.purpose = item.purpose || "";
+
+  verifiedStudent.studentId = item.studentId || verifiedStudent.studentId;
+  verifiedStudent.fullName = item.fullName || verifiedStudent.fullName;
+  verifiedStudent.campus = item.campus || verifiedStudent.campus;
+
+  updateStudentHeader();
+  updatePassDetails();
+}
+
+async function getStudentAppointments(studentId, rawStudentId) {
+  const studentKey = normalizeStudentId(studentId);
+  const appointmentsMap = {};
+
+  async function runQuery(fieldName, value) {
+    if (!value) return;
+
+    const snapshot = await db.collection("appointments")
+      .where(fieldName, "==", value)
+      .get();
+
+    snapshot.forEach(function(doc) {
+      appointmentsMap[doc.id] = {
+        id: doc.id,
+        data: doc.data()
+      };
+    });
+  }
+
+  await runQuery("studentKey", studentKey);
+  await runQuery("studentId", studentKey);
+
+  if (rawStudentId && rawStudentId !== studentKey) {
+    await runQuery("studentId", rawStudentId);
+  }
+
+  const appointments = Object.values(appointmentsMap);
+
+  appointments.sort(function(a, b) {
+    const aTime = a.data.createdAt && a.data.createdAt.toMillis
+      ? a.data.createdAt.toMillis()
+      : 0;
+
+    const bTime = b.data.createdAt && b.data.createdAt.toMillis
+      ? b.data.createdAt.toMillis()
+      : 0;
+
+    return bTime - aTime;
+  });
+
+  return appointments;
+}
+
+async function getLatestStudentAppointment(studentId, rawStudentId) {
+  const appointments = await getStudentAppointments(studentId, rawStudentId);
+
+  const activeAppointment = appointments.find(function(item) {
+    return isActiveBooking(item.data.status);
+  });
+
+  return activeAppointment || appointments[0] || null;
+}
+
+function listenToStudentAppointment(appointmentId) {
+  if (studentAppointmentUnsubscribe) {
+    studentAppointmentUnsubscribe();
+  }
+
+  studentAppointmentUnsubscribe = db.collection("appointments")
+    .doc(appointmentId)
+    .onSnapshot(function(doc) {
+      if (!doc.exists) {
+        clearCurrentAppointment();
+        return;
+      }
+
+      setCurrentAppointmentFromFirestore(doc.id, doc.data());
+
+      const activeScreen = getActiveScreenId();
+
+      if (activeScreen === "appointment") {
+        showAppointmentScreen();
+      }
+
+      if (activeScreen === "queue") {
+        showQueueFromNav();
+      }
+
+      if (activeScreen === "pass") {
+        updatePassDetails();
+      }
+    });
+}
+
+/* =====================================================
+   REPLACEMENT: studentLogin()
+   Existing student number loads existing appointment.
+===================================================== */
+async function studentLogin() {
+  const studentIdInput = document.getElementById("studentIdInput");
+  const fullNameInput = document.getElementById("fullNameInput");
+  const campusInput = document.getElementById("campusInput");
+
+  const studentIdError = document.getElementById("studentIdError");
+  const fullNameError = document.getElementById("fullNameError");
+  const campusError = document.getElementById("campusError");
+
+  const rawStudentId = studentIdInput.value.trim();
+  const studentId = normalizeStudentId(rawStudentId);
+  const fullName = fullNameInput.value.trim();
+  const campus = campusInput.value.trim();
+
+  if (!studentId) {
+    setStudentError(studentIdInput, studentIdError, true);
+    return;
+  }
+
+  setStudentError(studentIdInput, studentIdError, false);
+
+  try {
+    const existingAppointment = await getLatestStudentAppointment(studentId, rawStudentId);
+
+    if (existingAppointment) {
+      setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
+
+      await db.collection("appointments").doc(existingAppointment.id).set({
+        studentKey: studentId
+      }, { merge: true });
+
+      listenToStudentAppointment(existingAppointment.id);
+
+      fullNameInput.value = verifiedStudent.fullName;
+      campusInput.value = verifiedStudent.campus;
+
+      setStudentError(fullNameInput, fullNameError, false);
+      setStudentError(campusInput, campusError, false);
+
+      showScreen("dashboard");
+      return;
+    }
+
+    let valid = true;
+
+    if (!fullName) {
+      setStudentError(fullNameInput, fullNameError, true);
+      valid = false;
+    } else {
+      setStudentError(fullNameInput, fullNameError, false);
+    }
+
+    if (!campus) {
+      setStudentError(campusInput, campusError, true);
+      valid = false;
+    } else {
+      setStudentError(campusInput, campusError, false);
+    }
+
+    if (!valid) return;
+
+    verifiedStudent.studentId = studentId;
+    verifiedStudent.fullName = fullName;
+    verifiedStudent.campus = campus;
+
+    clearCurrentAppointment();
+    updateStudentHeader();
+
+    showScreen("dashboard");
+  } catch (error) {
+    console.error("Error checking student appointment:", error);
+    alert("Could not check existing booking. Please check your internet connection or Firebase rules.");
+  }
+}
+
+/* =====================================================
+   REPLACEMENT: saveBookingToFirestore()
+   Prevents duplicate active bookings.
+===================================================== */
+async function saveBookingToFirestore() {
+  const studentId = normalizeStudentId(getText("confirmStudentId"));
+  const fullName = getText("confirmFullName");
+  const campus = getText("confirmCampus");
+  const office = getText("confirmOffice");
+  const requestType = getText("confirmRequest");
+  const appointmentDate = getText("confirmDate");
+  const appointmentTime = getText("confirmTime");
+  const purpose = getText("confirmPurpose");
+
+  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDate || !appointmentTime || !purpose) {
+    alert("Some appointment details are missing. Please review your booking again.");
+    return;
+  }
+
+  try {
+    const existingAppointment = await getLatestStudentAppointment(studentId, studentId);
+
+    if (existingAppointment && isActiveBooking(existingAppointment.data.status)) {
+      setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
+      listenToStudentAppointment(existingAppointment.id);
+
+      alert("You already have an active booking. Showing your existing appointment instead.");
+      showAppointmentScreen();
+      return;
+    }
+
+    const queueNumber = createQueueNumber(office);
+
+    const newAppointment = {
+      studentId: studentId,
+      studentKey: studentId,
+      fullName: fullName,
+      campus: campus,
+      office: office,
+      requestType: requestType,
+      appointmentDate: appointmentDate,
+      appointmentTime: appointmentTime,
+      purpose: purpose,
+      queueNumber: queueNumber,
+      status: "Waiting",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await db.collection("appointments").add(newAppointment);
+
+    setCurrentAppointmentFromFirestore(docRef.id, newAppointment);
+    listenToStudentAppointment(docRef.id);
+
+    updatePassDetails();
+    showScreen("pass");
+  } catch (error) {
+    console.error("Error saving booking:", error);
+    alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
+  }
+}
+
+/* =====================================================
+   REPLACEMENT: updatePassDetails()
+===================================================== */
+function updatePassDetails() {
+  document.getElementById("passQueue").innerText =
+    currentAppointment.queue || "No Queue";
+
+  document.getElementById("passStudentId").innerText =
+    verifiedStudent.studentId || "";
+
+  document.getElementById("passFullName").innerText =
+    verifiedStudent.fullName || "";
+
+  document.getElementById("passOffice").innerText =
+    currentAppointment.office || "";
+
+  document.getElementById("passRequest").innerText =
+    currentAppointment.request || "";
+
+  document.getElementById("passDate").innerText =
+    currentAppointment.date || "";
+
+  document.getElementById("passTime").innerText =
+    currentAppointment.time || "";
+
+  document.getElementById("passStatus").innerText =
+    currentAppointment.status || "Waiting";
+}
+
+/* =====================================================
+   REPLACEMENT: goToServices()
+   Blocks new booking if student has active booking.
+===================================================== */
+function goToServices() {
+  if (!ensureStudentLoggedIn()) return;
+
+  if (currentAppointment.exists && isActiveBooking(currentAppointment.status)) {
+    alert("You already have an active booking. You can book again after it is completed or cancelled.");
+    showAppointmentScreen();
+    return;
+  }
+
+  showScreen("services");
+}
+
+/* =====================================================
+   REPLACEMENT: showAppointmentScreen()
+===================================================== */
+function showAppointmentScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  const content = document.getElementById("appointmentContent");
+
+  if (!currentAppointment.exists) {
+    content.innerHTML = `
+      <div class="card gold-card">
+        <h2>No Appointment Yet</h2>
+        <p>No booking is currently linked to ${verifiedStudent.studentId}.</p>
+        <span class="status-pill">No Booking</span>
+      </div>
+      <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
+    `;
+
+    showScreen("appointment");
+    return;
+  }
+
+  let statusClass = "status-waiting";
+  let statusLabel = currentAppointment.status;
+
+  if (currentAppointment.status === "Serving") {
+    statusClass = "status-serving";
+    statusLabel = "Now Serving";
+  }
+
+  if (currentAppointment.status === "Completed") {
+    statusClass = "status-completed";
+    statusLabel = "Already Passed / Completed";
+  }
+
+  if (currentAppointment.status === "Cancelled") {
+    statusClass = "status-cancelled";
+    statusLabel = "Cancelled";
+  }
+
+  let actionButtons = "";
+
+  if (currentAppointment.status === "Waiting" || currentAppointment.status === "Serving") {
+    actionButtons = `
+      <button class="btn" onclick="showScreen('pass')">View Queue Pass</button>
+      <button class="btn btn-outline" onclick="showQueueFromNav()">View Queue Status</button>
+      <button class="btn btn-outline" onclick="cancelAppointment()">Cancel Appointment</button>
+    `;
+  } else if (currentAppointment.status === "Completed") {
+    actionButtons = `<button class="btn btn-outline" onclick="goToServices()">Book New Appointment</button>`;
+  } else if (currentAppointment.status === "Cancelled") {
+    actionButtons = `<button class="btn btn-gold" onclick="goToServices()">Book Again</button>`;
+  }
+
+  content.innerHTML = `
+    <div class="card">
+      <h2>Appointment Details</h2>
+
+      <div class="detail-row">
+        <span>Status</span>
+        <span><span class="status-pill ${statusClass}">${statusLabel}</span></span>
+      </div>
+
+      <div class="detail-row">
+        <span>Queue Number</span>
+        <span>${currentAppointment.queue}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Office</span>
+        <span>${currentAppointment.office}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Request</span>
+        <span>${currentAppointment.request}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Date</span>
+        <span>${currentAppointment.date}</span>
+      </div>
+
+      <div class="detail-row">
+        <span>Time</span>
+        <span>${currentAppointment.time}</span>
+      </div>
+    </div>
+
+    ${actionButtons}
+  `;
+
+  showScreen("appointment");
+}
+
+/* =====================================================
+   REPLACEMENT: showQueueFromNav()
+===================================================== */
+async function showQueueFromNav() {
+  if (!ensureStudentLoggedIn()) return;
+
+  const content = document.getElementById("queueContent");
+
+  if (!currentAppointment.exists) {
+    content.innerHTML = `
+      <div class="card gold-card">
+        <h2>No Queue Yet</h2>
+        <p>No queue is currently linked to ${verifiedStudent.studentId}.</p>
+        <span class="status-pill">No Queue</span>
+      </div>
+      <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
+    `;
+
+    showScreen("queue");
+    return;
+  }
+
+  if (currentAppointment.status === "Cancelled") {
+    content.innerHTML = `
+      <div class="card">
+        <h2>Queue Unavailable</h2>
+        <p>Your appointment was cancelled. Please book a new appointment to get a new queue number.</p>
+        <span class="status-pill status-cancelled">Cancelled</span>
+      </div>
+      <button class="btn btn-gold" onclick="goToServices()">Book New Appointment</button>
+    `;
+
+    showScreen("queue");
+    return;
+  }
+
+  if (currentAppointment.status === "Completed") {
+    content.innerHTML = `
+      <div class="card">
+        <h2>Appointment Already Completed</h2>
+        <p>Your appointment has already been completed.</p>
+        <span class="status-pill status-completed">Completed</span>
+      </div>
+
+      <div class="card">
+        <div class="detail-row">
+          <span>Queue Number</span>
+          <span>${currentAppointment.queue}</span>
+        </div>
+        <div class="detail-row">
+          <span>Office</span>
+          <span>${currentAppointment.office}</span>
+        </div>
+        <div class="detail-row">
+          <span>Date</span>
+          <span>${currentAppointment.date}</span>
+        </div>
+        <div class="detail-row">
+          <span>Time</span>
+          <span>${currentAppointment.time}</span>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" onclick="goToServices()">Book New Appointment</button>
+    `;
+
+    showScreen("queue");
+    return;
+  }
+
+  let currentServing = "None";
+
+  try {
+    const servingSnapshot = await db.collection("appointments")
+      .where("office", "==", currentAppointment.office)
+      .where("status", "==", "Serving")
+      .limit(1)
+      .get();
+
+    if (!servingSnapshot.empty) {
+      currentServing = servingSnapshot.docs[0].data().queueNumber || "None";
+    }
+  } catch (error) {
+    console.error("Error loading current serving:", error);
+  }
+
+  const servingLabel = currentAppointment.status === "Serving"
+    ? "You are now being served"
+    : "Waiting";
+
+  const servingClass = currentAppointment.status === "Serving"
+    ? "status-serving"
+    : "status-waiting";
+
+  content.innerHTML = `
+    <div class="queue-grid">
+      <div class="now-serving">
+        <p>Current Serving</p>
+        <strong>${currentServing}</strong>
+      </div>
+
+      <div class="card">
+        <p>Your Queue Number</p>
+        <h1 style="color:var(--maroon);font-size:44px;">${currentAppointment.queue}</h1>
+        <span class="status-pill ${servingClass}">${servingLabel}</span>
+      </div>
+
+      <div class="card">
+        <p>Office</p>
+        <h2>${currentAppointment.office}</h2>
+        <p>${currentAppointment.request}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Progress</h2>
+
+      <div class="step done">
+        <div class="dot"></div>
+        <span>Appointment Confirmed</span>
+      </div>
+
+      <div class="step ${currentAppointment.status === "Waiting" ? "active" : "done"}">
+        <div class="dot"></div>
+        <span>Waiting</span>
+      </div>
+
+      <div class="step ${currentAppointment.status === "Serving" ? "active" : ""}">
+        <div class="dot"></div>
+        <span>Now Serving</span>
+      </div>
+
+      <div class="step">
+        <div class="dot"></div>
+        <span>Completed</span>
+      </div>
+    </div>
+
+    <button class="btn" onclick="showQueueFromNav()">Refresh Status</button>
+  `;
+
+  showScreen("queue");
+}
+
+/* =====================================================
+   REPLACEMENT: cancelAppointment()
+===================================================== */
+async function cancelAppointment() {
+  if (!currentAppointmentId) {
+    alert("No appointment selected.");
+    return;
+  }
+
+  try {
+    await db.collection("appointments").doc(currentAppointmentId).update({
+      status: "Cancelled",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    alert("Appointment was not cancelled.");
+  }
+}
+
+/* =====================================================
+   REPLACEMENT: updateAdminStatus()
+===================================================== */
+async function updateAdminStatus(appointmentId, newStatus) {
+  try {
+    await db.collection("appointments").doc(appointmentId).update({
+      status: newStatus,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    alert("Status was not updated.");
+  }
+}
+</script>
+  
 </body>
 </html>
