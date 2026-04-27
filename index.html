@@ -328,7 +328,7 @@
 
     .quick-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 12px;
     }
 
@@ -791,12 +791,13 @@
           <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
 
           <div class="section-title">Quick Access</div>
-          <div class="quick-row">
-            <div class="quick-card" onclick="showAppointmentScreen()">My Appointment</div>
-            <div class="quick-card" onclick="showQueueFromNav()">Queue Status</div>
-            <div class="quick-card" onclick="showNotificationsScreen()">Notifications</div>
-            <div class="quick-card" onclick="showHelpScreen()">Help</div>
-          </div>
+         <div class="quick-row">
+  <div class="quick-card" onclick="showAppointmentScreen()">My Appointment</div>
+  <div class="quick-card" onclick="showQueueFromNav()">Queue Status</div>
+  <div class="quick-card" onclick="showNotificationsScreen()">Notifications</div>
+  <div class="quick-card" onclick="showHelpScreen()">Help</div>
+  <div class="quick-card" onclick="openFeedbackSurvey()">Share Feedback</div>
+</div>
         </div>
 
         <div>
@@ -1157,8 +1158,9 @@
         <div class="logo-circle">✓</div>
         <h1>Thank you!</h1>
         <p>Your appointment is now marked as completed.</p>
-        <button class="btn btn-gold" onclick="showAppointmentScreen()">View Appointment History</button>
-        <button class="btn btn-outline" onclick="showScreen('dashboard')">Back to Home</button>
+       <button class="btn btn-gold" onclick="openFeedbackSurvey()">Share Feedback / Answer Survey</button>
+<button class="btn" onclick="showAppointmentScreen()">View Appointment History</button>
+<button class="btn btn-outline" onclick="showScreen('dashboard')">Back to Home</button>
       </div>
     </section>
 
@@ -4780,6 +4782,13 @@ async function updateAdminStatus(appointmentId, newStatus) {
   }
 }
 </script>
-  
+  <script>
+  const PUPASS_FEEDBACK_FORM_URL =
+    "https://docs.google.com/forms/d/e/1FAIpQLSfWcDZugsMhWRd3oLtIBXC4_b1TEFmcAYnymFRRnaUIIcK3Rw/viewform?usp=sharing&ouid=112133641462307009901";
+
+  function openFeedbackSurvey() {
+    window.open(PUPASS_FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer");
+  }
+</script>
 </body>
 </html>
