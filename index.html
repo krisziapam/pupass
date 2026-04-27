@@ -3945,6 +3945,172 @@ window.addEventListener("load", function() {
 ensureTechnicalHelpScreens();
 connectTechnicalHelpQuickCards();
 </script>
+<script>
+/* =====================================================
+   PUPASS SEQUENTIAL QUEUE NUMBER FIX
 
+   Result:
+   - Queue numbers are no longer random
+   - Queue numbers become sequential per office per date
+   - Example:
+     Registrar May 10 = R-001, R-002, R-003
+     Cashier May 10 = C-001, C-002, C-003
+   - Uses Firestore transaction to prevent duplicates
+===================================================== */
+
+function getQueueOfficePrefix(office) {
+  const value = String(office || "").toLowerCase();
+
+  if (value.includes("registrar")) return "R";
+  if (value.includes("cashier")) return "C";
+  if (value.includes("library")) return "L";
+  if (value.includes("guidance")) return "G";
+  if (value.includes("student affairs")) return "S";
+  if (value.includes("scholarship")) return "SCH";
+
+  return "Q";
+}
+
+function getQueueOfficeKey(office) {
+  return String(office || "General")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function formatSequentialQueueNumber(office, number) {
+  const prefix = getQueueOfficePrefix(office);
+  return prefix + "-" + String(number).padStart(3, "0");
+}
+
+function getQueueCounterId(office, dateKey) {
+  const officeKey = getQueueOfficeKey(office);
+  return officeKey + "_" + dateKey;
+}
+
+/* This replaces the old random queue behavior */
+async function createSequentialAppointment(newAppointment, office, appointmentDateKey) {
+  const counterId = getQueueCounterId(office, appointmentDateKey);
+
+  const counterRef = db.collection("queueCounters").doc(counterId);
+  const appointmentRef = db.collection("appointments").doc();
+
+  let finalAppointment = null;
+
+  await db.runTransaction(async function(transaction) {
+    const counterDoc = await transaction.get(counterRef);
+
+    let lastNumber = 0;
+
+    if (counterDoc.exists) {
+      lastNumber = counterDoc.data().lastNumber || 0;
+    }
+
+    const nextNumber = lastNumber + 1;
+    const queueNumber = formatSequentialQueueNumber(office, nextNumber);
+
+    finalAppointment = {
+      ...newAppointment,
+      queueNumber: queueNumber,
+      queueSequence: nextNumber,
+      queueCounterId: counterId
+    };
+
+    transaction.set(counterRef, {
+      office: office,
+      officeKey: getQueueOfficeKey(office),
+      appointmentDateKey: appointmentDateKey,
+      lastNumber: nextNumber,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    transaction.set(appointmentRef, finalAppointment);
+  });
+
+  return {
+    appointmentId: appointmentRef.id,
+    appointment: finalAppointment
+  };
+}
+
+/* =====================================================
+   REPLACEMENT: saveBookingToFirestore()
+   Same booking rules, but queue number is now sequential.
+===================================================== */
+
+async function saveBookingToFirestore() {
+  const studentId = normalizeStudentId(getText("confirmStudentId"));
+  const fullName = getText("confirmFullName");
+  const campus = getText("confirmCampus");
+  const office = getText("confirmOffice");
+  const requestType = getText("confirmRequest");
+
+  const appointmentDateKey =
+    document.getElementById("confirmDate").dataset.dateKey ||
+    document.getElementById("appointmentDate").value;
+
+  const appointmentDate = formatDateForDisplay(appointmentDateKey);
+  const appointmentTime = getText("confirmTime");
+  const purpose = getText("confirmPurpose");
+
+  if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDateKey || !appointmentTime || !purpose) {
+    alert("Some appointment details are missing. Please review your booking again.");
+    return;
+  }
+
+  try {
+    const existingAppointment = await getLatestStudentAppointment(studentId, studentId);
+
+    if (existingAppointment && isActiveBooking(existingAppointment.data.status)) {
+      setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
+      listenToStudentAppointment(existingAppointment.id);
+
+      alert("You already have an active booking. Showing your existing appointment instead.");
+      showAppointmentScreen();
+      return;
+    }
+
+    const bookingsToday = await countBookingsForDate(appointmentDateKey);
+
+    if (bookingsToday >= DAILY_BOOKING_LIMIT) {
+      alert("Sorry, this date is already fully booked. Please choose another appointment date.");
+      showScreen("book");
+      return;
+    }
+
+    const newAppointment = {
+      studentId: studentId,
+      studentKey: studentId,
+      fullName: fullName,
+      campus: campus,
+      office: office,
+      requestType: requestType,
+      appointmentDate: appointmentDate,
+      appointmentDateKey: appointmentDateKey,
+      appointmentTime: appointmentTime,
+      purpose: purpose,
+      status: "Waiting",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const result = await createSequentialAppointment(
+      newAppointment,
+      office,
+      appointmentDateKey
+    );
+
+    setCurrentAppointmentFromFirestore(result.appointmentId, result.appointment);
+    listenToStudentAppointment(result.appointmentId);
+
+    updatePassDetails();
+    showScreen("pass");
+  } catch (error) {
+    console.error("Error saving booking with sequential queue:", error);
+    alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
+  }
+}
+</script>
 </body>
 </html>
