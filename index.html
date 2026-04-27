@@ -796,12 +796,12 @@
           <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
 
           <div class="section-title">Quick Access</div>
-         <div class="quick-row">
-  <div class="quick-card" onclick="showAppointmentScreen()">My Appointment</div>
-  <div class="quick-card" onclick="showQueueFromNav()">Queue Status</div>
-  <div class="quick-card" onclick="showNotificationsScreen()">Notifications</div>
-  <div class="quick-card" onclick="showHelpScreen()">Help</div>
-</div>
+          <div class="quick-row">
+            <div class="quick-card" onclick="showAppointmentScreen()">My Appointment</div>
+            <div class="quick-card" onclick="showQueueFromNav()">Queue Status</div>
+            <div class="quick-card" onclick="showNotificationsScreen()">Notifications</div>
+            <div class="quick-card" onclick="showHelpScreen()">Help</div>
+          </div>
         </div>
 
         <div>
@@ -3033,20 +3033,25 @@ window.showScreen = function(screenId) {
 };
 </script>
 
-  <script>
+<script>
 /* =====================================================
-   PUPASS NOTIFICATIONS HISTORY + HELP CONTACT FIX
-
-   Result:
-   - Notifications shows only Completed and Cancelled bookings
-   - Waiting and Serving stay in My Appointment / Queue Status
-   - Help shows FAQ and Contact Admin form
-   - Admin dashboard gets Contact Messages inbox
+   PUPASS ADMIN FILTER + TECHNICAL ERROR REPORTS
+   - Admin can filter queues by office
+   - Waiting/Serving cards show queue number preview
+   - Notifications shows completed/cancelled booking history
+   - Help is technical error report only
+   - Admin can investigate, resolve, close, archive, search reports
 ===================================================== */
 
-let adminContactMessagesUnsubscribe = null;
+let selectedAdminOfficeFilter = localStorage.getItem("pupass_admin_office_filter") || "Registrar";
+let adminQueueStatsObserver = null;
+let technicalReportsUnsubscribe = null;
+let adminTechnicalReportView = "open";
+let adminTechnicalReportSearch = "";
 
-function escapeHtml(value) {
+const ADMIN_OFFICES = ["All", "Registrar", "Cashier", "Library", "Guidance", "Student Affairs", "Scholarship"];
+
+function safePupassText(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -3055,12 +3060,26 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function formatFirebaseDateTime(value) {
-  if (!value) return "Just now";
+function normalizeAdminOfficeName(office) {
+  const value = String(office || "").toLowerCase();
+  if (value.includes("registrar")) return "Registrar";
+  if (value.includes("cashier")) return "Cashier";
+  if (value.includes("library")) return "Library";
+  if (value.includes("guidance")) return "Guidance";
+  if (value.includes("student affairs")) return "Student Affairs";
+  if (value.includes("scholarship")) return "Scholarship";
+  return office || "Unknown";
+}
 
+function adminOfficeMatches(office) {
+  if (selectedAdminOfficeFilter === "All") return true;
+  return normalizeAdminOfficeName(office) === selectedAdminOfficeFilter;
+}
+
+function formatPupassDateTime(value) {
+  if (!value) return "Just now";
   try {
     const date = value.toDate ? value.toDate() : new Date(value);
-
     return date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
@@ -3073,446 +3092,45 @@ function formatFirebaseDateTime(value) {
   }
 }
 
-function ensureHistoryAndHelpScreens() {
-  const feedbackScreen = document.getElementById("feedback");
-
-  if (!feedbackScreen) return;
-
-  if (!document.getElementById("notifications")) {
-    feedbackScreen.insertAdjacentHTML("beforebegin", `
-      <section id="notifications" class="screen">
-        <div class="back" onclick="showScreen('dashboard')">← Home</div>
-        <h1>Booking History</h1>
-        <p>Only completed and cancelled bookings are shown here.</p>
-
-        <div id="notificationsContent"></div>
-
-        <div class="bottom-nav">
-          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
-          <div class="nav-item" onclick="goToServices()">Services</div>
-          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
-          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
-        </div>
-      </section>
-    `);
-  }
-
-  if (!document.getElementById("help")) {
-    feedbackScreen.insertAdjacentHTML("beforebegin", `
-      <section id="help" class="screen">
-        <div class="back" onclick="showScreen('dashboard')">← Home</div>
-        <h1>Help Center</h1>
-        <p>Read common questions or send a message to the admin.</p>
-
-        <div class="card gold-card">
-          <h2>How to use PUPass</h2>
-          <p>1. Log in using your Student ID Number.</p>
-          <p>2. Choose a service.</p>
-          <p>3. Select your appointment date and time.</p>
-          <p>4. Confirm your booking.</p>
-          <p>5. Track your queue status or save your digital queue pass.</p>
-        </div>
-
-        <div class="card">
-          <h2>Frequently Asked Questions</h2>
-
-          <div class="detail-row">
-            <span>Can I book more than once?</span>
-            <span>No, not while you have an active booking.</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Where can I see my current queue?</span>
-            <span>Open Queue Status.</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Where can I see old bookings?</span>
-            <span>Open Notifications.</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Can I book again after completion?</span>
-            <span>Yes.</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Contact Admin</h2>
-          <p>Send a message to the admin if you need help with your appointment.</p>
-
-          <label>Concern Type</label>
-          <select class="input-box" id="helpConcernType">
-            <option>Appointment Concern</option>
-            <option>Queue Status Concern</option>
-            <option>Cancellation Concern</option>
-            <option>Student Information Concern</option>
-            <option>Other Concern</option>
-          </select>
-
-          <label>Message</label>
-          <textarea class="input-box" id="helpMessage" placeholder="Type your concern here..."></textarea>
-
-          <button class="btn" onclick="sendHelpMessage()">Send Message to Admin</button>
-        </div>
-
-        <div class="bottom-nav">
-          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
-          <div class="nav-item" onclick="goToServices()">Services</div>
-          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
-          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
-        </div>
-      </section>
-    `);
-  }
+function createTechnicalReportNumber() {
+  const date = new Date();
+  const datePart =
+    date.getFullYear().toString() +
+    String(date.getMonth() + 1).padStart(2, "0") +
+    String(date.getDate()).padStart(2, "0");
+  const randomPart = Math.floor(Math.random() * 9000) + 1000;
+  return "TECH-" + datePart + "-" + randomPart;
 }
 
-window.addEventListener("load", function() {
-  ensureHistoryAndHelpScreens();
-});
-
-/* =====================================================
-   STUDENT: Booking History
-   Only Completed and Cancelled bookings are shown.
-===================================================== */
-
-async function showNotificationsScreen() {
-  if (!ensureStudentLoggedIn()) return;
-
-  ensureHistoryAndHelpScreens();
-
-  const content = document.getElementById("notificationsContent");
-
-  content.innerHTML = `
-    <div class="card">
-      <p>Loading your booking history...</p>
-    </div>
-  `;
-
-  showScreen("notifications");
-
-  try {
-    const appointments = await getStudentAppointments(
-      verifiedStudent.studentId,
-      verifiedStudent.studentId
-    );
-
-    const history = appointments.filter(function(item) {
-      const status = item.data.status || "";
-      return status === "Completed" || status === "Cancelled";
-    });
-
-    if (!history.length) {
-      content.innerHTML = `
-        <div class="card gold-card">
-          <h2>No Booking History Yet</h2>
-          <p>Completed and cancelled bookings will appear here.</p>
-          <span class="status-pill">No History</span>
-        </div>
-      `;
-      return;
-    }
-
-    content.innerHTML = history.map(function(item) {
-      const booking = item.data;
-      const status = booking.status || "Completed";
-      const statusClass = status === "Cancelled"
-        ? "status-cancelled"
-        : "status-completed";
-
-      return `
-        <div class="card">
-          <h2>${escapeHtml(booking.office || "Appointment")}</h2>
-
-          <div class="detail-row">
-            <span>Status</span>
-            <span><span class="status-pill ${statusClass}">${escapeHtml(status)}</span></span>
-          </div>
-
-          <div class="detail-row">
-            <span>Queue Number</span>
-            <span>${escapeHtml(booking.queueNumber || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Request</span>
-            <span>${escapeHtml(booking.requestType || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Date</span>
-            <span>${escapeHtml(booking.appointmentDate || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Time</span>
-            <span>${escapeHtml(booking.appointmentTime || "")}</span>
-          </div>
-        </div>
-      `;
-    }).join("");
-  } catch (error) {
-    console.error("Error loading booking history:", error);
-
-    content.innerHTML = `
-      <div class="card">
-        <h2>Could not load history</h2>
-        <p>Please check your internet connection or Firebase rules.</p>
-      </div>
-    `;
-  }
-}
-
-/* =====================================================
-   STUDENT: Help / Contact Admin
-===================================================== */
-
-function showHelpScreen() {
-  if (!ensureStudentLoggedIn()) return;
-
-  ensureHistoryAndHelpScreens();
-  showScreen("help");
-}
-
-async function sendHelpMessage() {
-  if (!ensureStudentLoggedIn()) return;
-
-  const concernType = document.getElementById("helpConcernType").value;
-  const message = document.getElementById("helpMessage").value.trim();
-
-  if (!message) {
-    alert("Please type your message before sending.");
-    return;
-  }
-
-  try {
-    await db.collection("supportMessages").add({
-      studentId: verifiedStudent.studentId,
-      fullName: verifiedStudent.fullName,
-      campus: verifiedStudent.campus,
-      concernType: concernType,
-      message: message,
-      status: "New",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    document.getElementById("helpMessage").value = "";
-    alert("Your message was sent to the admin.");
-  } catch (error) {
-    console.error("Error sending help message:", error);
-    alert("Message was not sent. Please check Firebase setup and rules.");
-  }
-}
-
-/* =====================================================
-   ADMIN: Contact Messages Inbox
-   Admin only sees this inside the admin dashboard.
-===================================================== */
-
-function ensureAdminContactMessagesSection() {
-  const adminScreen = document.getElementById("admin");
-  if (!adminScreen) return null;
-
-  let container = document.getElementById("adminContactMessages");
-
-  if (!container) {
-    const logoutButton = adminScreen.querySelector("button[onclick='adminLogout()']");
-
-    if (logoutButton) {
-      logoutButton.insertAdjacentHTML("beforebegin", `
-        <div class="section-title">Contact Messages</div>
-        <div id="adminContactMessages" class="admin-list"></div>
-      `);
-    } else {
-      adminScreen.insertAdjacentHTML("beforeend", `
-        <div class="section-title">Contact Messages</div>
-        <div id="adminContactMessages" class="admin-list"></div>
-      `);
-    }
-
-    container = document.getElementById("adminContactMessages");
-  }
-
-  return container;
-}
-
-function renderAdminContactMessages() {
-  const container = ensureAdminContactMessagesSection();
-
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="card">
-      <p>Loading contact messages...</p>
-    </div>
-  `;
-
-  if (adminContactMessagesUnsubscribe) {
-    adminContactMessagesUnsubscribe();
-  }
-
-  adminContactMessagesUnsubscribe = db.collection("supportMessages")
-    .orderBy("createdAt", "desc")
-    .limit(20)
-    .onSnapshot(function(snapshot) {
-      container.innerHTML = "";
-
-      if (snapshot.empty) {
-        container.innerHTML = `
-          <div class="card gold-card">
-            <h2>No Contact Messages</h2>
-            <p>Student help messages will appear here.</p>
-          </div>
-        `;
-        return;
-      }
-
-      snapshot.forEach(function(doc) {
-        const item = doc.data();
-        const messageId = doc.id;
-
-        const status = item.status || "New";
-        const statusClass = status === "Resolved"
-          ? "status-completed"
-          : status === "Read"
-            ? "status-serving"
-            : "status-waiting";
-
-        const card = document.createElement("div");
-        card.className = "list-item";
-
-        card.innerHTML = `
-          <strong>${escapeHtml(item.concernType || "Student Concern")}</strong>
-          <p>${escapeHtml(item.fullName || "")} · ${escapeHtml(item.campus || "")}</p>
-          <p style="font-size:12px;">Student ID: ${escapeHtml(item.studentId || "")}</p>
-          <p style="font-size:12px;">Sent: ${escapeHtml(formatFirebaseDateTime(item.createdAt))}</p>
-          <p style="font-size:12px;margin-top:8px;">${escapeHtml(item.message || "")}</p>
-
-          <span class="status-pill ${statusClass}">${escapeHtml(status)}</span>
-
-          <div class="admin-actions">
-            <button class="btn btn-small btn-blue" onclick="updateSupportMessageStatus('${messageId}', 'Read')">Mark Read</button>
-            <button class="btn btn-small btn-green" onclick="updateSupportMessageStatus('${messageId}', 'Resolved')">Resolve</button>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-    }, function(error) {
-      console.error("Error loading contact messages:", error);
-
-      container.innerHTML = `
-        <div class="card">
-          <h2>Could not load contact messages</h2>
-          <p>Please check Firebase rules and internet connection.</p>
-        </div>
-      `;
-    });
-}
-
-async function updateSupportMessageStatus(messageId, newStatus) {
-  try {
-    await db.collection("supportMessages").doc(messageId).update({
-      status: newStatus,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error("Error updating contact message:", error);
-    alert("Contact message status was not updated.");
-  }
-}
-
-/* Replace admin dashboard opener so admin also sees contact messages */
-window.openAdminDashboard = function() {
-  renderAdminAppointments();
-  renderAdminContactMessages();
-  showScreen("admin");
-};
-</script>
-  <script>
-/* =====================================================
-   ADMIN OFFICE FILTER FIX
-
-   Result:
-   - Admin can filter queue by office/service
-   - Registrar admin can click Registrar only
-   - Stats update based on selected office
-   - Works with your Firebase appointments
-===================================================== */
-
-let selectedAdminOfficeFilter =
-  localStorage.getItem("pupass_admin_office_filter") || "Registrar";
-
-const ADMIN_OFFICE_FILTERS = [
-  "All",
-  "Registrar",
-  "Cashier",
-  "Library",
-  "Guidance",
-  "Student Affairs",
-  "Scholarship"
-];
-
-function normalizeOfficeName(office) {
-  const value = String(office || "").toLowerCase();
-
-  if (value.includes("registrar")) return "Registrar";
-  if (value.includes("cashier")) return "Cashier";
-  if (value.includes("library")) return "Library";
-  if (value.includes("guidance")) return "Guidance";
-  if (value.includes("student affairs")) return "Student Affairs";
-  if (value.includes("scholarship")) return "Scholarship";
-
-  return office || "Unknown";
-}
-
-function officeMatchesFilter(office, selectedOffice) {
-  if (selectedOffice === "All") return true;
-  return normalizeOfficeName(office) === selectedOffice;
-}
+/* ---------------- ADMIN OFFICE FILTER ---------------- */
 
 function ensureAdminOfficeFilterUI() {
-  const appointmentList = document.getElementById("adminAppointmentList");
+  const list = document.getElementById("adminAppointmentList");
+  if (!list) return;
 
-  if (!appointmentList) return;
-
-  let filterBox = document.getElementById("adminOfficeFilterBox");
-
-  if (!filterBox) {
-    appointmentList.insertAdjacentHTML("beforebegin", `
+  if (!document.getElementById("adminOfficeFilterBox")) {
+    list.insertAdjacentHTML("beforebegin", `
       <div id="adminOfficeFilterBox" class="card" style="margin-bottom:18px;">
         <h2>Filter by Office</h2>
         <p>Select which office queue you want to manage.</p>
-
-        <div id="adminOfficeFilterButtons"
-          style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-        </div>
-
-        <p id="adminOfficeFilterLabel"
-          style="margin-top:12px;font-weight:700;color:var(--maroon);">
-        </p>
+        <div id="adminOfficeFilterButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+        <p id="adminOfficeFilterLabel" style="margin-top:12px;font-weight:700;color:var(--maroon);"></p>
       </div>
     `);
-
-    filterBox = document.getElementById("adminOfficeFilterBox");
   }
 
   renderAdminOfficeFilterButtons();
 }
 
 function renderAdminOfficeFilterButtons() {
-  const buttonContainer = document.getElementById("adminOfficeFilterButtons");
+  const container = document.getElementById("adminOfficeFilterButtons");
   const label = document.getElementById("adminOfficeFilterLabel");
+  if (!container) return;
 
-  if (!buttonContainer) return;
-
-  buttonContainer.innerHTML = ADMIN_OFFICE_FILTERS.map(function(office) {
-    const isActive = selectedAdminOfficeFilter === office;
-
+  container.innerHTML = ADMIN_OFFICES.map(function(office) {
+    const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
     return `
-      <button
-        class="btn btn-small ${isActive ? "btn-gold" : "btn-outline"}"
-        onclick="setAdminOfficeFilter('${office}')">
+      <button class="btn btn-small ${activeClass}" onclick="setAdminOfficeFilter('${office}')">
         ${office}
       </button>
     `;
@@ -3528,163 +3146,6 @@ function setAdminOfficeFilter(office) {
   localStorage.setItem("pupass_admin_office_filter", office);
   renderAdminAppointments();
 }
-
-/* =====================================================
-   REPLACEMENT: renderAdminAppointments()
-   Adds office filtering to the admin dashboard.
-===================================================== */
-
-function renderAdminAppointments() {
-  const list = document.getElementById("adminAppointmentList");
-
-  if (!list) return;
-
-  ensureAdminOfficeFilterUI();
-
-  list.innerHTML = `
-    <div class="card">
-      <p>Loading appointments from Firebase...</p>
-    </div>
-  `;
-
-  if (adminFirestoreUnsubscribe) {
-    adminFirestoreUnsubscribe();
-  }
-
-  adminFirestoreUnsubscribe = db.collection("appointments")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(function(snapshot) {
-      list.innerHTML = "";
-
-      const allAppointments = [];
-
-      snapshot.forEach(function(doc) {
-        allAppointments.push({
-          id: doc.id,
-          data: doc.data()
-        });
-      });
-
-      const filteredAppointments = allAppointments.filter(function(record) {
-        return officeMatchesFilter(record.data.office, selectedAdminOfficeFilter);
-      });
-
-      let total = 0;
-      let waiting = 0;
-      let serving = 0;
-      let completed = 0;
-
-      filteredAppointments.forEach(function(record) {
-        const item = record.data;
-
-        total++;
-
-        if (item.status === "Waiting") waiting++;
-        if (item.status === "Serving") serving++;
-        if (item.status === "Completed") completed++;
-      });
-
-      document.getElementById("adminTotal").innerText = total;
-      document.getElementById("adminWaiting").innerText = waiting;
-      document.getElementById("adminServing").innerText = serving;
-      document.getElementById("adminCompleted").innerText = completed;
-
-      if (!filteredAppointments.length) {
-        list.innerHTML = `
-          <div class="card gold-card">
-            <h2>No ${selectedAdminOfficeFilter} Appointments</h2>
-            <p>No appointments found for this office filter.</p>
-          </div>
-        `;
-
-        renderAdminOfficeFilterButtons();
-        return;
-      }
-
-      filteredAppointments.forEach(function(record) {
-        const item = record.data;
-        const appointmentId = record.id;
-
-        const appointmentCard = document.createElement("div");
-        appointmentCard.className = "list-item";
-
-        let actionButtons = "";
-
-        if (item.status === "Waiting") {
-          actionButtons = `
-            <button class="btn btn-small btn-blue" onclick="updateAdminStatus('${appointmentId}', 'Serving')">Now Serving</button>
-            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
-            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
-          `;
-        } else if (item.status === "Serving") {
-          actionButtons = `
-            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
-            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
-          `;
-        } else if (item.status === "Cancelled") {
-          actionButtons = `
-            <button class="btn btn-small btn-outline" disabled>Cancelled</button>
-          `;
-        } else {
-          actionButtons = `
-            <button class="btn btn-small btn-outline" disabled>Completed</button>
-          `;
-        }
-
-        appointmentCard.innerHTML = `
-          <strong>${item.queueNumber || ""}</strong>
-          <p>${item.fullName || ""} · ${item.campus || "No campus"} · ${item.office || ""}</p>
-          <p style="font-size:12px;">Student ID: ${item.studentId || ""}</p>
-          <p style="font-size:12px;">Request: ${item.requestType || ""}</p>
-          <p style="font-size:12px;">Date: ${item.appointmentDate || ""} · ${item.appointmentTime || ""}</p>
-          <span class="status-pill ${getStatusClass(item.status)}">${item.status || "Waiting"}</span>
-          <div class="admin-actions">
-            ${actionButtons}
-          </div>
-        `;
-
-        list.appendChild(appointmentCard);
-      });
-
-      renderAdminOfficeFilterButtons();
-    }, function(error) {
-      console.error("Error loading admin appointments:", error);
-
-      list.innerHTML = `
-        <div class="card">
-          <h2>Could not load appointments</h2>
-          <p>Please check your Firebase rules and internet connection.</p>
-        </div>
-      `;
-    });
-}
-
-/* =====================================================
-   Keep admin dashboard opening correctly.
-   If you added Contact Messages before, this keeps it too.
-===================================================== */
-
-window.openAdminDashboard = function() {
-  renderAdminAppointments();
-
-  if (typeof renderAdminContactMessages === "function") {
-    renderAdminContactMessages();
-  }
-
-  showScreen("admin");
-};
-</script>
-  <script>
-/* =====================================================
-   ADMIN STAT QUEUE NUMBER PREVIEW
-
-   Result:
-   - Waiting card shows waiting queue numbers
-   - Serving card shows currently serving queue numbers
-   - Does not clutter the dashboard with too many numbers
-===================================================== */
-
-let adminQueueStatsObserver = null;
 
 function ensureAdminQueueNumberStats() {
   const waitingCount = document.getElementById("adminWaiting");
@@ -3707,11 +3168,7 @@ function ensureAdminQueueNumberStats() {
 
 function formatAdminQueuePreview(queueList) {
   if (!queueList.length) return "None";
-
-  if (queueList.length <= 3) {
-    return queueList.join(", ");
-  }
-
+  if (queueList.length <= 3) return queueList.join(", ");
   return queueList.slice(0, 3).join(", ") + " +" + (queueList.length - 3) + " more";
 }
 
@@ -3722,42 +3179,24 @@ function updateAdminQueueNumberStats() {
   const servingLabel = document.getElementById("adminServingQueues");
 
   const cards = document.querySelectorAll("#adminAppointmentList .list-item");
-
   const waitingQueues = [];
   const servingQueues = [];
 
   cards.forEach(function(card) {
-    const queue = card.querySelector("strong")
-      ? card.querySelector("strong").innerText.trim()
-      : "";
-
-    const status = card.querySelector(".status-pill")
-      ? card.querySelector(".status-pill").innerText.trim()
-      : "";
+    const queue = card.querySelector("strong") ? card.querySelector("strong").innerText.trim() : "";
+    const status = card.querySelector(".status-pill") ? card.querySelector(".status-pill").innerText.trim() : "";
 
     if (!queue) return;
-
-    if (status === "Waiting") {
-      waitingQueues.push(queue);
-    }
-
-    if (status === "Serving") {
-      servingQueues.push(queue);
-    }
+    if (status === "Waiting") waitingQueues.push(queue);
+    if (status === "Serving") servingQueues.push(queue);
   });
 
-  if (waitingLabel) {
-    waitingLabel.innerText = "Next: " + formatAdminQueuePreview(waitingQueues);
-  }
-
-  if (servingLabel) {
-    servingLabel.innerText = "Now Serving: " + formatAdminQueuePreview(servingQueues);
-  }
+  if (waitingLabel) waitingLabel.innerText = "Next: " + formatAdminQueuePreview(waitingQueues);
+  if (servingLabel) servingLabel.innerText = "Now Serving: " + formatAdminQueuePreview(servingQueues);
 }
 
 function watchAdminQueueListForStats() {
   const list = document.getElementById("adminAppointmentList");
-
   if (!list) return;
 
   if (adminQueueStatsObserver) {
@@ -3776,84 +3215,125 @@ function watchAdminQueueListForStats() {
   updateAdminQueueNumberStats();
 }
 
-window.addEventListener("load", function() {
+/* Replacement admin appointment renderer with office filtering */
+function renderAdminAppointments() {
+  const list = document.getElementById("adminAppointmentList");
+  if (!list) return;
+
+  ensureAdminOfficeFilterUI();
   ensureAdminQueueNumberStats();
-  watchAdminQueueListForStats();
-});
 
-const originalOpenAdminDashboardForQueueStats = window.openAdminDashboard;
+  list.innerHTML = `<div class="card"><p>Loading appointments from Firebase...</p></div>`;
 
-window.openAdminDashboard = function() {
-  if (typeof originalOpenAdminDashboardForQueueStats === "function") {
-    originalOpenAdminDashboardForQueueStats();
+  if (adminFirestoreUnsubscribe) {
+    adminFirestoreUnsubscribe();
   }
 
-  setTimeout(function() {
-    ensureAdminQueueNumberStats();
-    watchAdminQueueListForStats();
-    updateAdminQueueNumberStats();
-  }, 300);
-};
-</script>
-<script>
-/* =====================================================
-   PUPASS TECHNICAL ERROR REPORT SYSTEM
+  adminFirestoreUnsubscribe = db.collection("appointments")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(function(snapshot) {
+      list.innerHTML = "";
 
-   Result:
-   - Help becomes "Report Technical Error"
-   - Students can report system/access problems only
-   - Admin sees Open Technical Error Reports
-   - Admin can mark as Investigating, Resolved, or Closed
-   - Closed reports go to Archive
-   - Admin can search open and archived reports
-   - Student cannot create many open technical reports at once
-===================================================== */
+      const allAppointments = [];
 
-let technicalReportsUnsubscribe = null;
-let adminTechnicalReportView = "open";
-let adminTechnicalReportSearch = "";
+      snapshot.forEach(function(doc) {
+        allAppointments.push({
+          id: doc.id,
+          data: doc.data()
+        });
+      });
 
-function techSafeText(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+      const filteredAppointments = allAppointments.filter(function(record) {
+        return adminOfficeMatches(record.data.office);
+      });
 
-function formatTechDate(value) {
-  if (!value) return "Just now";
+      let total = 0;
+      let waiting = 0;
+      let serving = 0;
+      let completed = 0;
 
-  try {
-    const date = value.toDate ? value.toDate() : new Date(value);
+      filteredAppointments.forEach(function(record) {
+        const status = record.data.status || "Waiting";
+        total++;
+        if (status === "Waiting") waiting++;
+        if (status === "Serving") serving++;
+        if (status === "Completed") completed++;
+      });
 
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
+      document.getElementById("adminTotal").innerText = total;
+      document.getElementById("adminWaiting").innerText = waiting;
+      document.getElementById("adminServing").innerText = serving;
+      document.getElementById("adminCompleted").innerText = completed;
+
+      if (!filteredAppointments.length) {
+        list.innerHTML = `
+          <div class="card gold-card">
+            <h2>No ${safePupassText(selectedAdminOfficeFilter)} Appointments</h2>
+            <p>No appointments found for this office filter.</p>
+          </div>
+        `;
+        renderAdminOfficeFilterButtons();
+        updateAdminQueueNumberStats();
+        return;
+      }
+
+      filteredAppointments.forEach(function(record) {
+        const item = record.data;
+        const appointmentId = record.id;
+        const status = item.status || "Waiting";
+
+        const card = document.createElement("div");
+        card.className = "list-item";
+
+        let actionButtons = "";
+
+        if (status === "Waiting") {
+          actionButtons = `
+            <button class="btn btn-small btn-blue" onclick="updateAdminStatus('${appointmentId}', 'Serving')">Now Serving</button>
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        } else if (status === "Serving") {
+          actionButtons = `
+            <button class="btn btn-small btn-green" onclick="updateAdminStatus('${appointmentId}', 'Completed')">Complete</button>
+            <button class="btn btn-small btn-outline" onclick="updateAdminStatus('${appointmentId}', 'Cancelled')">Cancel</button>
+          `;
+        } else if (status === "Cancelled") {
+          actionButtons = `<button class="btn btn-small btn-outline" disabled>Cancelled</button>`;
+        } else {
+          actionButtons = `<button class="btn btn-small btn-outline" disabled>Completed</button>`;
+        }
+
+        card.innerHTML = `
+          <strong>${safePupassText(item.queueNumber || "")}</strong>
+          <p>${safePupassText(item.fullName || "")} · ${safePupassText(item.campus || "No campus")} · ${safePupassText(item.office || "")}</p>
+          <p style="font-size:12px;">Student ID: ${safePupassText(item.studentId || "")}</p>
+          <p style="font-size:12px;">Request: ${safePupassText(item.requestType || "")}</p>
+          <p style="font-size:12px;">Date: ${safePupassText(item.appointmentDate || "")} · ${safePupassText(item.appointmentTime || "")}</p>
+          <span class="status-pill ${getStatusClass(status)}">${safePupassText(status)}</span>
+          <div class="admin-actions">${actionButtons}</div>
+        `;
+
+        list.appendChild(card);
+      });
+
+      renderAdminOfficeFilterButtons();
+      updateAdminQueueNumberStats();
+      watchAdminQueueListForStats();
+    }, function(error) {
+      console.error("Error loading admin appointments:", error);
+
+      list.innerHTML = `
+        <div class="card">
+          <h2>Could not load appointments</h2>
+          <p>Please check your Firebase rules and internet connection.</p>
+        </div>
+      `;
     });
-  } catch {
-    return "Just now";
-  }
 }
 
-function createTechnicalReportNumber() {
-  const date = new Date();
+/* ---------------- STUDENT HISTORY + TECHNICAL HELP ---------------- */
 
-  const datePart =
-    date.getFullYear().toString() +
-    String(date.getMonth() + 1).padStart(2, "0") +
-    String(date.getDate()).padStart(2, "0");
-
-  const randomPart = Math.floor(Math.random() * 9000) + 1000;
-
-  return "TECH-" + datePart + "-" + randomPart;
-}
-
-/* Make Notifications and Help clickable */
 function connectTechnicalHelpQuickCards() {
   const cards = document.querySelectorAll(".quick-card");
 
@@ -3870,7 +3350,6 @@ function connectTechnicalHelpQuickCards() {
   });
 }
 
-/* Create Notifications and Technical Help screens */
 function ensureTechnicalHelpScreens() {
   const feedbackScreen = document.getElementById("feedback");
   if (!feedbackScreen) return;
@@ -3944,15 +3423,6 @@ function ensureTechnicalHelpScreens() {
   }
 }
 
-window.addEventListener("load", function() {
-  ensureTechnicalHelpScreens();
-  connectTechnicalHelpQuickCards();
-});
-
-/* =====================================================
-   STUDENT: Booking History
-===================================================== */
-
 async function showNotificationsScreen() {
   if (!ensureStudentLoggedIn()) return;
 
@@ -3960,12 +3430,7 @@ async function showNotificationsScreen() {
 
   const content = document.getElementById("notificationsContent");
 
-  content.innerHTML = `
-    <div class="card">
-      <p>Loading booking history...</p>
-    </div>
-  `;
-
+  content.innerHTML = `<div class="card"><p>Loading booking history...</p></div>`;
   showScreen("notifications");
 
   try {
@@ -3993,37 +3458,35 @@ async function showNotificationsScreen() {
     content.innerHTML = history.map(function(item) {
       const booking = item.data;
       const status = booking.status || "";
-      const statusClass = status === "Cancelled"
-        ? "status-cancelled"
-        : "status-completed";
+      const statusClass = status === "Cancelled" ? "status-cancelled" : "status-completed";
 
       return `
         <div class="card">
-          <h2>${techSafeText(booking.office || "Appointment")}</h2>
+          <h2>${safePupassText(booking.office || "Appointment")}</h2>
 
           <div class="detail-row">
             <span>Status</span>
-            <span><span class="status-pill ${statusClass}">${techSafeText(status)}</span></span>
+            <span><span class="status-pill ${statusClass}">${safePupassText(status)}</span></span>
           </div>
 
           <div class="detail-row">
             <span>Queue Number</span>
-            <span>${techSafeText(booking.queueNumber || "")}</span>
+            <span>${safePupassText(booking.queueNumber || "")}</span>
           </div>
 
           <div class="detail-row">
             <span>Request</span>
-            <span>${techSafeText(booking.requestType || "")}</span>
+            <span>${safePupassText(booking.requestType || "")}</span>
           </div>
 
           <div class="detail-row">
             <span>Date</span>
-            <span>${techSafeText(booking.appointmentDate || "")}</span>
+            <span>${safePupassText(booking.appointmentDate || "")}</span>
           </div>
 
           <div class="detail-row">
             <span>Time</span>
-            <span>${techSafeText(booking.appointmentTime || "")}</span>
+            <span>${safePupassText(booking.appointmentTime || "")}</span>
           </div>
         </div>
       `;
@@ -4039,10 +3502,6 @@ async function showNotificationsScreen() {
     `;
   }
 }
-
-/* =====================================================
-   STUDENT: Technical Error Report
-===================================================== */
 
 async function getStudentActiveTechnicalReport() {
   const snapshot = await db.collection("technicalReports")
@@ -4084,14 +3543,8 @@ function renderStudentTechnicalReportBox(report) {
   const status = item.status || "Open";
 
   let statusClass = "status-waiting";
-
-  if (status === "Investigating") {
-    statusClass = "status-serving";
-  }
-
-  if (status === "Resolved") {
-    statusClass = "status-completed";
-  }
+  if (status === "Investigating") statusClass = "status-serving";
+  if (status === "Resolved") statusClass = "status-completed";
 
   box.innerHTML = `
     <div class="card gold-card">
@@ -4099,22 +3552,22 @@ function renderStudentTechnicalReportBox(report) {
 
       <div class="detail-row">
         <span>Report Number</span>
-        <span>${techSafeText(item.reportNumber || report.id)}</span>
+        <span>${safePupassText(item.reportNumber || report.id)}</span>
       </div>
 
       <div class="detail-row">
         <span>Status</span>
-        <span><span class="status-pill ${statusClass}">${techSafeText(status)}</span></span>
+        <span><span class="status-pill ${statusClass}">${safePupassText(status)}</span></span>
       </div>
 
       <div class="detail-row">
         <span>Error Area</span>
-        <span>${techSafeText(item.errorArea || "")}</span>
+        <span>${safePupassText(item.errorArea || "")}</span>
       </div>
 
       <div class="detail-row">
         <span>Problem</span>
-        <span>${techSafeText(item.description || "")}</span>
+        <span>${safePupassText(item.description || "")}</span>
       </div>
 
       ${
@@ -4122,7 +3575,7 @@ function renderStudentTechnicalReportBox(report) {
           ? `
             <div class="detail-row">
               <span>Admin Response</span>
-              <span>${techSafeText(item.adminResponse)}</span>
+              <span>${safePupassText(item.adminResponse)}</span>
             </div>
           `
           : ""
@@ -4205,9 +3658,7 @@ async function submitTechnicalErrorReport() {
   }
 }
 
-/* =====================================================
-   ADMIN: Technical Error Report Inbox
-===================================================== */
+/* ---------------- ADMIN TECHNICAL ERROR REPORTS ---------------- */
 
 function ensureAdminTechnicalReportInbox() {
   const adminScreen = document.getElementById("admin");
@@ -4223,7 +3674,7 @@ function ensureAdminTechnicalReportInbox() {
 
       <div class="card">
         <h2>Report View</h2>
-        <p>Open and investigating reports appear in the main view. Closed reports go to Archive.</p>
+        <p>Open, investigating, and resolved reports appear in the main view. Closed reports go to Archive.</p>
 
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
           <button id="adminTechOpenBtn" class="btn btn-small btn-gold" onclick="setAdminTechnicalReportView('open')">Open Reports</button>
@@ -4303,23 +3754,12 @@ function renderTechnicalReportCard(reportId, item) {
   const isArchived = item.archived === true || status === "Closed";
 
   let statusClass = "status-waiting";
-
-  if (status === "Investigating") {
-    statusClass = "status-serving";
-  }
-
-  if (status === "Resolved") {
-    statusClass = "status-completed";
-  }
-
-  if (status === "Closed") {
-    statusClass = "status-cancelled";
-  }
+  if (status === "Investigating") statusClass = "status-serving";
+  if (status === "Resolved") statusClass = "status-completed";
+  if (status === "Closed") statusClass = "status-cancelled";
 
   const actionButtons = isArchived
-    ? `
-      <button class="btn btn-small btn-outline" onclick="reopenTechnicalReport('${reportId}')">Reopen</button>
-    `
+    ? `<button class="btn btn-small btn-outline" onclick="reopenTechnicalReport('${reportId}')">Reopen</button>`
     : `
       <button class="btn btn-small btn-blue" onclick="markTechnicalReportInvestigating('${reportId}')">Investigating</button>
       <button class="btn btn-small btn-green" onclick="respondTechnicalReport('${reportId}')">Respond / Resolve</button>
@@ -4328,27 +3768,25 @@ function renderTechnicalReportCard(reportId, item) {
 
   return `
     <div class="list-item">
-      <strong>${techSafeText(item.reportNumber || reportId)}</strong>
+      <strong>${safePupassText(item.reportNumber || reportId)}</strong>
 
-      <p>${techSafeText(item.fullName || "")} · ${techSafeText(item.campus || "")}</p>
-      <p style="font-size:12px;">Student ID: ${techSafeText(item.studentId || "")}</p>
-      <p style="font-size:12px;">Error Area: ${techSafeText(item.errorArea || "")}</p>
-      <p style="font-size:12px;">Created: ${techSafeText(formatTechDate(item.createdAt))}</p>
+      <p>${safePupassText(item.fullName || "")} · ${safePupassText(item.campus || "")}</p>
+      <p style="font-size:12px;">Student ID: ${safePupassText(item.studentId || "")}</p>
+      <p style="font-size:12px;">Error Area: ${safePupassText(item.errorArea || "")}</p>
+      <p style="font-size:12px;">Created: ${safePupassText(formatPupassDateTime(item.createdAt))}</p>
 
-      <p style="font-size:12px;margin-top:8px;"><b>Problem:</b> ${techSafeText(item.description || "")}</p>
-      <p style="font-size:12px;margin-top:8px;"><b>Steps:</b> ${techSafeText(item.steps || "")}</p>
+      <p style="font-size:12px;margin-top:8px;"><b>Problem:</b> ${safePupassText(item.description || "")}</p>
+      <p style="font-size:12px;margin-top:8px;"><b>Steps:</b> ${safePupassText(item.steps || "")}</p>
 
       ${
         item.adminResponse
-          ? `<p style="font-size:12px;margin-top:8px;"><b>Admin Response:</b> ${techSafeText(item.adminResponse)}</p>`
+          ? `<p style="font-size:12px;margin-top:8px;"><b>Admin Response:</b> ${safePupassText(item.adminResponse)}</p>`
           : ""
       }
 
-      <span class="status-pill ${statusClass}">${techSafeText(status)}</span>
+      <span class="status-pill ${statusClass}">${safePupassText(status)}</span>
 
-      <div class="admin-actions">
-        ${actionButtons}
-      </div>
+      <div class="admin-actions">${actionButtons}</div>
     </div>
   `;
 }
@@ -4357,11 +3795,7 @@ function renderAdminTechnicalReportInbox() {
   const inbox = ensureAdminTechnicalReportInbox();
   if (!inbox) return;
 
-  inbox.innerHTML = `
-    <div class="card">
-      <p>Loading technical reports...</p>
-    </div>
-  `;
+  inbox.innerHTML = `<div class="card"><p>Loading technical reports...</p></div>`;
 
   if (technicalReportsUnsubscribe) {
     technicalReportsUnsubscribe();
@@ -4430,9 +3864,7 @@ async function markTechnicalReportInvestigating(reportId) {
 async function respondTechnicalReport(reportId) {
   const response = prompt("Type admin response or resolution note:");
 
-  if (!response || !response.trim()) {
-    return;
-  }
+  if (!response || !response.trim()) return;
 
   try {
     await db.collection("technicalReports").doc(reportId).update({
@@ -4450,7 +3882,6 @@ async function respondTechnicalReport(reportId) {
 
 async function closeTechnicalReport(reportId) {
   const confirmClose = confirm("Close this technical report and move it to Archive?");
-
   if (!confirmClose) return;
 
   try {
@@ -4468,7 +3899,6 @@ async function closeTechnicalReport(reportId) {
 
 async function reopenTechnicalReport(reportId) {
   const confirmReopen = confirm("Reopen this archived technical report?");
-
   if (!confirmReopen) return;
 
   try {
@@ -4487,556 +3917,34 @@ async function reopenTechnicalReport(reportId) {
   }
 }
 
-/* Load technical report inbox when admin dashboard opens */
-const previousOpenAdminDashboardForTechnicalReports = window.openAdminDashboard;
+/* Load everything when admin dashboard opens */
+const originalOpenAdminDashboardWithAllUpdates = window.openAdminDashboard;
 
 window.openAdminDashboard = function() {
-  if (typeof previousOpenAdminDashboardForTechnicalReports === "function") {
-    previousOpenAdminDashboardForTechnicalReports();
+  if (typeof originalOpenAdminDashboardWithAllUpdates === "function") {
+    originalOpenAdminDashboardWithAllUpdates();
   } else {
     renderAdminAppointments();
     showScreen("admin");
   }
 
   setTimeout(function() {
+    ensureAdminOfficeFilterUI();
+    ensureAdminQueueNumberStats();
+    watchAdminQueueListForStats();
     renderAdminTechnicalReportInbox();
   }, 300);
 };
+
+window.addEventListener("load", function() {
+  ensureTechnicalHelpScreens();
+  connectTechnicalHelpQuickCards();
+  ensureAdminQueueNumberStats();
+});
+
+ensureTechnicalHelpScreens();
+connectTechnicalHelpQuickCards();
 </script>
 
-/* =====================================================
-   STUDENT: Booking History
-===================================================== */
-
-async function showNotificationsScreen() {
-  if (!ensureStudentLoggedIn()) return;
-
-  ensureSupportScreens();
-
-  const content = document.getElementById("notificationsContent");
-
-  content.innerHTML = `
-    <div class="card">
-      <p>Loading booking history...</p>
-    </div>
-  `;
-
-  showScreen("notifications");
-
-  try {
-    const appointments = await getStudentAppointments(
-      verifiedStudent.studentId,
-      verifiedStudent.studentId
-    );
-
-    const history = appointments.filter(function(item) {
-      const status = item.data.status || "";
-      return status === "Completed" || status === "Cancelled";
-    });
-
-    if (!history.length) {
-      content.innerHTML = `
-        <div class="card gold-card">
-          <h2>No Booking History Yet</h2>
-          <p>Completed and cancelled bookings will appear here.</p>
-          <span class="status-pill">No History</span>
-        </div>
-      `;
-      return;
-    }
-
-    content.innerHTML = history.map(function(item) {
-      const booking = item.data;
-      const status = booking.status || "";
-      const statusClass = status === "Cancelled"
-        ? "status-cancelled"
-        : "status-completed";
-
-      return `
-        <div class="card">
-          <h2>${ticketSafeText(booking.office || "Appointment")}</h2>
-
-          <div class="detail-row">
-            <span>Status</span>
-            <span><span class="status-pill ${statusClass}">${ticketSafeText(status)}</span></span>
-          </div>
-
-          <div class="detail-row">
-            <span>Queue Number</span>
-            <span>${ticketSafeText(booking.queueNumber || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Request</span>
-            <span>${ticketSafeText(booking.requestType || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Date</span>
-            <span>${ticketSafeText(booking.appointmentDate || "")}</span>
-          </div>
-
-          <div class="detail-row">
-            <span>Time</span>
-            <span>${ticketSafeText(booking.appointmentTime || "")}</span>
-          </div>
-        </div>
-      `;
-    }).join("");
-  } catch (error) {
-    console.error("Error loading booking history:", error);
-
-    content.innerHTML = `
-      <div class="card">
-        <h2>Could not load booking history</h2>
-        <p>Please check Firebase rules or internet connection.</p>
-      </div>
-    `;
-  }
-}
-
-/* =====================================================
-   STUDENT: Help / Ticket Creation
-===================================================== */
-
-async function getStudentActiveTicket() {
-  const snapshot = await db.collection("supportMessages")
-    .where("studentId", "==", verifiedStudent.studentId)
-    .get();
-
-  let activeTicket = null;
-
-  snapshot.forEach(function(doc) {
-    const item = doc.data();
-
-    if (item.archived !== true && item.status !== "Closed") {
-      activeTicket = {
-        id: doc.id,
-        data: item
-      };
-    }
-  });
-
-  return activeTicket;
-}
-
-function renderStudentTicketBox(ticket) {
-  const box = document.getElementById("studentActiveTicketBox");
-  if (!box) return;
-
-  if (!ticket) {
-    box.innerHTML = `
-      <div class="card gold-card">
-        <h2>No Active Ticket</h2>
-        <p>You may submit a new help ticket below.</p>
-        <span class="status-pill">No Ticket</span>
-      </div>
-    `;
-    return;
-  }
-
-  const item = ticket.data;
-  const status = item.status || "Open";
-
-  const statusClass = status === "Responded"
-    ? "status-serving"
-    : "status-waiting";
-
-  box.innerHTML = `
-    <div class="card gold-card">
-      <h2>Active Ticket</h2>
-
-      <div class="detail-row">
-        <span>Ticket Number</span>
-        <span>${ticketSafeText(item.ticketNumber || ticket.id)}</span>
-      </div>
-
-      <div class="detail-row">
-        <span>Status</span>
-        <span><span class="status-pill ${statusClass}">${ticketSafeText(status)}</span></span>
-      </div>
-
-      <div class="detail-row">
-        <span>Concern</span>
-        <span>${ticketSafeText(item.concernType || "")}</span>
-      </div>
-
-      <div class="detail-row">
-        <span>Message</span>
-        <span>${ticketSafeText(item.message || "")}</span>
-      </div>
-
-      ${
-        item.adminResponse
-          ? `
-            <div class="detail-row">
-              <span>Admin Response</span>
-              <span>${ticketSafeText(item.adminResponse)}</span>
-            </div>
-          `
-          : ""
-      }
-
-      <p style="margin-top:12px;">
-        You cannot create another ticket until this ticket is closed by admin.
-      </p>
-    </div>
-  `;
-}
-
-async function showHelpScreen() {
-  if (!ensureStudentLoggedIn()) return;
-
-  ensureSupportScreens();
-  showScreen("help");
-
-  const ticket = await getStudentActiveTicket();
-  renderStudentTicketBox(ticket);
-}
-
-async function sendHelpTicket() {
-  if (!ensureStudentLoggedIn()) return;
-
-  const concernType = document.getElementById("helpConcernType").value;
-  const message = document.getElementById("helpMessage").value.trim();
-
-  if (!message) {
-    alert("Please type your message before sending.");
-    return;
-  }
-
-  try {
-    const activeTicket = await getStudentActiveTicket();
-
-    if (activeTicket) {
-      renderStudentTicketBox(activeTicket);
-      alert("You already have an active ticket. Please wait for admin to respond or close it.");
-      return;
-    }
-
-    const ticketNumber = createTicketNumber();
-
-    await db.collection("supportMessages").add({
-      ticketNumber: ticketNumber,
-      studentId: verifiedStudent.studentId,
-      fullName: verifiedStudent.fullName,
-      campus: verifiedStudent.campus,
-      concernType: concernType,
-      message: message,
-      adminResponse: "",
-      status: "Open",
-      archived: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    document.getElementById("helpMessage").value = "";
-
-    alert("Your ticket was submitted. Ticket Number: " + ticketNumber);
-
-    const newTicket = await getStudentActiveTicket();
-    renderStudentTicketBox(newTicket);
-  } catch (error) {
-    console.error("Error sending help ticket:", error);
-    alert("Ticket was not submitted. Please check Firebase rules.");
-  }
-}
-
-/* Keep old onclick name working if your button still calls sendHelpMessage */
-window.sendHelpMessage = sendHelpTicket;
-
-/* =====================================================
-   ADMIN: Ticket Inbox + Archive
-===================================================== */
-
-function ensureAdminTicketInbox() {
-  const adminScreen = document.getElementById("admin");
-  if (!adminScreen) return null;
-
-  let inbox = document.getElementById("adminTicketInbox");
-
-  if (!inbox) {
-    const logoutButton = adminScreen.querySelector("button[onclick='adminLogout()']");
-
-    const html = `
-      <div class="section-title">Support Tickets</div>
-
-      <div class="card">
-        <h2>Ticket View</h2>
-        <p>Open and responded tickets are shown in the main view. Closed tickets go to Archive.</p>
-
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-          <button id="adminOpenTicketBtn" class="btn btn-small btn-gold" onclick="setAdminTicketView('open')">Open Tickets</button>
-          <button id="adminArchiveTicketBtn" class="btn btn-small btn-outline" onclick="setAdminTicketView('archive')">Archive</button>
-        </div>
-
-        <input
-          class="input-box"
-          id="adminTicketSearch"
-          placeholder="Search ticket number, student name, student ID, concern..."
-          style="margin-top:14px;"
-          oninput="setAdminTicketSearch(this.value)"
-        />
-      </div>
-
-      <div id="adminTicketInbox" class="admin-list"></div>
-    `;
-
-    if (logoutButton) {
-      logoutButton.insertAdjacentHTML("beforebegin", html);
-    } else {
-      adminScreen.insertAdjacentHTML("beforeend", html);
-    }
-
-    inbox = document.getElementById("adminTicketInbox");
-  }
-
-  return inbox;
-}
-
-function setAdminTicketView(view) {
-  adminTicketView = view;
-
-  const openBtn = document.getElementById("adminOpenTicketBtn");
-  const archiveBtn = document.getElementById("adminArchiveTicketBtn");
-
-  if (openBtn) {
-    openBtn.className = view === "open"
-      ? "btn btn-small btn-gold"
-      : "btn btn-small btn-outline";
-  }
-
-  if (archiveBtn) {
-    archiveBtn.className = view === "archive"
-      ? "btn btn-small btn-gold"
-      : "btn btn-small btn-outline";
-  }
-
-  renderAdminTicketInbox();
-}
-
-function setAdminTicketSearch(value) {
-  adminTicketSearch = String(value || "").toLowerCase().trim();
-  renderAdminTicketInbox();
-}
-
-function ticketMatchesSearch(item) {
-  if (!adminTicketSearch) return true;
-
-  const combined = [
-    item.ticketNumber,
-    item.studentId,
-    item.fullName,
-    item.campus,
-    item.concernType,
-    item.message,
-    item.adminResponse,
-    item.status
-  ].join(" ").toLowerCase();
-
-  return combined.includes(adminTicketSearch);
-}
-
-function renderTicketCard(ticketId, item) {
-  const status = item.status || "Open";
-
-  const statusClass = status === "Closed"
-    ? "status-completed"
-    : status === "Responded"
-      ? "status-serving"
-      : "status-waiting";
-
-  const isClosed = status === "Closed" || item.archived === true;
-
-  const actionButtons = isClosed
-    ? `
-      <button class="btn btn-small btn-outline" onclick="reopenSupportTicket('${ticketId}')">Reopen</button>
-    `
-    : `
-      <button class="btn btn-small btn-blue" onclick="respondSupportTicket('${ticketId}')">Respond</button>
-      <button class="btn btn-small btn-green" onclick="closeSupportTicket('${ticketId}')">Close Ticket</button>
-    `;
-
-  return `
-    <div class="list-item">
-      <strong>${ticketSafeText(item.ticketNumber || ticketId)}</strong>
-
-      <p>${ticketSafeText(item.fullName || "")} · ${ticketSafeText(item.campus || "")}</p>
-      <p style="font-size:12px;">Student ID: ${ticketSafeText(item.studentId || "")}</p>
-      <p style="font-size:12px;">Concern: ${ticketSafeText(item.concernType || "")}</p>
-      <p style="font-size:12px;">Created: ${ticketSafeText(formatTicketDate(item.createdAt))}</p>
-
-      <p style="font-size:12px;margin-top:8px;"><b>Student Message:</b> ${ticketSafeText(item.message || "")}</p>
-
-      ${
-        item.adminResponse
-          ? `<p style="font-size:12px;margin-top:8px;"><b>Admin Response:</b> ${ticketSafeText(item.adminResponse)}</p>`
-          : ""
-      }
-
-      <span class="status-pill ${statusClass}">${ticketSafeText(status)}</span>
-
-      <div class="admin-actions">
-        ${actionButtons}
-      </div>
-    </div>
-  `;
-}
-
-function renderAdminTicketInbox() {
-  const inbox = ensureAdminTicketInbox();
-  if (!inbox) return;
-
-  inbox.innerHTML = `
-    <div class="card">
-      <p>Loading support tickets...</p>
-    </div>
-  `;
-
-  if (supportTicketsUnsubscribe) {
-    supportTicketsUnsubscribe();
-  }
-
-  supportTicketsUnsubscribe = db.collection("supportMessages")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(function(snapshot) {
-      const tickets = [];
-
-      snapshot.forEach(function(doc) {
-        tickets.push({
-          id: doc.id,
-          data: doc.data()
-        });
-      });
-
-      const filteredTickets = tickets.filter(function(record) {
-        const item = record.data;
-        const isClosed = item.status === "Closed" || item.archived === true;
-
-        if (adminTicketView === "open" && isClosed) return false;
-        if (adminTicketView === "archive" && !isClosed) return false;
-
-        return ticketMatchesSearch(item);
-      });
-
-      if (!filteredTickets.length) {
-        inbox.innerHTML = `
-          <div class="card gold-card">
-            <h2>${adminTicketView === "archive" ? "No Archived Tickets" : "No Open Tickets"}</h2>
-            <p>No tickets found for this view.</p>
-          </div>
-        `;
-        return;
-      }
-
-      inbox.innerHTML = filteredTickets.map(function(record) {
-        return renderTicketCard(record.id, record.data);
-      }).join("");
-    }, function(error) {
-      console.error("Error loading support tickets:", error);
-
-      inbox.innerHTML = `
-        <div class="card">
-          <h2>Could not load support tickets</h2>
-          <p>Please check Firebase rules for supportMessages.</p>
-        </div>
-      `;
-    });
-}
-
-async function respondSupportTicket(ticketId) {
-  const response = prompt("Type admin response for this ticket:");
-
-  if (!response || !response.trim()) {
-    return;
-  }
-
-  try {
-    await db.collection("supportMessages").doc(ticketId).update({
-      adminResponse: response.trim(),
-      status: "Responded",
-      archived: false,
-      respondedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error("Error responding to ticket:", error);
-    alert("Response was not saved.");
-  }
-}
-
-async function closeSupportTicket(ticketId) {
-  const confirmClose = confirm("Close this ticket and move it to Archive?");
-
-  if (!confirmClose) return;
-
-  try {
-    await db.collection("supportMessages").doc(ticketId).update({
-      status: "Closed",
-      archived: true,
-      closedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error("Error closing ticket:", error);
-    alert("Ticket was not closed.");
-  }
-}
-
-async function reopenSupportTicket(ticketId) {
-  const confirmReopen = confirm("Reopen this archived ticket?");
-
-  if (!confirmReopen) return;
-
-  try {
-    await db.collection("supportMessages").doc(ticketId).update({
-      status: "Open",
-      archived: false,
-      reopenedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    adminTicketView = "open";
-    renderAdminTicketInbox();
-  } catch (error) {
-    console.error("Error reopening ticket:", error);
-    alert("Ticket was not reopened.");
-  }
-}
-
-/* Keep older function name working if already referenced */
-window.updateSupportMessageStatus = async function(messageId, newStatus) {
-  if (newStatus === "Resolved" || newStatus === "Closed") {
-    await closeSupportTicket(messageId);
-    return;
-  }
-
-  try {
-    await db.collection("supportMessages").doc(messageId).update({
-      status: newStatus,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error("Error updating support message:", error);
-    alert("Ticket status was not updated.");
-  }
-};
-
-/* Load ticket inbox when admin dashboard opens */
-const previousOpenAdminDashboardForTickets = window.openAdminDashboard;
-
-window.openAdminDashboard = function() {
-  if (typeof previousOpenAdminDashboardForTickets === "function") {
-    previousOpenAdminDashboardForTickets();
-  } else {
-    renderAdminAppointments();
-    showScreen("admin");
-  }
-
-  setTimeout(function() {
-    renderAdminTicketInbox();
-  }, 300);
-};
-</script>
 </body>
 </html>
