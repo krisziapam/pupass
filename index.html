@@ -4984,5 +4984,137 @@ async function updateAdminStatus(appointmentId, newStatus) {
     window.open(PUPASS_FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer");
   }
 </script>
+  <script>
+/* =====================================================
+   PUPASS QUICK ACCESS FIX
+   - Makes Requirements clickable
+   - Makes Announcements clickable
+   - Automatically creates both screens if missing
+===================================================== */
+
+function ensureStudentInfoScreens() {
+  const feedbackScreen = document.getElementById("feedback");
+
+  if (!feedbackScreen) {
+    return;
+  }
+
+  if (!document.getElementById("requirements")) {
+    feedbackScreen.insertAdjacentHTML("beforebegin", `
+      <section id="requirements" class="screen">
+        <div class="back" onclick="showScreen('dashboard')">← Home</div>
+        <h1>Requirements</h1>
+        <p>Check the common documents to prepare before your appointment.</p>
+
+        <div class="card gold-card">
+          <h2>Before Going to the Office</h2>
+          <p>Please bring your student ID and any supporting documents related to your request.</p>
+        </div>
+
+        <div class="card">
+          <h2>Registrar</h2>
+          <p>Student ID, request form, certificate of registration or enrollment proof, and supporting documents if needed.</p>
+        </div>
+
+        <div class="card">
+          <h2>Cashier</h2>
+          <p>Student ID, assessment form, payment reference, receipt, or proof of payment.</p>
+        </div>
+
+        <div class="card">
+          <h2>Library</h2>
+          <p>Student ID, library card if available, clearance form, and borrowed book details if applicable.</p>
+        </div>
+
+        <div class="card">
+          <h2>Guidance</h2>
+          <p>Student ID and any referral form, appointment note, or supporting concern details.</p>
+        </div>
+
+        <div class="card">
+          <h2>Student Affairs</h2>
+          <p>Student ID, application form, ID concern documents, or activity-related requirements.</p>
+        </div>
+
+        <div class="card">
+          <h2>Scholarship</h2>
+          <p>Student ID, scholarship form, grades, certificate of registration, and other scholarship documents.</p>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+          <div class="nav-item" onclick="goToServices()">Services</div>
+          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+        </div>
+      </section>
+    `);
+  }
+
+  if (!document.getElementById("announcements")) {
+    feedbackScreen.insertAdjacentHTML("beforebegin", `
+      <section id="announcements" class="screen">
+        <div class="back" onclick="showScreen('dashboard')">← Home</div>
+        <h1>Announcements</h1>
+        <p>View reminders and important service updates.</p>
+
+        <div class="card gold-card">
+          <h2>General Reminder</h2>
+          <p>Please arrive at least 10 minutes before your appointment time.</p>
+        </div>
+
+        <div class="card">
+          <h2>Bring Your Student ID</h2>
+          <p>Students must present a valid student ID or proof of enrollment before being served.</p>
+        </div>
+
+        <div class="card">
+          <h2>Prepare Your Queue Pass</h2>
+          <p>Screenshot, print, or save your digital queue pass before going to the office.</p>
+        </div>
+
+        <div class="card">
+          <h2>Check Your Appointment Details</h2>
+          <p>Make sure your selected office, request type, date, and time are correct before going to campus.</p>
+        </div>
+
+        <div class="card">
+          <h2>Cancelled or Missed Appointment</h2>
+          <p>If your appointment is cancelled or missed, you may book again based on available slots.</p>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+          <div class="nav-item" onclick="goToServices()">Services</div>
+          <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+          <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+        </div>
+      </section>
+    `);
+  }
+}
+
+function showRequirementsScreen() {
+  if (typeof ensureStudentLoggedIn === "function") {
+    if (!ensureStudentLoggedIn()) return;
+  }
+
+  ensureStudentInfoScreens();
+  showScreen("requirements");
+}
+
+function showAnnouncementsScreen() {
+  if (typeof ensureStudentLoggedIn === "function") {
+    if (!ensureStudentLoggedIn()) return;
+  }
+
+  ensureStudentInfoScreens();
+  showScreen("announcements");
+}
+
+window.addEventListener("load", function() {
+  ensureStudentInfoScreens();
+});
+</script>
 </body>
 </html>
