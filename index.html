@@ -3090,12 +3090,20 @@ function adminOfficeMatches(office) {
   return normalizeAdminOfficeName(office) === selectedAdminOfficeFilter;
 }
 
-  function adminCampusMatches(campus) {
-  if (selectedAdminCampusFilter === "All") {
+ function normalizeAdminCampusName(campus) {
+  return String(campus || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function adminCampusMatches(campus) {
+  if (!selectedAdminCampusFilter || selectedAdminCampusFilter === "All") {
     return true;
   }
 
-  return String(campus || "").trim() === selectedAdminCampusFilter;
+  return normalizeAdminCampusName(campus) ===
+    normalizeAdminCampusName(selectedAdminCampusFilter);
 }
 
 function formatPupassDateTime(value) {
