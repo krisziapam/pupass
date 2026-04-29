@@ -3040,7 +3040,24 @@ window.showScreen = function(screenId) {
    - Admin can investigate, resolve, close, archive, search reports
 ===================================================== */
 
-let selectedAdminOfficeFilter = localStorage.getItem("pupass_admin_office_filter") || "Registrar";
+let selectedAdminOfficeFilter =
+  localStorage.getItem("pupass_admin_office_filter") || "Registrar";
+
+let selectedAdminCampusFilter =
+  localStorage.getItem("pupass_admin_campus_filter") || "PUP Main / Sta. Mesa";
+
+const ADMIN_CAMPUSES = [
+  "All",
+  "PUP Main / Sta. Mesa",
+  "PUP Taguig",
+  "PUP San Juan",
+  "PUP Parañaque",
+  "PUP Quezon City",
+  "PUP Bataan",
+  "PUP Sta. Maria",
+  "PUP Other Campus / Branch"
+];
+
 let adminQueueStatsObserver = null;
 let technicalReportsUnsubscribe = null;
 let adminTechnicalReportView = "open";
@@ -3071,6 +3088,14 @@ function normalizeAdminOfficeName(office) {
 function adminOfficeMatches(office) {
   if (selectedAdminOfficeFilter === "All") return true;
   return normalizeAdminOfficeName(office) === selectedAdminOfficeFilter;
+}
+
+  function adminCampusMatches(campus) {
+  if (selectedAdminCampusFilter === "All") {
+    return true;
+  }
+
+  return String(campus || "").trim() === selectedAdminCampusFilter;
 }
 
 function formatPupassDateTime(value) {
@@ -3117,6 +3142,57 @@ function ensureAdminOfficeFilterUI() {
   }
 
   renderAdminOfficeFilterButtons();
+}
+  function ensureAdminCampusFilterUI() {
+  const list = document.getElementById("adminAppointmentList");
+  if (!list) return;
+
+  if (!document.getElementById("adminCampusFilterBox")) {
+    list.insertAdjacentHTML("beforebegin", `
+      <div id="adminCampusFilterBox" class="card" style="margin-bottom:18px;">
+        <h2>Filter by Campus / Site</h2>
+        <p>Select the campus/site this admin is managing.</p>
+
+        <select
+          class="input-box"
+          id="adminCampusFilterSelect"
+          onchange="setAdminCampusFilter(this.value)"
+          style="margin-top:12px;"
+        ></select>
+
+        <p id="adminCampusFilterLabel" style="margin-top:12px;font-weight:700;color:var(--maroon);"></p>
+      </div>
+    `);
+  }
+
+  renderAdminCampusFilterSelect();
+}
+
+function renderAdminCampusFilterSelect() {
+  const select = document.getElementById("adminCampusFilterSelect");
+  const label = document.getElementById("adminCampusFilterLabel");
+
+  if (!select) return;
+
+  select.innerHTML = ADMIN_CAMPUSES.map(function(campus) {
+    const selected = selectedAdminCampusFilter === campus ? "selected" : "";
+
+    return `
+      <option value="${campus}" ${selected}>
+        ${campus}
+      </option>
+    `;
+  }).join("");
+
+  if (label) {
+    label.innerText = "Currently showing campus/site: " + selectedAdminCampusFilter;
+  }
+}
+
+function setAdminCampusFilter(campus) {
+  selectedAdminCampusFilter = campus;
+  localStorage.setItem("pupass_admin_campus_filter", campus);
+  renderAdminAppointments();
 }
 
 function renderAdminOfficeFilterButtons() {
@@ -3240,9 +3316,10 @@ function renderAdminAppointments() {
         });
       });
 
-      const filteredAppointments = allAppointments.filter(function(record) {
-        return adminOfficeMatches(record.data.office);
-      });
+     const filteredAppointments = allAppointments.filter(function(record) {
+  return adminCampusMatches(record.data.campus) &&
+    adminOfficeMatches(record.data.office);
+});
 
       let total = 0;
       let waiting = 0;
@@ -3265,8 +3342,8 @@ function renderAdminAppointments() {
       if (!filteredAppointments.length) {
         list.innerHTML = `
           <div class="card gold-card">
-            <h2>No ${safePupassText(selectedAdminOfficeFilter)} Appointments</h2>
-            <p>No appointments found for this office filter.</p>
+          <h2>No Appointments Found</h2>
+<p>No appointments found for ${safePupassText(selectedAdminCampusFilter)} and ${safePupassText(selectedAdminOfficeFilter)}.</p>
           </div>
         `;
         renderAdminOfficeFilterButtons();
@@ -3925,12 +4002,13 @@ window.openAdminDashboard = function() {
     showScreen("admin");
   }
 
-  setTimeout(function() {
-    ensureAdminOfficeFilterUI();
-    ensureAdminQueueNumberStats();
-    watchAdminQueueListForStats();
-    renderAdminTechnicalReportInbox();
-  }, 300);
+ setTimeout(function() {
+  ensureAdminCampusFilterUI();
+  ensureAdminOfficeFilterUI();
+  ensureAdminQueueNumberStats();
+  watchAdminQueueListForStats();
+  renderAdminTechnicalReportInbox();
+}, 300);
 };
 
 window.addEventListener("load", function() {
@@ -4433,10 +4511,13 @@ window.showScreen = function(screenId) {
   }
 
   if (screenId === "dashboard") {
-    setTimeout(function() {
-      ensureDashboardOfficeQueueMonitor();
-      startDashboardOfficeQueueAutoRefresh();
-    }, 300);
+   setTimeout(function() {
+  ensureAdminCampusFilterUI();
+  ensureAdminOfficeFilterUI();
+  ensureAdminQueueNumberStats();
+  watchAdminQueueListForStats();
+  renderAdminTechnicalReportInbox();
+}, 300);
   }
 };
 
@@ -4583,8 +4664,9 @@ function renderAdminAppointments() {
   const list = document.getElementById("adminAppointmentList");
   if (!list) return;
 
-  ensureAdminOfficeFilterUI();
-  ensureAdminQueueViewUI();
+ ensureAdminCampusFilterUI();
+ensureAdminOfficeFilterUI();
+ensureAdminQueueNumberStats();
   ensureAdminQueueNumberStats();
   updateAdminStatLabels();
 
