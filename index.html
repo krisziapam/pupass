@@ -864,10 +864,10 @@
               <div>Requirements</div>
             </div>
 
-            <div class="quick-card" onclick="showAnnouncementsScreen()">
-              <div class="quick-icon">📢</div>
-              <div>Announcements</div>
-            </div>
+            <div class="quick-card" onclick="showLocatorScreen()">
+  <div class="quick-icon">📍</div>
+  <div>Office Locator</div>
+</div>
 
             <div class="quick-card" onclick="showHelpScreen()">
               <div class="quick-icon">❓</div>
@@ -1256,43 +1256,25 @@
       </div>
     </section>
 
-    <section id="announcements" class="screen">
-      <div class="back" onclick="showScreen('dashboard')">← Home</div>
-      <h1>Announcements</h1>
-      <p>View reminders and important service updates.</p>
+    <section id="locator" class="screen">
+  <div class="back" onclick="showScreen('dashboard')">← Home</div>
+  <h1>Office Locator</h1>
+  <p>Find the office location for your selected campus/site.</p>
 
-      <div class="card gold-card">
-        <h2>General Reminder</h2>
-        <p>Please arrive at least 10 minutes before your appointment time.</p>
-      </div>
+  <div class="card gold-card">
+    <h2>Your Campus / Site</h2>
+    <p id="locatorCampusText">Campus information will appear here.</p>
+  </div>
 
-      <div class="card">
-        <h2>Bring Your Student ID</h2>
-        <p>Students must present a valid student ID or proof of enrollment before being served.</p>
-      </div>
+  <div id="locatorOfficeList"></div>
 
-      <div class="card">
-        <h2>Prepare Your Queue Pass</h2>
-        <p>Screenshot, print, or save your digital queue pass before going to the office.</p>
-      </div>
-
-      <div class="card">
-        <h2>Check Your Appointment Details</h2>
-        <p>Make sure your selected office, request type, date, and time are correct before going to campus.</p>
-      </div>
-
-      <div class="card">
-        <h2>Cancelled or Missed Appointment</h2>
-        <p>If your appointment is cancelled or missed, you may book again based on available slots.</p>
-      </div>
-
-      <div class="bottom-nav">
-        <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
-        <div class="nav-item" onclick="goToServices()">Services</div>
-        <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
-        <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
-      </div>
-    </section>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+    <div class="nav-item" onclick="goToServices()">Services</div>
+    <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+    <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+  </div>
+</section>
 
     <section id="help" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
@@ -1996,10 +1978,76 @@
       showScreen("requirements");
     }
 
-    function showAnnouncementsScreen() {
-      if (!ensureStudentLoggedIn()) return;
-      showScreen("announcements");
+   function showLocatorScreen() {
+  if (!ensureStudentLoggedIn()) return;
+
+  renderOfficeLocator();
+  showScreen("locator");
+}
+
+    function renderOfficeLocator() {
+  const campusText = document.getElementById("locatorCampusText");
+  const officeList = document.getElementById("locatorOfficeList");
+
+  if (!campusText || !officeList) return;
+
+  const campus = verifiedStudent.campus || "Selected Campus";
+
+  campusText.innerText = campus;
+
+  const defaultLocations = [
+    {
+      office: "Registrar",
+      location: "Registrar Office / Records Section",
+      note: "For COR, TOR, enrollment, and document requests."
+    },
+    {
+      office: "Cashier",
+      location: "Cashier Office / Payment Section",
+      note: "For payment, assessment, receipts, and balance concerns."
+    },
+    {
+      office: "Library",
+      location: "Library Office / Circulation Desk",
+      note: "For clearance, borrowing, returning, and library account concerns."
+    },
+    {
+      office: "Guidance",
+      location: "Guidance and Counseling Office",
+      note: "For counseling appointments and student support concerns."
+    },
+    {
+      office: "Student Affairs",
+      location: "Student Affairs Office",
+      note: "For ID concerns, student activities, and student assistance."
+    },
+    {
+      office: "Scholarship",
+      location: "Scholarship Office",
+      note: "For scholarship application, renewal, and inquiry."
     }
+  ];
+
+  officeList.innerHTML = defaultLocations.map(function(item) {
+    return `
+      <div class="card">
+        <h2>${safePupassText(item.office)}</h2>
+
+        <div class="detail-row">
+          <span>Campus / Site</span>
+          <span>${safePupassText(campus)}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Location</span>
+          <span>${safePupassText(item.location)}</span>
+        </div>
+
+        <p style="margin-top:10px;">${safePupassText(item.note)}</p>
+      </div>
+    `;
+  }).join("");
+}
 
     function selectService(serviceKey) {
       if (!ensureStudentLoggedIn()) return;
