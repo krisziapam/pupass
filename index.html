@@ -3293,8 +3293,9 @@ function renderAdminAppointments() {
   const list = document.getElementById("adminAppointmentList");
   if (!list) return;
 
-  ensureAdminOfficeFilterUI();
-  ensureAdminQueueNumberStats();
+ensureAdminCampusFilterUI();
+ensureAdminOfficeFilterUI();
+ensureAdminQueueNumberStats();
 
   list.innerHTML = `<div class="card"><p>Loading appointments from Firebase...</p></div>`;
 
@@ -4664,11 +4665,11 @@ function renderAdminAppointments() {
   const list = document.getElementById("adminAppointmentList");
   if (!list) return;
 
- ensureAdminCampusFilterUI();
+ensureAdminCampusFilterUI();
 ensureAdminOfficeFilterUI();
+ensureAdminQueueViewUI();
 ensureAdminQueueNumberStats();
-  ensureAdminQueueNumberStats();
-  updateAdminStatLabels();
+updateAdminStatLabels();
 
   list.innerHTML = `
     <div class="card">
@@ -4681,7 +4682,7 @@ ensureAdminQueueNumberStats();
   }
 
   adminFirestoreUnsubscribe = db.collection("appointments")
-    .orderBy("createdAt", "desc")
+  .orderBy("createdAt", "asc")
     .onSnapshot(function(snapshot) {
       const allAppointments = [];
 
@@ -4692,9 +4693,10 @@ ensureAdminQueueNumberStats();
         });
       });
 
-      const officeAppointments = allAppointments.filter(function(record) {
-        return adminOfficeMatches(record.data.office);
-      });
+    const officeAppointments = allAppointments.filter(function(record) {
+  return adminCampusMatches(record.data.campus) &&
+    adminOfficeMatches(record.data.office);
+});
 
       const activeAppointments = officeAppointments.filter(function(record) {
         return isAdminActiveAppointment(record.data);
