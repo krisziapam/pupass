@@ -2019,7 +2019,7 @@ const office = getText("confirmOffice");
     }
 
     adminFirestoreUnsubscribe = db.collection("appointments")
-      .orderBy("createdAt", "desc")
+  .orderBy("createdAt", "asc")
       .onSnapshot(function(snapshot) {
         list.innerHTML = "";
 
@@ -4627,24 +4627,29 @@ function renderAdminAppointments() {
           ? archivedAppointments
           : activeAppointments;
 
-      activeAppointments.sort(function(a, b) {
-        const aStatus = a.data.status || "Waiting";
-        const bStatus = b.data.status || "Waiting";
+    activeAppointments.sort(function(a, b) {
+  const aStatus = a.data.status || "Waiting";
+  const bStatus = b.data.status || "Waiting";
 
-        const statusOrder = {
-          "Serving": 1,
-          "Now Serving": 1,
-          "Waiting": 2,
-          "Upcoming": 3
-        };
+  const statusOrder = {
+    "Serving": 1,
+    "Now Serving": 1,
+    "Waiting": 2,
+    "Upcoming": 2
+  };
 
-        const aOrder = statusOrder[aStatus] || 99;
-        const bOrder = statusOrder[bStatus] || 99;
+  const aOrder = statusOrder[aStatus] || 99;
+  const bOrder = statusOrder[bStatus] || 99;
 
-        if (aOrder !== bOrder) return aOrder - bOrder;
+  if (aOrder !== bOrder) return aOrder - bOrder;
 
-        return getAdminQueueSequenceValue(a.data) - getAdminQueueSequenceValue(b.data);
-      });
+  const aSeq = getAdminQueueSequenceValue(a.data);
+  const bSeq = getAdminQueueSequenceValue(b.data);
+
+  if (aSeq !== bSeq) return aSeq - bSeq;
+
+  return getAdminCreatedMillis(a.data) - getAdminCreatedMillis(b.data);
+});
 
       archivedAppointments.sort(function(a, b) {
         return getAdminCreatedMillis(b.data) - getAdminCreatedMillis(a.data);
