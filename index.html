@@ -3885,7 +3885,7 @@ function renderAdminTechnicalReportInbox() {
   }
 
   technicalReportsUnsubscribe = db.collection("technicalReports")
-    .orderBy("createdAt", "desc")
+  .orderBy("createdAt", "asc")
     .onSnapshot(function(snapshot) {
       const reports = [];
 
