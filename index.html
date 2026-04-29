@@ -1985,7 +1985,7 @@
   showScreen("locator");
 }
 
-    function renderOfficeLocator() {
+   function renderOfficeLocator() {
   const campusText = document.getElementById("locatorCampusText");
   const officeList = document.getElementById("locatorOfficeList");
 
@@ -1993,42 +1993,301 @@
 
   const campus = verifiedStudent.campus || "Selected Campus";
 
-  campusText.innerText = campus;
+  const campusLocations = {
+    "PUP Main / Sta. Mesa": {
+      address: "A. Mabini Campus, Anonas St., Sta. Mesa, Manila",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Office of the University Registrar, G/F South Wing, Main Building",
+          note: "For COR, TOR, enrollment, records, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting Office, Main Campus",
+          note: "For payment, assessment, receipts, and balance concerns. Confirm exact window at the campus directory."
+        },
+        {
+          office: "Library",
+          location: "University Library, Main Campus",
+          note: "For clearance, borrowing, returning, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Office of Counseling and Psychological Services / Guidance and Counseling Services",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Office of Student Services / Student Affairs Section",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Office of Scholarship and Financial Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
+    },
 
-  const defaultLocations = [
-    {
-      office: "Registrar",
-      location: "Registrar Office / Records Section",
-      note: "For COR, TOR, enrollment, and document requests."
+    "PUP Taguig": {
+      address: "Gen. Santos Ave., Lower Bicutan, Taguig City",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Registrar and Admission Office",
+          note: "For admission, records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Collecting and Disbursement Office",
+          note: "For payment, assessment, receipt, and balance concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library / Learning Resource Area",
+          note: "For borrowing, clearance, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance and Counseling Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services Office / Scholarship Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     },
-    {
-      office: "Cashier",
-      location: "Cashier Office / Payment Section",
-      note: "For payment, assessment, receipts, and balance concerns."
+
+    "PUP San Juan": {
+      address: "223 Ortega St., cor. A. Mabini St., Brgy. Addition Hills, San Juan City",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Registration Office / Admission Office",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Collecting and Disbursing Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance Counselor / Student Support Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Affairs and Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Affairs / Scholarship Coordinator",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     },
-    {
-      office: "Library",
-      location: "Library Office / Circulation Desk",
-      note: "For clearance, borrowing, returning, and library account concerns."
+
+    "PUP Parañaque": {
+      address: "Col. E. De Leon St. Wawa, Brgy. Sto. Niño, Parañaque City",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Registration / Admission Office",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance / Student Services Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services / Scholarship Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     },
-    {
-      office: "Guidance",
-      location: "Guidance and Counseling Office",
-      note: "For counseling appointments and student support concerns."
+
+    "PUP Quezon City": {
+      address: "Don Fabian St., Brgy. Commonwealth, Quezon City",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Registration / Admission Office",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance / Student Services Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services / Scholarship Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     },
-    {
-      office: "Student Affairs",
-      location: "Student Affairs Office",
-      note: "For ID concerns, student activities, and student assistance."
+
+    "PUP Bataan": {
+      address: "Brgy. Malaya, Freeport Area of Bataan, Mariveles, Bataan",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Office of the Registrar",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting and Disbursing Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Library Services",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Student Services Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services / Scholarship Coordinator",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     },
-    {
-      office: "Scholarship",
-      location: "Scholarship Office",
-      note: "For scholarship application, renewal, and inquiry."
+
+    "PUP Sta. Maria": {
+      address: "PUP Sta. Maria Campus",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Campus Registrar / Admission Office",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance / Student Services Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services / Scholarship Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
+    },
+
+    "PUP Other Campus / Branch": {
+      address: "Please confirm the exact branch address with your campus.",
+      offices: [
+        {
+          office: "Registrar",
+          location: "Campus Registrar / Admission Office",
+          note: "For records, enrollment, and document requests."
+        },
+        {
+          office: "Cashier",
+          location: "Cashier / Collecting Office",
+          note: "For payment, receipt, and assessment concerns."
+        },
+        {
+          office: "Library",
+          location: "Campus Library",
+          note: "For clearance, borrowing, and library account concerns."
+        },
+        {
+          office: "Guidance",
+          location: "Guidance / Student Services Office",
+          note: "For counseling appointments and student support concerns."
+        },
+        {
+          office: "Student Affairs",
+          location: "Student Services Office",
+          note: "For ID concerns, student activities, and student assistance."
+        },
+        {
+          office: "Scholarship",
+          location: "Student Services / Scholarship Assistance",
+          note: "For scholarship application, renewal, and inquiry."
+        }
+      ]
     }
-  ];
+  };
 
-  officeList.innerHTML = defaultLocations.map(function(item) {
+  const selectedCampusData = campusLocations[campus] || campusLocations["PUP Other Campus / Branch"];
+
+  campusText.innerText = campus + " — " + selectedCampusData.address;
+
+  officeList.innerHTML = selectedCampusData.offices.map(function(item) {
     return `
       <div class="card">
         <h2>${safePupassText(item.office)}</h2>
@@ -2039,7 +2298,12 @@
         </div>
 
         <div class="detail-row">
-          <span>Location</span>
+          <span>Campus Address</span>
+          <span>${safePupassText(selectedCampusData.address)}</span>
+        </div>
+
+        <div class="detail-row">
+          <span>Office Location</span>
           <span>${safePupassText(item.location)}</span>
         </div>
 
