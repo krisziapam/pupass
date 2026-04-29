@@ -4512,13 +4512,10 @@ window.showScreen = function(screenId) {
   }
 
   if (screenId === "dashboard") {
-   setTimeout(function() {
-  ensureAdminCampusFilterUI();
-  ensureAdminOfficeFilterUI();
-  ensureAdminQueueNumberStats();
-  watchAdminQueueListForStats();
-  renderAdminTechnicalReportInbox();
-}, 300);
+    setTimeout(function() {
+      ensureDashboardOfficeQueueMonitor();
+      startDashboardOfficeQueueAutoRefresh();
+    }, 300);
   }
 };
 
