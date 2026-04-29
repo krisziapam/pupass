@@ -1530,6 +1530,22 @@
       if (!ensureStudentLoggedIn()) return;
       showScreen("services");
     }
+    function goToServices() {
+  if (!ensureStudentLoggedIn()) return;
+  showScreen("services");
+}
+
+function showRequirementsScreen() {
+  if (!ensureStudentLoggedIn()) return;
+  showScreen("requirements");
+}
+
+function showAnnouncementsScreen() {
+  if (!ensureStudentLoggedIn()) return;
+  showScreen("announcements");
+}
+
+function selectService(serviceKey) {
 
     function selectService(serviceKey) {
       if (!ensureStudentLoggedIn()) return;
