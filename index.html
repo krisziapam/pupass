@@ -1043,11 +1043,8 @@
           <label>Request Type</label>
           <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
 
-         <label>Appointment Date</label>
-<input class="input-box" type="date" id="appointmentDate" />
-<p id="slotAvailabilityText" style="font-size:12px;font-weight:700;margin-top:-8px;margin-bottom:14px;color:var(--muted);">
-  Select a date to check available slots.
-</p>
+          <label>Appointment Date</label>
+          <input class="input-box" type="date" id="appointmentDate" />
 
           <label>Appointment Time</label>
           <select class="input-box" id="appointmentTime">
@@ -1506,112 +1503,8 @@
     ===================================================== */
 
     const ADMIN_REGISTRATION_CODE = "PUPASS2026";
-    const DAILY_BOOKING_LIMIT = 10;
+    const DAILY_BOOKING_LIMIT = 100;
     const ACTIVE_BOOKING_STATUSES = ["Waiting", "Serving", "Upcoming", "Now Serving"];
-
-    const PHILIPPINE_NON_WORKING_HOLIDAYS_2026 = {
-  "2026-01-01": "New Year's Day",
-  "2026-02-17": "Chinese New Year",
-  "2026-03-20": "Eid'l Fitr",
-  "2026-04-02": "Maundy Thursday",
-  "2026-04-03": "Good Friday",
-  "2026-04-04": "Black Saturday",
-  "2026-04-09": "Araw ng Kagitingan",
-  "2026-05-01": "Labor Day",
-  "2026-06-12": "Independence Day",
-  "2026-08-21": "Ninoy Aquino Day",
-  "2026-08-31": "National Heroes Day",
-  "2026-11-01": "All Saints' Day",
-  "2026-11-02": "All Souls' Day",
-  "2026-11-30": "Bonifacio Day",
-  "2026-12-08": "Feast of the Immaculate Conception of Mary",
-  "2026-12-24": "Christmas Eve",
-  "2026-12-25": "Christmas Day",
-  "2026-12-30": "Rizal Day",
-  "2026-12-31": "Last Day of the Year"
-};
-
-function getLocalDateFromKey(dateKey) {
-  const parts = String(dateKey || "").split("-");
-  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-}
-
-function getAppointmentDateBlockReason(dateKey) {
-  if (!dateKey) {
-    return "Please select an appointment date.";
-  }
-
-  const selectedDate = getLocalDateFromKey(dateKey);
-  const day = selectedDate.getDay();
-
-  if (day === 0 || day === 6) {
-    return "No available slots on weekends. Please choose a weekday.";
-  }
-
-  if (PHILIPPINE_NON_WORKING_HOLIDAYS_2026[dateKey]) {
-    return "No available slots on " + PHILIPPINE_NON_WORKING_HOLIDAYS_2026[dateKey] + ". Please choose another date.";
-  }
-
-  return "";
-}
-
-async function updateAppointmentDateAvailability() {
-  const appointmentDateInput = document.getElementById("appointmentDate");
-  const slotText = document.getElementById("slotAvailabilityText");
-
-  if (!appointmentDateInput || !slotText) return;
-
-  const dateKey = appointmentDateInput.value;
-  const blockReason = getAppointmentDateBlockReason(dateKey);
-
-  if (blockReason) {
-    slotText.innerText = blockReason;
-    slotText.style.color = "var(--red)";
-    return;
-  }
-
-  try {
-    const bookingsToday = await countBookingsForDate(dateKey);
-    const slotsLeft = Math.max(DAILY_BOOKING_LIMIT - bookingsToday, 0);
-
-    if (slotsLeft <= 0) {
-      slotText.innerText = "No available slots for this date. Please choose another date.";
-      slotText.style.color = "var(--red)";
-    } else {
-      slotText.innerText = slotsLeft + " slot" + (slotsLeft === 1 ? "" : "s") + " left for this date.";
-      slotText.style.color = "var(--green)";
-    }
-  } catch (error) {
-    console.error("Error checking slot availability:", error);
-    slotText.innerText = "Slot availability will be checked before confirmation.";
-    slotText.style.color = "var(--muted)";
-  }
-}
-
-async function validateAppointmentDateBeforeBooking(dateKey) {
-  const blockReason = getAppointmentDateBlockReason(dateKey);
-
-  if (blockReason) {
-    return {
-      valid: false,
-      message: blockReason
-    };
-  }
-
-  const bookingsToday = await countBookingsForDate(dateKey);
-
-  if (bookingsToday >= DAILY_BOOKING_LIMIT) {
-    return {
-      valid: false,
-      message: "No available slots for this date. Please choose another appointment date."
-    };
-  }
-
-  return {
-    valid: true,
-    message: ""
-  };
-}
 
     const ADMIN_CAMPUSES = [
       "All",
@@ -1848,25 +1741,17 @@ async function validateAppointmentDateBeforeBooking(dateKey) {
       }
     }
 
-  function setupCalendarDefaults() {
-  const todayKey = getTodayDateKey();
-  const appointmentDateInput = document.getElementById("appointmentDate");
+    function setupCalendarDefaults() {
+      const todayKey = getTodayDateKey();
+      const appointmentDateInput = document.getElementById("appointmentDate");
 
-  if (appointmentDateInput) {
-    appointmentDateInput.min = todayKey;
+      if (appointmentDateInput) {
+        appointmentDateInput.min = todayKey;
 
-    if (!appointmentDateInput.value) {
-      appointmentDateInput.value = todayKey;
-    }
-
-    if (!appointmentDateInput.dataset.availabilityListenerAdded) {
-      appointmentDateInput.addEventListener("change", updateAppointmentDateAvailability);
-      appointmentDateInput.dataset.availabilityListenerAdded = "true";
-    }
-
-    updateAppointmentDateAvailability();
-  }
-}
+        if (!appointmentDateInput.value) {
+          appointmentDateInput.value = todayKey;
+        }
+      }
     }
 
     function setStudentError(inputElement, errorElement, hasError) {
