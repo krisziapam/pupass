@@ -303,19 +303,18 @@
       transform: translateY(-2px);
     }
 
-  .icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--light-gold);
-  color: var(--maroon);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 22px;
-  margin-bottom: 12px;
-}
+    .icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--light-gold);
+      color: var(--maroon);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
 
     .service-card p {
       font-size: 12px;
@@ -865,10 +864,10 @@
               <div>Requirements</div>
             </div>
 
-            <div class="quick-card" onclick="showLocatorScreen()">
-  <div class="quick-icon">📍</div>
-  <div>Office Locator</div>
-</div>
+            <div class="quick-card" onclick="showAnnouncementsScreen()">
+              <div class="quick-icon">📢</div>
+              <div>Announcements</div>
+            </div>
 
             <div class="quick-card" onclick="showHelpScreen()">
               <div class="quick-icon">❓</div>
@@ -887,41 +886,39 @@
 
         <div>
           <div class="section-title">Popular Services</div>
-          
+          <div class="grid">
             <div class="service-card" onclick="selectService('registrar')">
-             <div class="icon">📄</div>
+              <div class="icon">R</div>
               <h3>Registrar</h3>
               <p>Documents and enrollment concerns</p>
             </div>
 
-           
-
             <div class="service-card" onclick="selectService('cashier')">
-              <div class="icon">💳</div>
+              <div class="icon">C</div>
               <h3>Cashier</h3>
               <p>Payment and assessment concerns</p>
             </div>
 
             <div class="service-card" onclick="selectService('library')">
-             <div class="icon">📚</div>
+              <div class="icon">L</div>
               <h3>Library</h3>
               <p>Clearance and borrowing concerns</p>
             </div>
 
             <div class="service-card" onclick="selectService('guidance')">
-              <div class="icon">🤝</div>
+              <div class="icon">G</div>
               <h3>Guidance</h3>
               <p>Counseling appointments</p>
             </div>
 
             <div class="service-card" onclick="selectService('studentAffairs')">
-         <div class="icon">🧑‍🎓</div>
+              <div class="icon">S</div>
               <h3>Student Affairs</h3>
               <p>ID concerns and assistance</p>
             </div>
 
             <div class="service-card" onclick="selectService('scholarship')">
-             <div class="icon">🎓</div>
+              <div class="icon">₱</div>
               <h3>Scholarship</h3>
               <p>Scholarship application and inquiry</p>
             </div>
@@ -929,7 +926,6 @@
         </div>
       </div>
 
-    
       <div id="dashboardQueueMonitor"></div>
 
       <div class="bottom-nav">
@@ -945,39 +941,39 @@
       <h1>Select a Service</h1>
       <p>Choose the office or department you want to visit.</p>
 
-    <div class="grid">
+      <div class="grid">
         <div class="service-card" onclick="selectService('registrar')">
-          <div class="icon">📄</div>
+          <div class="icon">R</div>
           <h3>Registrar</h3>
           <p>Document request, COR, TOR, and enrollment concerns</p>
         </div>
 
         <div class="service-card" onclick="selectService('cashier')">
-         <div class="icon">💳</div>
+          <div class="icon">C</div>
           <h3>Cashier</h3>
           <p>Payment, assessment, and receipt concerns</p>
         </div>
 
         <div class="service-card" onclick="selectService('library')">
-        <div class="icon">📚</div>
+          <div class="icon">L</div>
           <h3>Library</h3>
           <p>Clearance, borrowing, and library account concerns</p>
         </div>
 
         <div class="service-card" onclick="selectService('guidance')">
-        <div class="icon">🤝</div>
+          <div class="icon">G</div>
           <h3>Guidance Office</h3>
           <p>Counseling and student support appointment</p>
         </div>
 
         <div class="service-card" onclick="selectService('studentAffairs')">
-         <div class="icon">🧑‍🎓</div>
+          <div class="icon">S</div>
           <h3>Student Affairs</h3>
           <p>ID concerns, student activities, and assistance</p>
         </div>
 
         <div class="service-card" onclick="selectService('scholarship')">
-      <div class="icon">🎓</div>
+          <div class="icon">₱</div>
           <h3>Scholarship</h3>
           <p>Scholarship application and inquiry</p>
         </div>
@@ -1260,25 +1256,43 @@
       </div>
     </section>
 
-    <section id="locator" class="screen">
-  <div class="back" onclick="showScreen('dashboard')">← Home</div>
-  <h1>Office Locator</h1>
-  <p>Find the office location for your selected campus/site.</p>
+    <section id="announcements" class="screen">
+      <div class="back" onclick="showScreen('dashboard')">← Home</div>
+      <h1>Announcements</h1>
+      <p>View reminders and important service updates.</p>
 
-  <div class="card gold-card">
-    <h2>Your Campus / Site</h2>
-    <p id="locatorCampusText">Campus information will appear here.</p>
-  </div>
+      <div class="card gold-card">
+        <h2>General Reminder</h2>
+        <p>Please arrive at least 10 minutes before your appointment time.</p>
+      </div>
 
-  <div id="locatorOfficeList"></div>
+      <div class="card">
+        <h2>Bring Your Student ID</h2>
+        <p>Students must present a valid student ID or proof of enrollment before being served.</p>
+      </div>
 
-  <div class="bottom-nav">
-    <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
-    <div class="nav-item" onclick="goToServices()">Services</div>
-    <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
-    <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
-  </div>
-</section>
+      <div class="card">
+        <h2>Prepare Your Queue Pass</h2>
+        <p>Screenshot, print, or save your digital queue pass before going to the office.</p>
+      </div>
+
+      <div class="card">
+        <h2>Check Your Appointment Details</h2>
+        <p>Make sure your selected office, request type, date, and time are correct before going to campus.</p>
+      </div>
+
+      <div class="card">
+        <h2>Cancelled or Missed Appointment</h2>
+        <p>If your appointment is cancelled or missed, you may book again based on available slots.</p>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showScreen('dashboard')">Home</div>
+        <div class="nav-item" onclick="goToServices()">Services</div>
+        <div class="nav-item" onclick="showAppointmentScreen()">Appointment</div>
+        <div class="nav-item" onclick="showQueueFromNav()">Queue</div>
+      </div>
+    </section>
 
     <section id="help" class="screen">
       <div class="back" onclick="showScreen('dashboard')">← Home</div>
@@ -1462,7 +1476,7 @@
        - Oldest booking first
        - Admin campus + office filter
        - Technical reports
-       - Requirements + Office Locator
+       - Requirements + Announcements
        - Dashboard queue monitor
     ===================================================== */
 
@@ -1982,340 +1996,10 @@
       showScreen("requirements");
     }
 
-   function showLocatorScreen() {
-  if (!ensureStudentLoggedIn()) return;
-
-  renderOfficeLocator();
-  showScreen("locator");
-}
-
-   function renderOfficeLocator() {
-  const campusText = document.getElementById("locatorCampusText");
-  const officeList = document.getElementById("locatorOfficeList");
-
-  if (!campusText || !officeList) return;
-
-  const campus = verifiedStudent.campus || "Selected Campus";
-
-  const campusLocations = {
-    "PUP Main / Sta. Mesa": {
-      address: "A. Mabini Campus, Anonas St., Sta. Mesa, Manila",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Office of the University Registrar, G/F South Wing, Main Building",
-          note: "For COR, TOR, enrollment, records, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting Office, Main Campus",
-          note: "For payment, assessment, receipts, and balance concerns. Confirm exact window at the campus directory."
-        },
-        {
-          office: "Library",
-          location: "University Library, Main Campus",
-          note: "For clearance, borrowing, returning, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Office of Counseling and Psychological Services / Guidance and Counseling Services",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Office of Student Services / Student Affairs Section",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Office of Scholarship and Financial Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Taguig": {
-      address: "Gen. Santos Ave., Lower Bicutan, Taguig City",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Registrar and Admission Office",
-          note: "For admission, records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Collecting and Disbursement Office",
-          note: "For payment, assessment, receipt, and balance concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library / Learning Resource Area",
-          note: "For borrowing, clearance, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance and Counseling Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services Office / Scholarship Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP San Juan": {
-      address: "223 Ortega St., cor. A. Mabini St., Brgy. Addition Hills, San Juan City",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Registration Office / Admission Office",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Collecting and Disbursing Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance Counselor / Student Support Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Affairs and Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Affairs / Scholarship Coordinator",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Parañaque": {
-      address: "Col. E. De Leon St. Wawa, Brgy. Sto. Niño, Parañaque City",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Registration / Admission Office",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance / Student Services Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services / Scholarship Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Quezon City": {
-      address: "Don Fabian St., Brgy. Commonwealth, Quezon City",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Registration / Admission Office",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance / Student Services Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services / Scholarship Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Bataan": {
-      address: "Brgy. Malaya, Freeport Area of Bataan, Mariveles, Bataan",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Office of the Registrar",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting and Disbursing Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Library Services",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Student Services Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services / Scholarship Coordinator",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Sta. Maria": {
-      address: "PUP Sta. Maria Campus",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Campus Registrar / Admission Office",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance / Student Services Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services / Scholarship Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
-    },
-
-    "PUP Other Campus / Branch": {
-      address: "Please confirm the exact branch address with your campus.",
-      offices: [
-        {
-          office: "Registrar",
-          location: "Campus Registrar / Admission Office",
-          note: "For records, enrollment, and document requests."
-        },
-        {
-          office: "Cashier",
-          location: "Cashier / Collecting Office",
-          note: "For payment, receipt, and assessment concerns."
-        },
-        {
-          office: "Library",
-          location: "Campus Library",
-          note: "For clearance, borrowing, and library account concerns."
-        },
-        {
-          office: "Guidance",
-          location: "Guidance / Student Services Office",
-          note: "For counseling appointments and student support concerns."
-        },
-        {
-          office: "Student Affairs",
-          location: "Student Services Office",
-          note: "For ID concerns, student activities, and student assistance."
-        },
-        {
-          office: "Scholarship",
-          location: "Student Services / Scholarship Assistance",
-          note: "For scholarship application, renewal, and inquiry."
-        }
-      ]
+    function showAnnouncementsScreen() {
+      if (!ensureStudentLoggedIn()) return;
+      showScreen("announcements");
     }
-  };
-
-  const selectedCampusData = campusLocations[campus] || campusLocations["PUP Other Campus / Branch"];
-
-  campusText.innerText = campus + " — " + selectedCampusData.address;
-
-  officeList.innerHTML = selectedCampusData.offices.map(function(item) {
-    return `
-      <div class="card">
-        <h2>${safePupassText(item.office)}</h2>
-
-        <div class="detail-row">
-          <span>Campus / Site</span>
-          <span>${safePupassText(campus)}</span>
-        </div>
-
-        <div class="detail-row">
-          <span>Campus Address</span>
-          <span>${safePupassText(selectedCampusData.address)}</span>
-        </div>
-
-        <div class="detail-row">
-          <span>Office Location</span>
-          <span>${safePupassText(item.location)}</span>
-        </div>
-
-        <p style="margin-top:10px;">${safePupassText(item.note)}</p>
-      </div>
-    `;
-  }).join("");
-}
 
     function selectService(serviceKey) {
       if (!ensureStudentLoggedIn()) return;
