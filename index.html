@@ -2730,10 +2730,11 @@
       }
     }
 
-    function openFeedbackSurvey() {
-      if (!ensureStudentLoggedIn()) return;
-      showScreen("feedback");
-    }
+  function openFeedbackSurvey() {
+  const feedbackFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfWcDZugsMhWRd3oLtIBXC4_b1TEFmcAYnymFRRnaUIIcK3Rw/viewform?usp=sharing&ouid=112133641462307009901";
+
+  window.open(feedbackFormUrl, "_blank", "noopener,noreferrer");
+}
 
     async function showNotificationsScreen() {
       if (!ensureStudentLoggedIn()) return;
