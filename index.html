@@ -279,6 +279,36 @@
       font-weight: 700;
     }
 
+    .slot-availability {
+      margin-top: -6px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .slot-available {
+      border-color: #b7dfb9;
+      background: #f1fbf2;
+      color: var(--green);
+    }
+
+    .slot-warning {
+      border-color: #f1d47a;
+      background: var(--light-gold);
+      color: var(--dark-maroon);
+    }
+
+    .slot-blocked {
+      border-color: #f1b5b5;
+      background: #fff5f5;
+      color: var(--red);
+    }
+
     .muted-center {
       text-align: center;
       margin-top: 16px;
@@ -1046,6 +1076,7 @@
 
           <label>Appointment Date</label>
           <input class="input-box" type="date" id="appointmentDate" />
+          <div id="appointmentDateAvailability" class="slot-availability">Select a date to check available slots.</div>
 
           <label>Appointment Time</label>
           <select class="input-box" id="appointmentTime">
@@ -1504,8 +1535,36 @@
     ===================================================== */
 
     const ADMIN_REGISTRATION_CODE = "PUPASS2026";
-    const DAILY_BOOKING_LIMIT = 100;
+    const DAILY_BOOKING_LIMIT = 10;
     const ACTIVE_BOOKING_STATUSES = ["Waiting", "Serving", "Upcoming", "Now Serving"];
+
+    const PHILIPPINE_HOLIDAYS_2026 = {
+      "2026-01-01": "New Year's Day",
+      "2026-02-17": "Chinese New Year",
+      "2026-04-02": "Maundy Thursday",
+      "2026-04-03": "Good Friday",
+      "2026-04-04": "Black Saturday",
+      "2026-04-09": "Araw ng Kagitingan",
+      "2026-05-01": "Labor Day",
+      "2026-06-12": "Independence Day",
+      "2026-08-21": "Ninoy Aquino Day",
+      "2026-08-31": "National Heroes Day",
+      "2026-11-01": "All Saints' Day",
+      "2026-11-02": "All Souls' Day",
+      "2026-11-30": "Bonifacio Day",
+      "2026-12-08": "Feast of the Immaculate Conception of Mary",
+      "2026-12-24": "Christmas Eve",
+      "2026-12-25": "Christmas Day",
+      "2026-12-30": "Rizal Day",
+      "2026-12-31": "Last Day of the Year"
+
+      /*
+        Add Eidul Fitr and Eidul Adha here once Malacanang releases
+        the exact 2026 dates, for example:
+        "2026-MM-DD": "Eidul Fitr",
+        "2026-MM-DD": "Eidul Adha"
+      */
+    };
 
     const ADMIN_CAMPUSES = [
       "All",
@@ -1742,6 +1801,161 @@
       }
     }
 
+    function parseDateKeyAsLocalDate(dateKey) {
+      if (!dateKey) return null;
+
+      const parts = dateKey.split("-");
+      const year = Number(parts[0]);
+      const month = Number(parts[1]) - 1;
+      const day = Number(parts[2]);
+
+      return new Date(year, month, day);
+    }
+
+    function isWeekendDate(dateKey) {
+      const date = parseDateKeyAsLocalDate(dateKey);
+      if (!date) return false;
+
+      const day = date.getDay();
+      return day === 0 || day === 6;
+    }
+
+    function getPhilippineHolidayName(dateKey) {
+      return PHILIPPINE_HOLIDAYS_2026[dateKey] || "";
+    }
+
+    function isPhilippineHoliday(dateKey) {
+      return Boolean(getPhilippineHolidayName(dateKey));
+    }
+
+    function getNextBookableDateKey(startDateKey) {
+      let date = parseDateKeyAsLocalDate(startDateKey);
+
+      if (!date) {
+        date = parseDateKeyAsLocalDate(getTodayDateKey());
+      }
+
+      for (let index = 0; index < 370; index++) {
+        const timezoneOffset = date.getTimezoneOffset() * 60000;
+        const localDate = new Date(date.getTime() - timezoneOffset);
+        const dateKey = localDate.toISOString().split("T")[0];
+
+        if (!isWeekendDate(dateKey) && !isPhilippineHoliday(dateKey)) {
+          return dateKey;
+        }
+
+        date.setDate(date.getDate() + 1);
+      }
+
+      return startDateKey;
+    }
+
+    function setAppointmentDateAvailabilityMessage(message, className) {
+      const availabilityBox = document.getElementById("appointmentDateAvailability");
+      if (!availabilityBox) return;
+
+      availabilityBox.className = "slot-availability " + className;
+      availabilityBox.innerHTML = message;
+    }
+
+    async function updateAppointmentDateAvailability() {
+      const appointmentDateInput = document.getElementById("appointmentDate");
+      if (!appointmentDateInput) return;
+
+      const dateKey = appointmentDateInput.value;
+
+      if (!dateKey) {
+        setAppointmentDateAvailabilityMessage(
+          "Select a date to check available slots.",
+          "slot-warning"
+        );
+        return;
+      }
+
+      if (isWeekendDate(dateKey)) {
+        setAppointmentDateAvailabilityMessage(
+          "Unavailable: Weekends are blocked. Please choose a weekday.",
+          "slot-blocked"
+        );
+        return;
+      }
+
+      const holidayName = getPhilippineHolidayName(dateKey);
+      if (holidayName) {
+        setAppointmentDateAvailabilityMessage(
+          "Unavailable: " + safePupassText(holidayName) + " is a Philippine holiday.",
+          "slot-blocked"
+        );
+        return;
+      }
+
+      try {
+        const bookedCount = await countBookingsForDate(dateKey);
+        const slotsLeft = Math.max(DAILY_BOOKING_LIMIT - bookedCount, 0);
+
+        if (slotsLeft <= 0) {
+          setAppointmentDateAvailabilityMessage(
+            "Fully booked: 0 slots left for " + safePupassText(formatDateForDisplay(dateKey)) + ".",
+            "slot-blocked"
+          );
+          return;
+        }
+
+        const className = slotsLeft <= 3 ? "slot-warning" : "slot-available";
+        const slotWord = slotsLeft === 1 ? "slot" : "slots";
+
+        setAppointmentDateAvailabilityMessage(
+          slotsLeft + " " + slotWord + " left for " + safePupassText(formatDateForDisplay(dateKey)) +
+            ". Maximum " + DAILY_BOOKING_LIMIT + " bookings per day.",
+          className
+        );
+      } catch (error) {
+        console.error("Error checking date availability:", error);
+        setAppointmentDateAvailabilityMessage(
+          "Could not check slot availability. Please check Firebase rules or internet connection.",
+          "slot-warning"
+        );
+      }
+    }
+
+    async function validateAppointmentDateSelection(dateKey) {
+      if (!dateKey) {
+        return {
+          valid: false,
+          message: "Please select an appointment date."
+        };
+      }
+
+      if (isWeekendDate(dateKey)) {
+        return {
+          valid: false,
+          message: "Weekends are blocked. Please choose a weekday."
+        };
+      }
+
+      const holidayName = getPhilippineHolidayName(dateKey);
+      if (holidayName) {
+        return {
+          valid: false,
+          message: holidayName + " is a Philippine holiday. Please choose another date."
+        };
+      }
+
+      const bookedCount = await countBookingsForDate(dateKey);
+
+      if (bookedCount >= DAILY_BOOKING_LIMIT) {
+        return {
+          valid: false,
+          message: "Sorry, this date is fully booked. Please choose another appointment date."
+        };
+      }
+
+      return {
+        valid: true,
+        slotsLeft: DAILY_BOOKING_LIMIT - bookedCount
+      };
+    }
+
     function setupCalendarDefaults() {
       const todayKey = getTodayDateKey();
       const appointmentDateInput = document.getElementById("appointmentDate");
@@ -1750,8 +1964,17 @@
         appointmentDateInput.min = todayKey;
 
         if (!appointmentDateInput.value) {
-          appointmentDateInput.value = todayKey;
+          appointmentDateInput.value = getNextBookableDateKey(todayKey);
         }
+
+        if (isWeekendDate(appointmentDateInput.value) || isPhilippineHoliday(appointmentDateInput.value)) {
+          appointmentDateInput.value = getNextBookableDateKey(appointmentDateInput.value);
+        }
+
+        appointmentDateInput.onchange = updateAppointmentDateAvailability;
+        appointmentDateInput.oninput = updateAppointmentDateAvailability;
+
+        setTimeout(updateAppointmentDateAvailability, 100);
       }
     }
 
@@ -2083,7 +2306,7 @@
       purposeText.value = "Request for " + requestType.value;
     }
 
-    function prepareConfirmation() {
+    async function prepareConfirmation() {
       const service = services[selectedServiceKey];
 
       const requestType = document.getElementById("requestType").value;
@@ -2093,6 +2316,14 @@
 
       if (!dateKey) {
         alert("Please select an appointment date.");
+        return;
+      }
+
+      const dateValidation = await validateAppointmentDateSelection(dateKey);
+
+      if (!dateValidation.valid) {
+        alert(dateValidation.message);
+        updateAppointmentDateAvailability();
         return;
       }
 
@@ -2181,16 +2412,37 @@
     async function createSequentialAppointment(newAppointment, office, appointmentDateKey) {
       const counterId = getQueueCounterId(office, appointmentDateKey);
       const counterRef = db.collection("queueCounters").doc(counterId);
+      const dailyCounterRef = db.collection("dailyBookingCounters").doc(appointmentDateKey);
       const appointmentRef = db.collection("appointments").doc();
+
+      /*
+        This count supports older appointment records created before
+        the dailyBookingCounters collection exists.
+      */
+      const initialDateCount = await countBookingsForDate(appointmentDateKey);
 
       let finalAppointment = null;
 
       await db.runTransaction(async function(transaction) {
         const counterDoc = await transaction.get(counterRef);
+        const dailyCounterDoc = await transaction.get(dailyCounterRef);
+
         let lastNumber = 0;
+        let activeDateCount = initialDateCount;
 
         if (counterDoc.exists) {
           lastNumber = counterDoc.data().lastNumber || 0;
+        }
+
+        if (dailyCounterDoc.exists) {
+          activeDateCount = Math.max(
+            Number(dailyCounterDoc.data().activeCount || 0),
+            initialDateCount
+          );
+        }
+
+        if (activeDateCount >= DAILY_BOOKING_LIMIT) {
+          throw new Error("DATE_FULL");
         }
 
         const nextNumber = lastNumber + 1;
@@ -2211,6 +2463,13 @@
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
+        transaction.set(dailyCounterRef, {
+          appointmentDateKey: appointmentDateKey,
+          activeCount: activeDateCount + 1,
+          dailyLimit: DAILY_BOOKING_LIMIT,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
         transaction.set(appointmentRef, finalAppointment);
       });
 
@@ -2218,6 +2477,49 @@
         appointmentId: appointmentRef.id,
         appointment: finalAppointment
       };
+    }
+
+    async function updateAppointmentStatusWithCounter(appointmentId, newStatus) {
+      const appointmentRef = db.collection("appointments").doc(appointmentId);
+
+      await db.runTransaction(async function(transaction) {
+        const appointmentDoc = await transaction.get(appointmentRef);
+
+        if (!appointmentDoc.exists) {
+          throw new Error("APPOINTMENT_NOT_FOUND");
+        }
+
+        const appointment = appointmentDoc.data();
+        const oldStatus = appointment.status || "Waiting";
+        const appointmentDateKey = appointment.appointmentDateKey || "";
+        const shouldFreeSlot = newStatus === "Cancelled" && oldStatus !== "Cancelled";
+
+        let dailyCounterRef = null;
+        let dailyCounterDoc = null;
+
+        if (shouldFreeSlot && appointmentDateKey) {
+          dailyCounterRef = db.collection("dailyBookingCounters").doc(appointmentDateKey);
+          dailyCounterDoc = await transaction.get(dailyCounterRef);
+        }
+
+        transaction.update(appointmentRef, {
+          status: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        if (dailyCounterRef) {
+          const currentActiveCount = dailyCounterDoc && dailyCounterDoc.exists
+            ? Number(dailyCounterDoc.data().activeCount || 0)
+            : 0;
+
+          transaction.set(dailyCounterRef, {
+            appointmentDateKey: appointmentDateKey,
+            activeCount: Math.max(currentActiveCount - 1, 0),
+            dailyLimit: DAILY_BOOKING_LIMIT,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+      });
     }
 
     async function saveBookingToFirestore() {
@@ -2252,11 +2554,21 @@
           return;
         }
 
+        const dateValidation = await validateAppointmentDateSelection(appointmentDateKey);
+
+        if (!dateValidation.valid) {
+          alert(dateValidation.message);
+          showScreen("book");
+          updateAppointmentDateAvailability();
+          return;
+        }
+
         const bookingsToday = await countBookingsForDate(appointmentDateKey);
 
         if (bookingsToday >= DAILY_BOOKING_LIMIT) {
           alert("Sorry, this date is already fully booked. Please choose another appointment date.");
           showScreen("book");
+          updateAppointmentDateAvailability();
           return;
         }
 
@@ -2289,6 +2601,14 @@
         showScreen("pass");
       } catch (error) {
         console.error("Error saving booking with sequential queue:", error);
+
+        if (error && error.message === "DATE_FULL") {
+          alert("Sorry, this date just became fully booked. Please choose another appointment date.");
+          showScreen("book");
+          updateAppointmentDateAvailability();
+          return;
+        }
+
         alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
       }
     }
@@ -2700,12 +3020,10 @@
       if (!confirmCancel) return;
 
       try {
-        await db.collection("appointments").doc(currentAppointmentId).update({
-          status: "Cancelled",
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        await updateAppointmentStatusWithCounter(currentAppointmentId, "Cancelled");
 
         alert("Appointment cancelled.");
+        updateAppointmentDateAvailability();
       } catch (error) {
         console.error("Error cancelling appointment:", error);
         alert("Appointment was not cancelled.");
@@ -3490,10 +3808,7 @@
 
     async function updateAdminStatus(appointmentId, newStatus) {
       try {
-        await db.collection("appointments").doc(appointmentId).update({
-          status: newStatus,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        await updateAppointmentStatusWithCounter(appointmentId, newStatus);
       } catch (error) {
         console.error("Error updating appointment:", error);
         alert("Status was not updated.");
