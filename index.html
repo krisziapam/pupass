@@ -2140,24 +2140,40 @@
       try {
         const existingAppointment = await getLatestStudentAppointment(studentId, rawStudentId);
 
-        if (existingAppointment) {
-          setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
+      if (existingAppointment) {
+  const savedName = String(existingAppointment.data.fullName || "").trim().toLowerCase();
+  const enteredName = String(fullName || "").trim().toLowerCase();
 
-          await db.collection("appointments").doc(existingAppointment.id).set({
-            studentKey: studentId
-          }, { merge: true });
+  if (!fullName) {
+    fullNameError.innerText = "Full Name is required.";
+    setStudentError(fullNameInput, fullNameError, true);
+    return;
+  }
 
-          listenToStudentAppointment(existingAppointment.id);
+  if (savedName && savedName !== enteredName) {
+    fullNameError.innerText =
+      "This Student ID Number is already registered under a different name. Please use your own student number or create a unique dummy student number.";
+    setStudentError(fullNameInput, fullNameError, true);
+    return;
+  }
 
-          fullNameInput.value = verifiedStudent.fullName;
-          campusInput.value = verifiedStudent.campus;
+  setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
 
-          setStudentError(fullNameInput, fullNameError, false);
-          setStudentError(campusInput, campusError, false);
+  await db.collection("appointments").doc(existingAppointment.id).set({
+    studentKey: studentId
+  }, { merge: true });
 
-          showScreen("dashboard");
-          return;
-        }
+  listenToStudentAppointment(existingAppointment.id);
+
+  fullNameInput.value = verifiedStudent.fullName;
+  campusInput.value = verifiedStudent.campus;
+
+  setStudentError(fullNameInput, fullNameError, false);
+  setStudentError(campusInput, campusError, false);
+
+  showScreen("dashboard");
+  return;
+}
 
         let valid = true;
 
