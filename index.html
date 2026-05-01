@@ -2393,8 +2393,7 @@
 
         slotText.innerHTML =
           "<b>" + remainingSlots + " slot" + (remainingSlots === 1 ? "" : "s") + " left</b> for " +
-          safePupassText(displayDate) +
-          ". Daily limit: " + DAILY_BOOKING_LIMIT + " bookings.";
+          safePupassText(displayDate);
       } catch (error) {
         console.error("Error checking available slots:", error);
 
