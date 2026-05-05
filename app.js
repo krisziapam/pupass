@@ -2028,27 +2028,27 @@ let message = "";
       }
     }
 
-   window.resetAdminPassword = async function () {
+  window.resetAdminPassword = async function () {
   const emailInput = document.getElementById("adminEmail");
 
   if (!emailInput) {
-    showMessage("Admin email field not found.");
+    alert("Admin email field not found.");
     return;
   }
 
   const email = emailInput.value.trim();
 
   if (!email) {
-    showMessage("Please enter your admin email first.");
+    alert("Please enter your admin email first.");
     return;
   }
 
   try {
     await auth.sendPasswordResetEmail(email);
-    showMessage("Password reset email sent. Please check your inbox or spam folder.");
+    alert("Password reset email sent. Please check your inbox or spam folder.");
   } catch (error) {
     console.error("Password reset error:", error);
-    showMessage(error.message || "Could not send password reset email. Please check if the email is registered.");
+    alert(error.message || "Could not send password reset email.");
   }
 };
 
