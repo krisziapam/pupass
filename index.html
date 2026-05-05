@@ -765,7 +765,7 @@
     </div>
   </div>
 
-  <div class="admin-feedback-card" onclick="document.getElementById('adminTechnicalReportSection').scrollIntoView({ behavior: 'smooth' })">
+  <div class="admin-feedback-card" onclick="showScreen('adminTechnicalReports')">
     <div class="admin-feedback-icon">🛠️</div>
     <div>
       <strong>Technical Error Reports</strong>
@@ -779,9 +779,28 @@
       <div class="section-title">Appointment Queue</div>
       <div id="adminAppointmentList" class="admin-list"></div>
 
-    <div class="section-title" id="adminTechnicalReportSection">Technical Error Reports</div>
-      <div id="adminTechnicalReportControls"></div>
-      <div id="adminTechnicalReportInbox" class="admin-list"></div>
+<section id="adminTechnicalReports" class="screen">
+  <div class="page-header">
+    <div class="header-row">
+      <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+      <div>
+        <h1>Technical Error Reports</h1>
+        <p>Review open, investigating, resolved, and archived reports.</p>
+      </div>
+
+      <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="back" onclick="showScreen('admin')">← Back to Admin Dashboard</div>
+
+  <div class="section-title" id="adminTechnicalReportSection">Report View</div>
+  <div id="adminTechnicalReportControls"></div>
+  <div id="adminTechnicalReportInbox" class="admin-list"></div>
+</section>
+      
       </section>
       <section id="contact" class="screen">
 
