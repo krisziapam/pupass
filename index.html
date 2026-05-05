@@ -428,6 +428,51 @@
       margin-top: 8px;
     }
 
+    .admin-feedback-card {
+  margin: 22px 0;
+  background: var(--maroon);
+  color: white;
+  border-radius: 18px;
+  padding: 18px;
+  border: 2px solid var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: 0.2s ease;
+  box-shadow: 0 8px 18px rgba(128, 0, 0, 0.22);
+}
+
+.admin-feedback-card:hover {
+  background: var(--dark-maroon);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(128, 0, 0, 0.3);
+}
+
+.admin-feedback-card strong {
+  color: white;
+  font-size: 18px;
+}
+
+.admin-feedback-card p {
+  color: #fff4cc;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.admin-feedback-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: var(--gold);
+  color: var(--maroon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
     .status-waiting {
       background: var(--light-gold);
       color: var(--dark-maroon);
@@ -1490,8 +1535,8 @@
         </div>
       </div>
 
-      <div class="feedback-access-card" onclick="openFeedbackSurvey()">
-  <div class="quick-icon">⭐</div>
+  <div class="admin-feedback-card" onclick="openFeedbackSurvey()">
+  <div class="admin-feedback-icon">⭐</div>
   <div>
     <strong>Share Feedback</strong>
     <p>Help us improve PUPass. Admin testers may also answer the feedback form.</p>
