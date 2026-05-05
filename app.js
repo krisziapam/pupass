@@ -1867,8 +1867,9 @@ let estimatedWait = "-";
       let currentServing = "None";
       let nextInLine = "None";
       let studentsAhead = "-";
-      let positionText = "-";
-      let message = "";
+let positionText = "-";
+let estimatedWait = "-";
+let message = "";
 
       try {
         const queueData = await getOfficeQueueSnapshot(currentAppointment.office);
@@ -1892,6 +1893,7 @@ let estimatedWait = "-";
         if (studentIndex !== -1) {
           studentsAhead = String(studentIndex);
           positionText = String(studentIndex + 1);
+          estimatedWait = String(studentIndex * 5) + " mins";
           message = studentIndex === 0
             ? "You are next in line. Please be ready."
             : "Please wait for your queue number to be called.";
@@ -1968,6 +1970,11 @@ let estimatedWait = "-";
               <span>Students Ahead</span>
               <span>${safePupassText(studentsAhead)}</span>
             </div>
+
+            <div class="detail-row">
+  <span>Estimated Wait</span>
+  <span>${safePupassText(estimatedWait)}</span>
+</div>
 
             <p style="margin-top:12px;font-weight:700;color:var(--maroon);">${safePupassText(message)}</p>
           </div>
