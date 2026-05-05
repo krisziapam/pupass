@@ -2599,7 +2599,14 @@ let estimatedWait = "-";
     window.addEventListener("load", function() {
   setupCalendarDefaults();
   selectServiceDataOnly("registrar");
-  restoreStudentSession();
+
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      openAdminDashboard();
+    } else {
+      restoreStudentSession();
+    }
+  });
 
       const studentIdInput = document.getElementById("studentIdInput");
       const fullNameInput = document.getElementById("fullNameInput");
