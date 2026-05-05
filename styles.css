@@ -999,3 +999,7 @@ font-weight: 600 !important;
   background: transparent !important;
   outline: none !important;
 }
+#adminLogin .btn-outline {
+  margin-top: 34px !important;
+}
+
