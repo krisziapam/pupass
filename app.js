@@ -2651,3 +2651,10 @@ function openAdminTechnicalReports() {
         });
       }
     });
+document.addEventListener("DOMContentLoaded", function () {
+  const forgotBtn = document.getElementById("adminForgotPasswordBtn");
+
+  if (forgotBtn) {
+    forgotBtn.addEventListener("click", resetAdminPassword);
+  }
+});
