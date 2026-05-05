@@ -16,8 +16,6 @@
 <body>
   <main class="app">
 
-    <div id="systemMessage" class="system-message" style="display:none;"></div>
-
     <section id="splash" class="screen splash active">
       <div class="splash-content">
         <img class="logo-circle" src="PUPLogo.png" alt="PUP Logo" />
@@ -94,16 +92,16 @@
     <section id="dashboard" class="screen">
       <div class="page-header">
         <div class="header-row">
-  <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
-  <div>
-    <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
-    <p>Book an appointment for PUP student services.</p>
-  </div>
+          <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+          <div>
+            <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
+            <p>Book an appointment for PUP student services.</p>
+          </div>
 
-  <button class="header-logout-btn" onclick="studentLogout()" title="Log Out">
-    <i class="fa-solid fa-right-from-bracket"></i>
-  </button>
-</div>
+          <button class="header-logout-btn" onclick="studentLogout()" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
 
       <div class="desktop-layout">
@@ -111,8 +109,7 @@
           <div class="card gold-card">
             <h2>Student Verified</h2>
             <p id="verifiedStudentText">Student ID Number and Full Name verified.</p>
-<span class="status-pill">Verified</span>
-
+            <span class="status-pill">Verified</span>
           </div>
 
           <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
@@ -718,17 +715,17 @@
 
     <section id="admin" class="screen">
       <div class="page-header">
-      <div class="header-row">
-  <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
-  <div>
-    <h1>Admin Dashboard</h1>
-    <p>Manage appointments and queue status.</p>
-  </div>
+        <div class="header-row">
+          <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+          <div>
+            <h1>Admin Dashboard</h1>
+            <p>Manage appointments and queue status.</p>
+          </div>
 
-  <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
-    <i class="fa-solid fa-right-from-bracket"></i>
-  </button>
-</div>
+          <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
 
       <div class="admin-stats">
@@ -755,55 +752,53 @@
         </div>
       </div>
 
-<div class="admin-dashboard-shortcuts">
-  <div class="admin-feedback-card" onclick="openFeedbackSurvey()">
-    <div class="admin-feedback-icon">⭐</div>
-      
-    <div>
-      <strong>Share Feedback</strong>
-      <p>Help us improve PUPass.</p>
-    </div>
-  </div>
+      <div class="admin-dashboard-shortcuts">
+        <div class="admin-feedback-card" onclick="openFeedbackSurvey()">
+          <div class="admin-feedback-icon">⭐</div>
+          <div>
+            <strong>Share Feedback</strong>
+            <p>Help us improve PUPass.</p>
+          </div>
+        </div>
 
-  <div class="admin-feedback-card" onclick="openAdminTechnicalReports()">
-    <div class="admin-feedback-icon">🛠️</div>
-    <div>
-      <strong>Technical Error Reports</strong>
-      <p>View and manage student technical reports.</p>
-    </div>
-  </div>
-</div>
+        <div class="admin-feedback-card" onclick="openAdminTechnicalReports()">
+          <div class="admin-feedback-icon">🛠️</div>
+          <div>
+            <strong>Technical Error Reports</strong>
+            <p>View and manage student technical reports.</p>
+          </div>
+        </div>
+      </div>
 
       <div id="adminFilterArea"></div>
 
       <div class="section-title">Appointment Queue</div>
       <div id="adminAppointmentList" class="admin-list"></div>
+    </section>
 
-<section id="adminTechnicalReports" class="screen">
-  <div class="page-header">
-    <div class="header-row">
-      <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
-      <div>
-        <h1>Technical Error Reports</h1>
-        <p>Review open, investigating, resolved, and archived reports.</p>
+    <section id="adminTechnicalReports" class="screen">
+      <div class="page-header">
+        <div class="header-row">
+          <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+          <div>
+            <h1>Technical Error Reports</h1>
+            <p>Review open, investigating, resolved, and archived reports.</p>
+          </div>
+
+          <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
 
-      <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
-        <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
-    </div>
-  </div>
+      <div class="back" onclick="showScreen('admin')">← Back to Admin Dashboard</div>
 
-  <div class="back" onclick="showScreen('admin')">← Back to Admin Dashboard</div>
+      <div class="section-title">Report View</div>
+      <div id="adminTechnicalReportControls"></div>
+      <div id="adminTechnicalReportInbox" class="admin-list"></div>
+    </section>
 
-  <div class="section-title">Report View</div>
-  <div id="adminTechnicalReportControls"></div>
-  <div id="adminTechnicalReportInbox" class="admin-list"></div>
-</section>
-      
-      </section>
-      <section id="contact" class="screen">
-
+    <section id="contact" class="screen">
   <div class="back" onclick="showScreen('splash')">← Back</div>
 
   <h1>Contact the Creator</h1>
