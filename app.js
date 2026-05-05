@@ -1363,10 +1363,11 @@ async function submitContactForm() {
         return;
       }
 
-      let currentServing = "None";
-      let nextInLine = "None";
-      let studentsAhead = "-";
-      let positionText = "-";
+     let currentServing = "None";
+let nextInLine = "None";
+let studentsAhead = "-";
+let positionText = "-";
+let estimatedWait = "-";
 
       try {
         const queueData = await getOfficeQueueSnapshot(currentAppointment.office);
