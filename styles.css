@@ -970,4 +970,21 @@ textarea.input-box {
   .admin-dashboard-shortcuts {
     grid-template-columns: 1fr;
   }
+  .admin-forgot-link {
+  display: block;
+  width: fit-content;
+  margin: 26px auto 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--maroon);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.admin-forgot-link:hover {
+  text-decoration: underline;
+}
 }
