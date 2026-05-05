@@ -748,12 +748,24 @@ textarea.input-box {
 
   .screen {
     min-height: 100vh;
-    padding: 24px;
+    padding: 20px;
+    padding-bottom: 90px;
   }
 
   .page-header {
-    margin: -24px -24px 24px;
-    padding: 28px 24px 30px;
+    margin: -20px -20px 22px;
+    padding: 24px 20px 26px;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+  }
+
+  .header-row {
+    align-items: flex-start;
+  }
+
+  .small-logo {
+    width: 52px;
+    height: 52px;
   }
 
   .desktop-layout {
@@ -762,11 +774,43 @@ textarea.input-box {
 
   .grid,
   .quick-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .service-card,
+  #dashboard .service-card {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .service-card {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .service-card .icon {
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    margin-bottom: 0;
+  }
+
+  .quick-card {
+    min-height: auto;
+    padding: 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .feedback-access-card {
+    padding: 14px;
   }
 
   .queue-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .admin-stats {
@@ -778,7 +822,49 @@ textarea.input-box {
   }
 
   .app-title {
-    font-size: 44px;
+    font-size: 42px;
+  }
+
+  h1 {
+    font-size: 25px;
+  }
+
+  h2 {
+    font-size: 19px;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .btn {
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 1000;
+    margin-top: 0;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .nav-item {
+    padding: 8px 4px;
+  }
+
+  .detail-row {
+    gap: 10px;
+  }
+
+  .detail-row span:last-child {
+    max-width: 55%;
+    word-break: break-word;
   }
 }
 
