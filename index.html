@@ -94,12 +94,16 @@
     <section id="dashboard" class="screen">
       <div class="page-header">
         <div class="header-row">
-          <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
-          <div>
-            <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
-            <p>Book an appointment for PUP student services.</p>
-          </div>
-        </div>
+  <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+  <div>
+    <h1 id="studentGreeting">Hello, Isko/Iska!</h1>
+    <p>Book an appointment for PUP student services.</p>
+  </div>
+
+  <button class="header-logout-btn" onclick="studentLogout()" title="Log Out">
+    <i class="fa-solid fa-right-from-bracket"></i>
+  </button>
+</div>
       </div>
 
       <div class="desktop-layout">
@@ -717,13 +721,17 @@
 
     <section id="admin" class="screen">
       <div class="page-header">
-        <div class="header-row">
-          <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
-          <div>
-            <h1>Admin Dashboard</h1>
-            <p>Manage appointments and queue status.</p>
-          </div>
-        </div>
+      <div class="header-row">
+  <img class="small-logo" src="PUPLogo.png" alt="PUP Logo" />
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p>Manage appointments and queue status.</p>
+  </div>
+
+  <button class="header-logout-btn" onclick="adminLogout()" title="Log Out">
+    <i class="fa-solid fa-right-from-bracket"></i>
+  </button>
+</div>
       </div>
 
       <div class="admin-stats">
