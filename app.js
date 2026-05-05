@@ -1389,12 +1389,14 @@ let estimatedWait = "-";
         });
 
         if (studentIndex !== -1) {
-          studentsAhead = String(studentIndex);
-          positionText = String(studentIndex + 1);
-        } else if (currentAppointment.status === "Serving" || currentAppointment.status === "Now Serving") {
-          studentsAhead = "0";
-          positionText = "Now Serving";
-        }
+  studentsAhead = String(studentIndex);
+  positionText = String(studentIndex + 1);
+  estimatedWait = String(studentIndex * 5) + " mins";
+} else if (currentAppointment.status === "Serving" || currentAppointment.status === "Now Serving") {
+  studentsAhead = "0";
+  positionText = "Now Serving";
+  estimatedWait = "0 mins";
+}
       } catch (error) {
         console.error("Error loading queue status:", error);
       }
