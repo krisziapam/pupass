@@ -206,6 +206,25 @@ function clearStudentSession() {
   localStorage.removeItem("pupass_student");
 }
 
+function studentLogout() {
+  clearStudentSession();
+
+  verifiedStudent = {
+    studentId: "",
+    fullName: "",
+    campus: ""
+  };
+
+  clearCurrentAppointment();
+
+  if (studentAppointmentUnsubscribe) {
+    studentAppointmentUnsubscribe();
+    studentAppointmentUnsubscribe = null;
+  }
+
+  showScreen("splash");
+}
+
     let currentAppointmentId = "";
     let currentAppointment = {
       exists: false,
