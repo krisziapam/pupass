@@ -959,6 +959,7 @@ textarea.input-box {
     border: 2px solid #800000;
   }
 }
+
 .admin-dashboard-shortcuts {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -970,26 +971,31 @@ textarea.input-box {
   .admin-dashboard-shortcuts {
     grid-template-columns: 1fr;
   }
+}
+
 .admin-forgot-link {
   display: block !important;
   width: fit-content !important;
   margin: 26px auto 0 !important;
   padding: 0 !important;
-  border: 0 !important;
-  outline: 0 !important;
-  background: none !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
   color: var(--maroon) !important;
   font-size: 18px !important;
   font-weight: 700 !important;
+  line-height: 1.2 !important;
   text-align: center !important;
   cursor: pointer !important;
   appearance: none !important;
   -webkit-appearance: none !important;
 }
 
-.admin-forgot-link:hover {
+.admin-forgot-link:hover,
+.admin-forgot-link:focus {
   text-decoration: underline !important;
-}
+  background: transparent !important;
+  outline: none !important;
 }
