@@ -847,10 +847,6 @@
         <button class="btn btn-gold" onclick="showScreen('studentLogin')">Continue as Student</button>
         <button class="btn btn-outline" onclick="showScreen('adminLogin')" style="margin-top:14px;">Continue as Admin</button>
 
-        <button class="btn btn-outline" onclick="showScreen('contact')" style="margin-top:14px;">
-  Contact the Creator
-</button>
-
       <p style="margin-top:60px;font-size:12px;">
   Polytechnic University of the Philippines<br>
   © 2026 Kriszia Pamintuan. All rights reserved.<br>
@@ -1579,24 +1575,6 @@
 
   </main>
 
-  <section id="contact" class="screen">
-  <div class="back" onclick="showScreen('splash')">← Back</div>
-
-  <h1>Contact the Creator</h1>
-  <p>Interested in this project? Send a message below.</p>
-
-  <label>Full Name</label>
-  <input class="input-box" type="text" id="contactName" placeholder="Enter your full name" />
-
-  <label>Email Address</label>
-  <input class="input-box" type="email" id="contactEmail" placeholder="Enter your email address" />
-
-  <label>Message</label>
-  <textarea class="input-box" id="contactMessage" placeholder="Write your message here..."></textarea>
-
-  <button class="btn" onclick="submitContactForm()">Submit Message</button>
-</section>
-
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
@@ -1621,32 +1599,7 @@
 
   <script>
 
-    async function submitContactForm() {
-  const name = document.getElementById("contactName").value.trim();
-  const email = document.getElementById("contactEmail").value.trim();
-  const message = document.getElementById("contactMessage").value.trim();
-
-  if (!name || !email || !message) {
-    alert("Please complete all fields before submitting.");
-    return;
-  }
-
-  await db.collection("contactMessages").add({
-    name: name,
-    email: email,
-    message: message,
-    status: "Unread",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  alert("Thank you! Your message has been sent.");
-
-  document.getElementById("contactName").value = "";
-  document.getElementById("contactEmail").value = "";
-  document.getElementById("contactMessage").value = "";
-
-  showScreen("splash");
-}
+   
     /* =====================================================
        PUPASS COMPLETE SINGLE-FILE SYSTEM
        - Student login with campus
