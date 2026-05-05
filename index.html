@@ -388,18 +388,23 @@
       font-size: 20px;
     }
 
-    .feedback-access-card {
-      margin-top: 14px;
-      background: white;
-      border-radius: 16px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: 0.2s ease;
-    }
+    .feedback-access-card .quick-icon {
+  background: var(--gold);
+  color: var(--maroon);
+}
+
+   .feedback-access-card {
+  margin-top: 14px;
+  background: var(--maroon); /* changed */
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--gold); /* optional gold border */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: 0.2s ease;
+}
 
     .feedback-access-card:hover {
       border-color: var(--gold);
@@ -407,15 +412,16 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
     }
 
-    .feedback-access-card strong {
-      color: var(--text);
-      font-size: 14px;
-    }
+   .feedback-access-card strong {
+  color: white;
+  font-size: 14px;
+}
 
-    .feedback-access-card p {
-      font-size: 12px;
-      margin-top: 2px;
-    }
+   .feedback-access-card p {
+  color: #fff4cc; /* light gold */
+  font-size: 12px;
+  margin-top: 2px;
+}
 
     .status-pill {
       display: inline-block;
