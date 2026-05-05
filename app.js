@@ -2665,3 +2665,23 @@ document.addEventListener("DOMContentLoaded", function () {
     forgotBtn.addEventListener("click", resetAdminPassword);
   }
 });
+document.addEventListener("click", async function (event) {
+  if (!event.target.classList.contains("admin-forgot-link")) return;
+
+  event.preventDefault();
+
+  const emailInput = document.getElementById("adminEmail");
+
+  if (!emailInput || !emailInput.value.trim()) {
+    showMessage("Please enter your admin email first.");
+    return;
+  }
+
+  try {
+    await auth.sendPasswordResetEmail(emailInput.value.trim());
+    showMessage("Password reset email sent. Please check your inbox or spam folder.");
+  } catch (error) {
+    console.error("Password reset error:", error);
+    showMessage(error.message || "Could not send password reset email.");
+  }
+});
