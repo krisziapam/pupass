@@ -2028,29 +2028,22 @@ let message = "";
       }
     }
 
-   window.resetAdminPassword = async function () {
-  const emailInput = document.getElementById("adminEmail");
+    async function resetAdminPassword() {
+      const email = document.getElementById("adminEmail").value.trim();
 
-  if (!emailInput) {
-    showMessage("Admin email field not found.");
-    return;
-  }
+      if (!email) {
+        showMessage("Please enter your admin email first.");
+        return;
+      }
 
-  const email = emailInput.value.trim();
-
-  if (!email) {
-    showMessage("Please enter your admin email first.");
-    return;
-  }
-
-  try {
-    await auth.sendPasswordResetEmail(email);
-    showMessage("Password reset email sent. Please check your inbox or spam folder.");
-  } catch (error) {
-    console.error("Password reset error:", error);
-    showMessage(error.message || "Could not send password reset email.");
-  }
-};
+      try {
+        await auth.sendPasswordResetEmail(email);
+        showMessage("Password reset email sent. Please check your inbox or spam folder.");
+      } catch (error) {
+        console.error("Password reset error:", error);
+        showMessage("Could not send password reset email. Please check if the email is registered.");
+      }
+    }
 
     async function createAdminAccount() {
       const email = document.getElementById("newAdminEmail").value.trim();
@@ -2614,4 +2607,47 @@ function openAdminTechnicalReports() {
         showMessage("Report was not reopened.");
       }
     }
-});
+
+    window.addEventListener("load", function() {
+  setupCalendarDefaults();
+  selectServiceDataOnly("registrar");
+
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      openAdminDashboard();
+    } else {
+      restoreStudentSession();
+    }
+  });
+
+      const studentIdInput = document.getElementById("studentIdInput");
+      const fullNameInput = document.getElementById("fullNameInput");
+      const campusInput = document.getElementById("campusInput");
+
+      if (studentIdInput) {
+        studentIdInput.addEventListener("input", function() {
+          if (this.value.trim() !== "") {
+            this.classList.remove("input-error");
+            document.getElementById("studentIdError").style.display = "none";
+          }
+        });
+      }
+
+      if (fullNameInput) {
+        fullNameInput.addEventListener("input", function() {
+          if (this.value.trim() !== "") {
+            this.classList.remove("input-error");
+            document.getElementById("fullNameError").style.display = "none";
+          }
+        });
+      }
+
+      if (campusInput) {
+        campusInput.addEventListener("change", function() {
+          if (this.value.trim() !== "") {
+            this.classList.remove("input-error");
+            document.getElementById("campusError").style.display = "none";
+          }
+        });
+      }
+    });
