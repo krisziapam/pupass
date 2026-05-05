@@ -4,7 +4,7 @@ async function submitContactForm() {
   const message = document.getElementById("contactMessage").value.trim();
 
   if (!name || !email || !message) {
-    alert("Please complete all fields before submitting.");
+    showMessage("Please complete all fields before submitting.");
     return;
   }
 
@@ -17,7 +17,7 @@ async function submitContactForm() {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    alert("Thank you! Your inquiry has been sent.");
+    showMessage("Thank you! Your inquiry has been sent.");
 
     document.getElementById("contactName").value = "";
     document.getElementById("contactEmail").value = "";
@@ -27,7 +27,7 @@ async function submitContactForm() {
 
   } catch (error) {
     console.error("Contact form error:", error);
-    alert("Inquiry failed to send. Please check Firebase Firestore Rules.");
+    showMessage("Inquiry failed to send. Please check Firebase Firestore Rules.");
   }
 }
 
@@ -419,7 +419,7 @@ function hideMessage() {
 
       if (reason) {
         if (showAlert) {
-          alert(reason);
+          showMessage(reason);
         }
 
         const nextAvailableDateKey = getNextAvailableBookingDateKey(appointmentDateInput.value);
@@ -734,7 +734,7 @@ function hideMessage() {
         showScreen("dashboard");
       } catch (error) {
         console.error("Error checking student appointment:", error);
-        alert("Could not check existing booking. Please check your internet connection or Firebase rules.");
+        showMessage("Could not check existing booking. Please check your internet connection or Firebase rules.");
       }
     }
 
@@ -742,7 +742,7 @@ function hideMessage() {
       if (!ensureStudentLoggedIn()) return;
 
       if (currentAppointment.exists && isActiveBooking(currentAppointment.status)) {
-        alert("You already have an active booking. You can book again after it is completed or cancelled.");
+        showMessage("You already have an active booking. You can book again after it is completed or cancelled.");
         showAppointmentScreen();
         return;
       }
@@ -829,7 +829,7 @@ function hideMessage() {
       const purpose = document.getElementById("purposeText").value.trim();
 
       if (!dateKey) {
-        alert("Please select an appointment date.");
+        showMessage("Please select an appointment date.");
         return;
       }
 
@@ -838,7 +838,7 @@ function hideMessage() {
       if (unavailableReason) {
         updateAppointmentDateError(dateKey);
         await updateAppointmentSlotNote(dateKey);
-        alert(unavailableReason);
+        showMessage(unavailableReason);
         showScreen("book");
         return;
       }
@@ -847,13 +847,13 @@ function hideMessage() {
 
       if (bookedSlots >= DAILY_BOOKING_LIMIT) {
         await updateAppointmentSlotNote(dateKey);
-        alert("Sorry, this date is already fully booked. Please choose another appointment date.");
+        showMessage("Sorry, this date is already fully booked. Please choose another appointment date.");
         showScreen("book");
         return;
       }
 
       if (!purpose) {
-        alert("Please enter your purpose of visit.");
+        showMessage("Please enter your purpose of visit.");
         return;
       }
 
@@ -1038,7 +1038,7 @@ function hideMessage() {
       const purpose = getText("confirmPurpose");
 
       if (!studentId || !fullName || !campus || !office || !requestType || !appointmentDateKey || !appointmentTime || !purpose) {
-        alert("Some appointment details are missing. Please review your booking again.");
+        showMessage("Some appointment details are missing. Please review your booking again.");
         return;
       }
 
@@ -1046,7 +1046,7 @@ function hideMessage() {
 
       if (unavailableReason) {
         await updateAppointmentSlotNote(appointmentDateKey);
-        alert(unavailableReason);
+        showMessage(unavailableReason);
         showScreen("book");
         return;
       }
@@ -1058,7 +1058,7 @@ function hideMessage() {
           setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
           listenToStudentAppointment(existingAppointment.id);
 
-          alert("You already have an active booking. Showing your existing appointment instead.");
+          showMessage("You already have an active booking. Showing your existing appointment instead.");
           showAppointmentScreen();
           return;
         }
@@ -1067,7 +1067,7 @@ function hideMessage() {
 
         if (bookingsToday >= DAILY_BOOKING_LIMIT) {
           await updateAppointmentSlotNote(appointmentDateKey);
-          alert("Sorry, this date is already fully booked. Please choose another appointment date.");
+          showMessage("Sorry, this date is already fully booked. Please choose another appointment date.");
           showScreen("book");
           return;
         }
@@ -1510,7 +1510,7 @@ let estimatedWait = "-";
 
     async function cancelAppointment() {
       if (!currentAppointmentId) {
-        alert("No appointment selected.");
+        showMessage("No appointment selected.");
         return;
       }
 
@@ -1523,10 +1523,10 @@ let estimatedWait = "-";
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        alert("Appointment cancelled.");
+        showMessage("Appointment cancelled.");
       } catch (error) {
         console.error("Error cancelling appointment:", error);
-        alert("Appointment was not cancelled.");
+        showMessage("Appointment was not cancelled.");
       }
     }
 
@@ -1752,12 +1752,12 @@ let estimatedWait = "-";
       const steps = document.getElementById("technicalErrorSteps").value.trim();
 
       if (!description) {
-        alert("Please describe the technical problem.");
+        showMessage("Please describe the technical problem.");
         return;
       }
 
       if (!steps) {
-        alert("Please describe the steps before the error happened.");
+        showMessage("Please describe the steps before the error happened.");
         return;
       }
 
@@ -1766,7 +1766,7 @@ let estimatedWait = "-";
 
         if (activeReport) {
           renderStudentTechnicalReportBox(activeReport);
-          alert("You already have an active technical report. Please wait for admin to resolve or close it.");
+          showMessage("You already have an active technical report. Please wait for admin to resolve or close it.");
           return;
         }
 
@@ -1790,13 +1790,13 @@ let estimatedWait = "-";
         document.getElementById("technicalErrorDescription").value = "";
         document.getElementById("technicalErrorSteps").value = "";
 
-        alert("Technical report submitted. Report Number: " + reportNumber);
+        showMessage("Technical report submitted. Report Number: " + reportNumber);
 
         const newReport = await getStudentActiveTechnicalReport();
         renderStudentTechnicalReportBox(newReport);
       } catch (error) {
         console.error("Error submitting technical report:", error);
-        alert("Technical report was not submitted. Please check Firebase rules.");
+        showMessage("Technical report was not submitted. Please check Firebase rules.");
       }
     }
 
@@ -1953,7 +1953,7 @@ let estimatedWait = "-";
       const password = document.getElementById("adminPassword").value;
 
       if (!email || !password) {
-        alert("Please enter admin email and password.");
+        showMessage("Please enter admin email and password.");
         return;
       }
 
@@ -1962,7 +1962,7 @@ let estimatedWait = "-";
         openAdminDashboard();
       } catch (error) {
         console.error("Admin login error:", error);
-        alert("Invalid admin email or password.");
+        showMessage("Invalid admin email or password.");
       }
     }
 
@@ -1970,16 +1970,16 @@ let estimatedWait = "-";
       const email = document.getElementById("adminEmail").value.trim();
 
       if (!email) {
-        alert("Please enter your admin email first.");
+        showMessage("Please enter your admin email first.");
         return;
       }
 
       try {
         await auth.sendPasswordResetEmail(email);
-        alert("Password reset email sent. Please check your inbox or spam folder.");
+        showMessage("Password reset email sent. Please check your inbox or spam folder.");
       } catch (error) {
         console.error("Password reset error:", error);
-        alert("Could not send password reset email. Please check if the email is registered.");
+        showMessage("Could not send password reset email. Please check if the email is registered.");
       }
     }
 
@@ -1989,22 +1989,22 @@ let estimatedWait = "-";
       const registrationCode = document.getElementById("adminRegistrationCode").value.trim();
 
       if (!email || !password || !registrationCode) {
-        alert("Please complete all admin account fields.");
+        showMessage("Please complete all admin account fields.");
         return;
       }
 
       if (registrationCode !== ADMIN_REGISTRATION_CODE) {
-        alert("Invalid admin registration code.");
+        showMessage("Invalid admin registration code.");
         return;
       }
 
       try {
         await auth.createUserWithEmailAndPassword(email, password);
-        alert("Admin account created successfully. You are now logged in.");
+        showMessage("Admin account created successfully. You are now logged in.");
         openAdminDashboard();
       } catch (error) {
         console.error("Create admin error:", error);
-        alert("Admin account was not created. The email may already exist or the password may be too weak.");
+        showMessage("Admin account was not created. The email may already exist or the password may be too weak.");
       }
     }
 
@@ -2312,7 +2312,7 @@ let estimatedWait = "-";
         });
       } catch (error) {
         console.error("Error updating appointment:", error);
-        alert("Status was not updated.");
+        showMessage("Status was not updated.");
       }
     }
 
@@ -2481,7 +2481,7 @@ let estimatedWait = "-";
         });
       } catch (error) {
         console.error("Error updating technical report:", error);
-        alert("Report was not updated.");
+        showMessage("Report was not updated.");
       }
     }
 
@@ -2500,7 +2500,7 @@ let estimatedWait = "-";
         });
       } catch (error) {
         console.error("Error responding to technical report:", error);
-        alert("Response was not saved.");
+        showMessage("Response was not saved.");
       }
     }
 
@@ -2517,7 +2517,7 @@ let estimatedWait = "-";
         });
       } catch (error) {
         console.error("Error closing technical report:", error);
-        alert("Report was not closed.");
+        showMessage("Report was not closed.");
       }
     }
 
@@ -2537,7 +2537,7 @@ let estimatedWait = "-";
         renderAdminTechnicalReportInbox();
       } catch (error) {
         console.error("Error reopening technical report:", error);
-        alert("Report was not reopened.");
+        showMessage("Report was not reopened.");
       }
     }
 
