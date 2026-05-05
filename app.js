@@ -1100,8 +1100,9 @@ function hideMessage() {
         updatePassDetails();
         showScreen("pass");
       } catch (error) {
-        console.error("Error saving booking with sequential queue:", error);
-showMessage("Booking was not saved. Please check your connection and try again.");      }
+     console.error("Error saving booking with sequential queue:", error);
+     showMessage("Booking was not saved. Please check your connection and try again.");
+      }
     }
 
     function updatePassDetails() {
