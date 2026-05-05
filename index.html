@@ -685,26 +685,30 @@
           <p>Log in using your staff account to manage appointments.</p>
         </div>
 
-                <div class="admin-auth-form">
-          <input class="input-box admin-auth-input" type="email" id="adminEmail" placeholder="Admin email" />
-          <input class="input-box admin-auth-input" type="password" id="adminPassword" placeholder="Password" />
+        <div style="margin-top:38px;">
+          <input class="input-box" type="email" id="adminEmail" placeholder="Admin Email" />
+          <input class="input-box" type="password" id="adminPassword" placeholder="Password" />
 
-          <button class="btn admin-login-btn" onclick="adminLogin()">Log In</button>
-          <button class="admin-forgot-link" type="button" onclick="resetAdminPassword()">Forgot password?</button>
+          <button class="btn" onclick="adminLogin()">Log In</button>
+          <button class="btn btn-outline" onclick="resetAdminPassword()">Forgot Password?</button>
+          <button class="btn btn-outline" onclick="showAdminCreateForm()">Create Admin Account</button>
 
-          <div class="admin-create-wrap">
-            <button class="btn btn-outline admin-create-toggle" onclick="showAdminCreateForm()">Create admin account</button>
-          </div>
-
-          <div id="adminCreateForm" class="admin-create-form" style="display:none;">
+          <div id="adminCreateForm" style="display:none; margin-top:20px;">
             <h2>Create Admin Account</h2>
-            <input class="input-box admin-auth-input" type="email" id="newAdminEmail" placeholder="New admin email" />
-            <input class="input-box admin-auth-input" type="password" id="newAdminPassword" placeholder="New admin password" />
-            <input class="input-box admin-auth-input" type="text" id="adminRegistrationCode" value="PUPASS2026" readonly style="background:#eeeeee; color:#777777; cursor:not-allowed;" />
+            <input class="input-box" type="email" id="newAdminEmail" placeholder="New Admin Email" />
+            <input class="input-box" type="password" id="newAdminPassword" placeholder="New Admin Password" />
+<input 
+  class="input-box" 
+  type="text" 
+  id="adminRegistrationCode" 
+  value="PUPASS2026" 
+  readonly 
+  style="background:#eeeeee; color:#777777; cursor:not-allowed;" 
+/>
             <button class="btn btn-gold" onclick="createAdminAccount()">Create Account</button>
           </div>
 
-          <p class="muted-center admin-auth-note">For authorized PUP staff only.</p>
+          <p class="muted-center">For authorized PUP staff only.</p>
         </div>
       </div>
     </section>
