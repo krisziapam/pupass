@@ -1101,8 +1101,7 @@ function hideMessage() {
         showScreen("pass");
       } catch (error) {
         console.error("Error saving booking with sequential queue:", error);
-        alert("Booking was not saved. Please check Firebase setup and Firestore Rules.");
-      }
+showMessage("Booking was not saved. Please check your connection and try again.");      }
     }
 
     function updatePassDetails() {
