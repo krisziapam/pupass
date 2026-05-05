@@ -970,4 +970,56 @@ textarea.input-box {
   .admin-dashboard-shortcuts {
     grid-template-columns: 1fr;
   }
+  #adminLogin .login-wrapper {
+  max-width: 520px;
+}
+
+.admin-auth-form {
+  margin-top: 42px;
+}
+
+.admin-auth-input {
+  height: 58px;
+  border-radius: 18px;
+  font-size: 17px;
+  margin-bottom: 18px;
+}
+
+.admin-login-btn {
+  min-height: 58px;
+  border-radius: 18px;
+  margin-top: 14px;
+  font-size: 18px;
+}
+
+.admin-forgot-link {
+  display: block;
+  width: fit-content;
+  margin: 28px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--maroon);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-create-wrap {
+  margin-top: 118px;
+}
+
+.admin-create-toggle {
+  min-height: 58px;
+  border-radius: 18px;
+  font-size: 18px;
+}
+
+.admin-create-form {
+  margin-top: 24px;
+}
+
+.admin-auth-note {
+  margin-top: 26px;
+}
 }
