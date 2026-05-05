@@ -995,18 +995,30 @@ textarea.input-box {
 .admin-forgot-link {
   display: block;
   width: fit-content;
-  margin: 28px auto 0;
+  margin: 34px auto 0;
   padding: 0;
-  border: 0;
+  border: none;
+  outline: none;
   background: transparent;
   color: var(--maroon);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.admin-forgot-link:hover,
+.admin-forgot-link:focus {
+  text-decoration: underline;
+  background: transparent;
+  outline: none;
 }
 
 .admin-create-wrap {
-  margin-top: 118px;
+  margin-top: 150px;
 }
 
 .admin-create-toggle {
