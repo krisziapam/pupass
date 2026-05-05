@@ -922,4 +922,30 @@ textarea.input-box {
     box-shadow: none;
     border: 2px solid #800000;
   }
+  .header-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.header-row > div {
+  flex: 1;
+}
+
+.header-logout-btn {
+  margin-left: auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.header-logout-btn:hover {
+  background: #ffffff;
+  color: var(--maroon);
+}
 }
