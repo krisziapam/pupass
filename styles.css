@@ -728,6 +728,25 @@ textarea.input-box {
   cursor: pointer;
 }
 
+.system-message {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 520px;
+  width: calc(100% - 32px);
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--maroon);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  z-index: 2000;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .center-block {
   text-align: center;
   margin-top: 35px;
