@@ -2045,7 +2045,7 @@ let message = "";
 
   try {
     await auth.sendPasswordResetEmail(email);
-    alert("Password reset email sent. Please check your inbox or spam folder.");
+    showMessage("Password reset email sent. Please check your inbox or spam folder.");
   } catch (error) {
     console.error("Password reset error:", error);
     alert(error.message || "Could not send password reset email.");
