@@ -1446,6 +1446,10 @@ let estimatedWait = "-";
             <span>Students Ahead</span>
             <span>${safePupassText(studentsAhead)}</span>
           </div>
+          <div class="detail-row">
+  <span>Estimated Wait</span>
+  <span>${safePupassText(estimatedWait)}</span>
+</div>
         </div>
 
         <div class="card">
