@@ -161,6 +161,7 @@ label {
   display: flex;
   align-items: center;
   gap: 18px;
+  width: 100%;
 }
 
 .header-row > div {
@@ -169,13 +170,13 @@ label {
 
 .header-logout-btn {
   margin-left: auto;
-  width: 48px;
-  height: 48px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   border: 2px solid #ffffff;
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  font-size: 20px;
+  font-size: 28px;
   cursor: pointer;
   flex-shrink: 0;
   display: flex;
@@ -815,11 +816,11 @@ textarea.input-box {
     height: 52px;
   }
 
-  .header-logout-btn {
-    width: 42px;
-    height: 42px;
-    font-size: 18px;
-  }
+ .header-logout-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 24px;
+}
 
   .desktop-layout {
     display: block;
