@@ -970,21 +970,26 @@ textarea.input-box {
   .admin-dashboard-shortcuts {
     grid-template-columns: 1fr;
   }
-  .admin-forgot-link {
-  display: block;
-  width: fit-content;
-  margin: 26px auto 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--maroon);
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  cursor: pointer;
+.admin-forgot-link {
+  display: block !important;
+  width: fit-content !important;
+  margin: 26px auto 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--maroon) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
 .admin-forgot-link:hover {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 }
