@@ -30,6 +30,33 @@ async function submitContactForm() {
     alert("Inquiry failed to send. Please check Firebase Firestore Rules.");
   }
 }
+
+function showMessage(message) {
+  const box = document.getElementById("systemMessage");
+  if (!box) return;
+
+  box.innerText = message;
+  box.style.display = "block";
+
+  setTimeout(function() {
+    box.style.display = "none";
+  }, 4000);
+}
+
+function showLoadingMessage(message) {
+  const box = document.getElementById("systemMessage");
+  if (!box) return;
+
+  box.innerText = message;
+  box.style.display = "block";
+}
+
+function hideMessage() {
+  const box = document.getElementById("systemMessage");
+  if (!box) return;
+
+  box.style.display = "none";
+}
     
     /* =====================================================
        PUPASS COMPLETE SINGLE-FILE SYSTEM
