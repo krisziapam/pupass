@@ -587,11 +587,12 @@ function clearStudentSession() {
       verifiedStudent.fullName = item.fullName || verifiedStudent.fullName;
       verifiedStudent.campus = item.campus || verifiedStudent.campus;
 
-   updateStudentHeader();
+ updateStudentHeader();
 updatePassDetails();
 saveStudentSession();
+}
 
-    async function getStudentAppointments(studentId, rawStudentId) {
+async function getStudentAppointments(studentId, rawStudentId) {
       const studentKey = normalizeStudentId(studentId);
       const appointmentsMap = {};
 
