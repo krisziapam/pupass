@@ -450,7 +450,7 @@ textarea.input-box {
 }
 
 .admin-feedback-card {
-  margin: 22px 0;
+  margin: 0;
   background: var(--maroon);
   color: white;
   border-radius: 18px;
