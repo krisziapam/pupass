@@ -2092,6 +2092,11 @@ let message = "";
       renderAdminTechnicalReportInbox();
     }
 
+function openAdminTechnicalReports() {
+  showScreen("adminTechnicalReports");
+  renderAdminTechnicalReportInbox();
+}
+
     function ensureAdminFilterUI() {
       const area = document.getElementById("adminFilterArea");
       if (!area) return;
