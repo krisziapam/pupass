@@ -173,6 +173,39 @@ function hideMessage() {
       campus: ""
     };
 
+function saveStudentSession() {
+  localStorage.setItem("pupass_student", JSON.stringify({
+    verifiedStudent: verifiedStudent,
+    currentAppointmentId: currentAppointmentId,
+    currentAppointment: currentAppointment
+  }));
+}
+
+function restoreStudentSession() {
+  const savedSession = localStorage.getItem("pupass_student");
+
+  if (!savedSession) return;
+
+  const session = JSON.parse(savedSession);
+
+  verifiedStudent = session.verifiedStudent || verifiedStudent;
+  currentAppointmentId = session.currentAppointmentId || "";
+  currentAppointment = session.currentAppointment || currentAppointment;
+
+  updateStudentHeader();
+  updatePassDetails();
+
+  if (currentAppointmentId) {
+    listenToStudentAppointment(currentAppointmentId);
+  }
+
+  showScreen("dashboard");
+}
+
+function clearStudentSession() {
+  localStorage.removeItem("pupass_student");
+}
+
     let currentAppointmentId = "";
     let currentAppointment = {
       exists: false,
@@ -554,9 +587,9 @@ function hideMessage() {
       verifiedStudent.fullName = item.fullName || verifiedStudent.fullName;
       verifiedStudent.campus = item.campus || verifiedStudent.campus;
 
-      updateStudentHeader();
-      updatePassDetails();
-    }
+   updateStudentHeader();
+updatePassDetails();
+saveStudentSession();
 
     async function getStudentAppointments(studentId, rawStudentId) {
       const studentKey = normalizeStudentId(studentId);
@@ -724,14 +757,15 @@ function hideMessage() {
 
         if (!valid) return;
 
-        verifiedStudent.studentId = studentId;
-        verifiedStudent.fullName = fullName;
-        verifiedStudent.campus = campus;
+      verifiedStudent.studentId = studentId;
+verifiedStudent.fullName = fullName;
+verifiedStudent.campus = campus;
 
-        clearCurrentAppointment();
-        updateStudentHeader();
+clearCurrentAppointment();
+updateStudentHeader();
+saveStudentSession();
 
-        showScreen("dashboard");
+showScreen("dashboard");
       } catch (error) {
         console.error("Error checking student appointment:", error);
         showMessage("Could not check existing booking. Please check your internet connection or Firebase rules.");
@@ -2543,8 +2577,9 @@ let estimatedWait = "-";
     }
 
     window.addEventListener("load", function() {
-      setupCalendarDefaults();
-      selectServiceDataOnly("registrar");
+  setupCalendarDefaults();
+  selectServiceDataOnly("registrar");
+  restoreStudentSession();
 
       const studentIdInput = document.getElementById("studentIdInput");
       const fullNameInput = document.getElementById("fullNameInput");
