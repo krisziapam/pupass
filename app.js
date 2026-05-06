@@ -1372,6 +1372,7 @@ showScreen("dashboard");
 
     async function showQueueFromNav() {
       if (!ensureStudentLoggedIn()) return;
+      showScreen("queue");
 
       const content = document.getElementById("queueContent");
 
@@ -1385,7 +1386,6 @@ showScreen("dashboard");
           <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
         `;
 
-        showScreen("queue");
         return;
       }
 
