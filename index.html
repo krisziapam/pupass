@@ -317,6 +317,20 @@
           <label>Purpose of Visit</label>
           <textarea class="input-box" id="purposeText"></textarea>
 
+          <!-- Checkbox to opt-in for email -->
+<div>
+  <label>
+    <input type="checkbox" id="emailOptIn" />
+    I want to receive a booking notification
+  </label>
+</div>
+
+<!-- Email field, hidden by default -->
+<div id="emailFieldContainer" style="display: none;">
+  <label for="studentEmail">Email:</label>
+  <input type="email" id="studentEmail" placeholder="Enter your email" />
+</div>
+
           <div class="card gold-card">
             <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
           </div>
@@ -829,5 +843,20 @@
   <script src="firebase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="app.js"></script>
+
+  <script>
+const emailOptIn = document.getElementById("emailOptIn");
+const emailFieldContainer = document.getElementById("emailFieldContainer");
+
+emailOptIn.addEventListener("change", () => {
+  if (emailOptIn.checked) {
+    emailFieldContainer.style.display = "block"; // show email field
+  } else {
+    emailFieldContainer.style.display = "none"; // hide email field
+  }
+});
+</script>
+
+  
 </body>
 </html>
