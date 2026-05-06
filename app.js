@@ -1,3 +1,4 @@
+emailjs.init("xXEQyL-jQXwq8eZWu");
 async function submitContactForm() {
   const name = document.getElementById("contactName").value.trim();
   const email = document.getElementById("contactEmail").value.trim();
@@ -1061,6 +1062,23 @@ showScreen("dashboard");
         }, { merge: true });
 
         transaction.set(appointmentRef, finalAppointment);
+
+        // Send confirmation email
+emailjs.send("service_3v5suh8", "template_mavt53k", {
+    student_email: getText("confirmStudentEmail"), // replace with your form variable
+    student_name: fullName,                        // already defined in this function
+    queue_number: finalAppointment.queueNumber,   // use your appointment object
+    office: office,
+    request: requestType,
+    date: appointmentDate,
+    time: appointmentTime
+})
+.then(() => {
+    console.log("Confirmation email sent.");
+})
+.catch((error) => {
+    console.error("Email failed:", error);
+});
       });
 
       return {
