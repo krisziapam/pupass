@@ -1063,6 +1063,31 @@ showScreen("dashboard");
 
         transaction.set(appointmentRef, finalAppointment);
 
+// --- Send confirmation email ---
+emailjs.send("service_3v5suh8", "template_mavt53k", {
+    student_email: getText("confirmStudentEmail"), // student email from input
+    student_name: fullName,
+    queue_number: finalAppointment.queueNumber,
+    office: office,
+    request: requestType,
+    date: appointmentDate,
+    time: appointmentTime
+})
+.then(() => {
+    console.log("Confirmation email sent.");
+})
+.catch((error) => {
+    console.error("Email failed:", error);
+});
+
+// Return the appointment info
+return {
+    appointmentId: appointmentRef.id,
+    appointment: finalAppointment
+};
+
+        
+
         // Send confirmation email
 emailjs.send("service_3v5suh8", "template_mavt53k", {
     student_email: getText("confirmStudentEmail"), // replace with your form variable
