@@ -2712,7 +2712,7 @@ function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
 
   inactivityTimer = setTimeout(() => {
-    alert("You have been logged out due to inactivity.");
+    showMessage("You have been logged out due to inactivity.");
 
     if (document.getElementById("admin")?.classList.contains("active")) {
       adminLogout();
