@@ -1011,7 +1011,7 @@ font-weight: 600 !important;
 }
 
 .bottom-nav .nav-item.active {
-  color: var(--gold) !important;
-  background: var(--dark-maroon);
+  color: #ffffff !important;
+  background: transparent;
   font-weight: 900;
 }
