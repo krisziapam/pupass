@@ -1,4 +1,3 @@
-emailjs.init("xXEQyL-jQXwq8eZWu");
 async function submitContactForm() {
   const name = document.getElementById("contactName").value.trim();
   const email = document.getElementById("contactEmail").value.trim();
@@ -794,10 +793,17 @@ showScreen("dashboard");
     }
 
     function goToServices() {
-  if (!ensureStudentLoggedIn()) return;
+      if (!ensureStudentLoggedIn()) return;
 
-  showScreen("services");
-}
+      if (currentAppointment.exists && isActiveBooking(currentAppointment.status)) {
+        showMessage("You already have an active booking. You can book again after it is completed or cancelled.");
+        showAppointmentScreen();
+        return;
+      }
+
+      setupCalendarDefaults();
+      showScreen("services");
+    }
 
     function showRequirementsScreen() {
       if (!ensureStudentLoggedIn()) return;
@@ -1062,29 +1068,6 @@ showScreen("dashboard");
         }, { merge: true });
 
         transaction.set(appointmentRef, finalAppointment);
-
-
-        // Send confirmation email
-emailjs.send("service_3v5suh8", "template_mavt53k", {
- // Get email from input
-const studentEmail = document.getElementById("studentEmail").value.trim();
-const emailOptIn = document.getElementById("emailOptIn");
-
-// Only send if student opted in and email is not empty
-if (emailOptIn.checked && studentEmail) {
-    emailjs.send("service_3v5suh8", "template_mavt53k", {
-        student_email: studentEmail,
-        student_name: fullName,
-        queue_number: finalAppointment.queueNumber,
-        office: office,
-        request: requestType,
-        date: appointmentDate,
-        time: appointmentTime
-    })
-    .then(() => console.log("Confirmation email sent."))
-    .catch((error) => console.error("Email failed:", error));
-}
-});
       });
 
       return {
@@ -1396,7 +1379,6 @@ if (emailOptIn.checked && studentEmail) {
 
     async function showQueueFromNav() {
       if (!ensureStudentLoggedIn()) return;
-      showScreen("queue");
 
       const content = document.getElementById("queueContent");
 
@@ -1410,6 +1392,7 @@ if (emailOptIn.checked && studentEmail) {
           <button class="btn btn-gold" onclick="goToServices()">Book Appointment</button>
         `;
 
+        showScreen("queue");
         return;
       }
 
@@ -2062,7 +2045,7 @@ let message = "";
 
   try {
     await auth.sendPasswordResetEmail(email);
-    showMessage("Password reset email sent. Please check your inbox or spam folder.");
+    alert("Password reset email sent. Please check your inbox or spam folder.");
   } catch (error) {
     console.error("Password reset error:", error);
     alert(error.message || "Could not send password reset email.");
@@ -2147,36 +2130,25 @@ function openAdminTechnicalReports() {
           </p>
         </div>
 
-      <div class="card">
-  <h2>Filter by Office</h2>
-  <p>Select which office queue you want to manage.</p>
+        <div class="card">
+          <h2>Filter by Office</h2>
+          <p>Select which office queue you want to manage.</p>
 
-  <select
-    class="input-box admin-office-filter-dropdown"
-    onchange="setAdminOfficeFilter(this.value)"
-    style="margin-top:12px;"
-  >
-    ${ADMIN_OFFICES.map(function(office) {
-      const selected = selectedAdminOfficeFilter === office ? "selected" : "";
-      return `<option value="${safePupassText(office)}" ${selected}>${safePupassText(office)}</option>`;
-    }).join("")}
-  </select>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+            ${ADMIN_OFFICES.map(function(office) {
+              const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
+              return `
+                <button class="btn btn-small ${activeClass}" onclick="setAdminOfficeFilter('${safePupassText(office)}')">
+                  ${safePupassText(office)}
+                </button>
+              `;
+            }).join("")}
+          </div>
 
-  <div class="admin-office-filter-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-    ${ADMIN_OFFICES.map(function(office) {
-      const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
-      return `
-        <button class="btn btn-small ${activeClass}" onclick="setAdminOfficeFilter('${safePupassText(office)}')">
-          ${safePupassText(office)}
-        </button>
-      `;
-    }).join("")}
-  </div>
-
-  <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
-    Currently showing office: ${safePupassText(selectedAdminOfficeFilter)}
-  </p>
-</div>
+          <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
+            Currently showing office: ${safePupassText(selectedAdminOfficeFilter)}
+          </p>
+        </div>
 
         <div class="card">
           <h2>Queue View</h2>
@@ -2686,25 +2658,3 @@ function openAdminTechnicalReports() {
         });
       }
     });
-/* Auto logout after inactivity */
-let inactivityTimer;
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-
-  inactivityTimer = setTimeout(() => {
-    showMessage("You have been logged out due to inactivity.");
-
-    if (document.getElementById("admin")?.classList.contains("active")) {
-      adminLogout();
-    } else {
-      studentLogout();
-    }
-  }, 15 * 60 * 1000); // 15 minutes
-}
-
-["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(event => {
-  document.addEventListener(event, resetInactivityTimer);
-});
-
-resetInactivityTimer();
