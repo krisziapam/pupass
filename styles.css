@@ -1015,3 +1015,16 @@ font-weight: 600 !important;
   background: transparent;
   font-weight: 900;
 }
+/* Mobile status badge fix */
+@media (max-width: 768px) {
+  #appointment .status-pill {
+    min-width: 80px;
+    text-align: center;
+    white-space: nowrap;
+    padding: 6px 12px;
+  }
+
+  #appointment .detail-row {
+    align-items: center;
+  }
+}
