@@ -842,5 +842,13 @@
 
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+
+  const emailOptIn = document.getElementById("emailOptIn");
+const emailFieldContainer = document.getElementById("emailFieldContainer");
+
+emailOptIn.addEventListener("change", () => {
+  emailFieldContainer.style.display = emailOptIn.checked ? "block" : "none";
+});
+  
 </body>
 </html>
