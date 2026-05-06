@@ -1038,3 +1038,18 @@ font-weight: 600 !important;
     min-height: 102px;
   }
 }
+
+/* Admin office filter: dropdown on mobile only */
+.admin-office-filter-dropdown {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-office-filter-dropdown {
+    display: block;
+  }
+
+  .admin-office-filter-buttons {
+    display: none !important;
+  }
+}
