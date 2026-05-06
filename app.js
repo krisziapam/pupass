@@ -2659,7 +2659,12 @@ function resetInactivityTimer() {
 
   inactivityTimer = setTimeout(() => {
     alert("You have been logged out due to inactivity.");
-    studentLogout();
+
+    if (document.getElementById("admin")?.classList.contains("active")) {
+      adminLogout();
+    } else {
+      studentLogout();
+    }
   }, 15 * 60 * 1000); // 15 minutes
 }
 
