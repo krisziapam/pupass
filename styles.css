@@ -999,3 +999,18 @@ font-weight: 600 !important;
   background: transparent !important;
   outline: none !important;
 }
+/* Bottom navigation visibility fix */
+.bottom-nav {
+  background: #ffffff;
+}
+
+.bottom-nav .nav-item {
+  color: var(--maroon) !important;
+  font-weight: 800;
+}
+
+.bottom-nav .nav-item.active {
+  color: var(--maroon) !important;
+  background: var(--light-gold);
+  font-weight: 900;
+}
