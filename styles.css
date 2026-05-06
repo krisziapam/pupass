@@ -1233,3 +1233,262 @@ font-weight: 600 !important;
     padding: 10px;
   }
 }
+
+/* =========================================================
+   FINAL MOBILE CLARITY PATCH
+   Purpose: clear, phone-first layout only. Desktop unchanged.
+   ========================================================= */
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    padding: 0 !important;
+    background: var(--bg);
+  }
+
+  .app {
+    width: 100%;
+    min-height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .screen {
+    min-height: 100dvh;
+    padding: 14px;
+    padding-bottom: 96px;
+  }
+
+  .page-header {
+    margin: -14px -14px 14px;
+    padding: 16px 14px 18px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-row > div {
+    min-width: 0;
+  }
+
+  .small-logo,
+  .pass-top .small-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .header-logout-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  h1 {
+    font-size: 21px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  p,
+  label,
+  input,
+  select,
+  textarea,
+  .detail-row {
+    font-size: 13px;
+  }
+
+  .desktop-layout,
+  .grid,
+  .quick-row,
+  .queue-grid,
+  .admin-list,
+  .admin-dashboard-shortcuts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .card,
+  .gold-card,
+  .queue-pass,
+  .now-serving,
+  .next-line-card,
+  .stat-card,
+  .list-item,
+  .feedback-access-card {
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .quick-card,
+  .service-card,
+  #dashboard .service-card {
+    min-height: unset;
+    padding: 12px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .quick-icon,
+  .service-card .icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    margin: 0;
+    border-radius: 12px;
+    font-size: 18px;
+  }
+
+  .service-card p,
+  .feedback-access-card p {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .input-box {
+    height: 46px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+
+  textarea.input-box {
+    height: 92px;
+  }
+
+  .btn {
+    min-height: 46px;
+    font-size: 14px;
+    border-radius: 12px;
+    padding: 11px 14px;
+  }
+
+  .btn-row,
+  .admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-small {
+    width: auto;
+    flex: 1 1 120px;
+    margin: 0;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    margin: 0;
+    padding: 7px 6px;
+    gap: 4px;
+    border-radius: 16px;
+    font-size: 11px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+  }
+
+  .nav-item {
+    padding: 7px 2px;
+    line-height: 1.15;
+    border-radius: 12px;
+  }
+
+  .nav-item.active {
+    background: var(--light-gold);
+    color: var(--maroon);
+  }
+
+  .detail-row {
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .detail-row span:last-child {
+    max-width: 60%;
+    word-break: break-word;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card strong {
+    font-size: 34px;
+  }
+
+  .queue-number {
+    font-size: 42px;
+  }
+
+  .qr {
+    width: 130px;
+    height: 130px;
+  }
+
+  .splash {
+    padding: 28px 18px;
+  }
+
+  .logo-circle {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 16px;
+  }
+
+  .app-title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 420px) {
+  .screen {
+    padding: 12px;
+    padding-bottom: 92px;
+  }
+
+  .page-header {
+    margin: -12px -12px 12px;
+    padding: 14px 12px 16px;
+  }
+
+  .bottom-nav {
+    left: 8px;
+    right: 8px;
+    font-size: 10px;
+  }
+
+  .quick-card,
+  .service-card,
+  #dashboard .service-card {
+    padding: 10px;
+  }
+}
