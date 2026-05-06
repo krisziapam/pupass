@@ -2123,25 +2123,36 @@ function openAdminTechnicalReports() {
           </p>
         </div>
 
-        <div class="card">
-          <h2>Filter by Office</h2>
-          <p>Select which office queue you want to manage.</p>
+      <div class="card">
+  <h2>Filter by Office</h2>
+  <p>Select which office queue you want to manage.</p>
 
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            ${ADMIN_OFFICES.map(function(office) {
-              const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
-              return `
-                <button class="btn btn-small ${activeClass}" onclick="setAdminOfficeFilter('${safePupassText(office)}')">
-                  ${safePupassText(office)}
-                </button>
-              `;
-            }).join("")}
-          </div>
+  <select
+    class="input-box admin-office-filter-dropdown"
+    onchange="setAdminOfficeFilter(this.value)"
+    style="margin-top:12px;"
+  >
+    ${ADMIN_OFFICES.map(function(office) {
+      const selected = selectedAdminOfficeFilter === office ? "selected" : "";
+      return `<option value="${safePupassText(office)}" ${selected}>${safePupassText(office)}</option>`;
+    }).join("")}
+  </select>
 
-          <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
-            Currently showing office: ${safePupassText(selectedAdminOfficeFilter)}
-          </p>
-        </div>
+  <div class="admin-office-filter-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+    ${ADMIN_OFFICES.map(function(office) {
+      const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
+      return `
+        <button class="btn btn-small ${activeClass}" onclick="setAdminOfficeFilter('${safePupassText(office)}')">
+          ${safePupassText(office)}
+        </button>
+      `;
+    }).join("")}
+  </div>
+
+  <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
+    Currently showing office: ${safePupassText(selectedAdminOfficeFilter)}
+  </p>
+</div>
 
         <div class="card">
           <h2>Queue View</h2>
