@@ -1028,3 +1028,13 @@ font-weight: 600 !important;
     align-items: center;
   }
 }
+/* Admin shortcut cards equal height on mobile */
+@media (max-width: 768px) {
+  .admin-dashboard-shortcuts {
+    align-items: stretch;
+  }
+
+  .admin-feedback-card {
+    min-height: 102px;
+  }
+}
