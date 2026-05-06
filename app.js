@@ -2651,3 +2651,20 @@ function openAdminTechnicalReports() {
         });
       }
     });
+/* Auto logout after inactivity */
+let inactivityTimer;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+
+  inactivityTimer = setTimeout(() => {
+    alert("You have been logged out due to inactivity.");
+    studentLogout();
+  }, 15 * 60 * 1000); // 15 minutes
+}
+
+["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(event => {
+  document.addEventListener(event, resetInactivityTimer);
+});
+
+resetInactivityTimer();
