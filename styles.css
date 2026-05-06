@@ -1053,3 +1053,21 @@ font-weight: 600 !important;
     display: none !important;
   }
 }
+/* Mobile date input overlap fix */
+@media (max-width: 768px) {
+  input[type="date"],
+  .input-box[type="date"],
+  select.input-box {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: block;
+  }
+
+  .card,
+  .screen,
+  .desktop-layout > div {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
