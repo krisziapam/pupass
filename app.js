@@ -793,17 +793,10 @@ showScreen("dashboard");
     }
 
     function goToServices() {
-      if (!ensureStudentLoggedIn()) return;
+  if (!ensureStudentLoggedIn()) return;
 
-      if (currentAppointment.exists && isActiveBooking(currentAppointment.status)) {
-        showMessage("You already have an active booking. You can book again after it is completed or cancelled.");
-        showAppointmentScreen();
-        return;
-      }
-
-      setupCalendarDefaults();
-      showScreen("services");
-    }
+  showScreen("services");
+}
 
     function showRequirementsScreen() {
       if (!ensureStudentLoggedIn()) return;
