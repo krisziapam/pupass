@@ -758,6 +758,7 @@ if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
 }
 
 return;
+}
 
         let valid = true;
 
