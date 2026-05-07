@@ -60,11 +60,11 @@ function hideMessage() {
     
     /* =====================================================
        PUPASS COMPLETE SINGLE-FILE SYSTEM
-       - Student login with campus
+       - Student login for Main Campus only
        - One active booking per student
        - Sequential queue numbers by office/date
        - Oldest booking first
-       - Admin campus + office filter
+       - Admin office filter
        - Technical reports
        - Requirements + Announcements
        - Dashboard queue monitor
@@ -104,17 +104,7 @@ function hideMessage() {
       "2026-12-31": "Last Day of the Year"
     };
 
-    const ADMIN_CAMPUSES = [
-      "All",
-      "PUP Main / Sta. Mesa",
-      "PUP Taguig",
-      "PUP San Juan",
-      "PUP Parañaque",
-      "PUP Quezon City",
-      "PUP Bataan",
-      "PUP Sta. Maria",
-      "PUP Other Campus / Branch"
-    ];
+    const MAIN_CAMPUS = "PUP Main / Sta. Mesa";
 
     const ADMIN_OFFICES = [
       "All",
@@ -170,7 +160,7 @@ function hideMessage() {
     let verifiedStudent = {
       studentId: "",
       fullName: "",
-      campus: ""
+      campus: MAIN_CAMPUS
     };
 
 function saveStudentSession() {
@@ -189,6 +179,7 @@ function restoreStudentSession() {
   const session = JSON.parse(savedSession);
 
   verifiedStudent = session.verifiedStudent || verifiedStudent;
+  verifiedStudent.campus = MAIN_CAMPUS;
   currentAppointmentId = session.currentAppointmentId || "";
   currentAppointment = session.currentAppointment || currentAppointment;
 
@@ -212,7 +203,7 @@ function studentLogout() {
   verifiedStudent = {
     studentId: "",
     fullName: "",
-    campus: ""
+    campus: MAIN_CAMPUS
   };
 
   clearCurrentAppointment();
@@ -243,8 +234,7 @@ function studentLogout() {
     let technicalReportsUnsubscribe = null;
     let dashboardOfficeQueueRefreshTimer = null;
 
-    let selectedAdminCampusFilter =
-      localStorage.getItem("pupass_admin_campus_filter") || "PUP Main / Sta. Mesa";
+    let selectedAdminCampusFilter = MAIN_CAMPUS;
 
     let selectedAdminOfficeFilter =
       localStorage.getItem("pupass_admin_office_filter") || "Registrar";
@@ -323,12 +313,7 @@ function studentLogout() {
     }
 
     function adminCampusMatches(campus) {
-      if (!selectedAdminCampusFilter || selectedAdminCampusFilter === "All") {
-        return true;
-      }
-
-      return normalizeAdminCampusName(campus) ===
-        normalizeAdminCampusName(selectedAdminCampusFilter);
+      return normalizeAdminCampusName(campus) === normalizeAdminCampusName(MAIN_CAMPUS);
     }
 
     function adminOfficeMatches(office) {
@@ -604,7 +589,7 @@ function studentLogout() {
 
       verifiedStudent.studentId = item.studentId || verifiedStudent.studentId;
       verifiedStudent.fullName = item.fullName || verifiedStudent.fullName;
-      verifiedStudent.campus = item.campus || verifiedStudent.campus;
+      verifiedStudent.campus = MAIN_CAMPUS;
 
  updateStudentHeader();
 updatePassDetails();
@@ -712,7 +697,11 @@ async function getStudentAppointments(studentId, rawStudentId) {
       const rawStudentId = studentIdInput.value.trim();
       const studentId = normalizeStudentId(rawStudentId);
       const fullName = fullNameInput.value.trim();
-      const campus = campusInput.value.trim();
+      const campus = MAIN_CAMPUS;
+
+      if (campusInput) {
+        campusInput.value = MAIN_CAMPUS;
+      }
 
       if (!studentId) {
         setStudentError(studentIdInput, studentIdError, true);
@@ -744,13 +733,14 @@ async function getStudentAppointments(studentId, rawStudentId) {
   setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
 
   await db.collection("appointments").doc(existingAppointment.id).set({
-    studentKey: studentId
+    studentKey: studentId,
+    campus: MAIN_CAMPUS
   }, { merge: true });
 
   listenToStudentAppointment(existingAppointment.id);
 
   fullNameInput.value = verifiedStudent.fullName;
-  campusInput.value = verifiedStudent.campus;
+  if (campusInput) campusInput.value = MAIN_CAMPUS;
 
   setStudentError(fullNameInput, fullNameError, false);
   setStudentError(campusInput, campusError, false);
@@ -768,10 +758,7 @@ async function getStudentAppointments(studentId, rawStudentId) {
           setStudentError(fullNameInput, fullNameError, false);
         }
 
-        if (!campus) {
-          setStudentError(campusInput, campusError, true);
-          valid = false;
-        } else {
+        if (campusError) {
           setStudentError(campusInput, campusError, false);
         }
 
@@ -779,7 +766,7 @@ async function getStudentAppointments(studentId, rawStudentId) {
 
       verifiedStudent.studentId = studentId;
 verifiedStudent.fullName = fullName;
-verifiedStudent.campus = campus;
+verifiedStudent.campus = MAIN_CAMPUS;
 
 clearCurrentAppointment();
 updateStudentHeader();
@@ -2110,27 +2097,6 @@ function openAdminTechnicalReports() {
 
       area.innerHTML = `
         <div class="card">
-          <h2>Filter by Campus / Site</h2>
-          <p>Select the campus/site this admin is managing.</p>
-
-          <select
-            class="input-box"
-            id="adminCampusFilterSelect"
-            onchange="setAdminCampusFilter(this.value)"
-            style="margin-top:12px;"
-          >
-            ${ADMIN_CAMPUSES.map(function(campus) {
-              const selected = selectedAdminCampusFilter === campus ? "selected" : "";
-              return `<option value="${safePupassText(campus)}" ${selected}>${safePupassText(campus)}</option>`;
-            }).join("")}
-          </select>
-
-          <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
-            Currently showing campus/site: ${safePupassText(selectedAdminCampusFilter)}
-          </p>
-        </div>
-
-        <div class="card">
           <h2>Filter by Office</h2>
           <p>Select which office queue you want to manage.</p>
 
@@ -2166,10 +2132,8 @@ function openAdminTechnicalReports() {
       `;
     }
 
-    function setAdminCampusFilter(campus) {
-      selectedAdminCampusFilter = campus;
-      localStorage.setItem("pupass_admin_campus_filter", campus);
-      ensureAdminFilterUI();
+    function setAdminCampusFilter() {
+      selectedAdminCampusFilter = MAIN_CAMPUS;
       renderAdminAppointments();
     }
 
@@ -2317,7 +2281,7 @@ function openAdminTechnicalReports() {
             list.innerHTML = `
               <div class="card gold-card">
                 <h2>No Appointments Found</h2>
-                <p>No appointments found for ${safePupassText(selectedAdminCampusFilter)} and ${safePupassText(selectedAdminOfficeFilter)}.</p>
+                <p>No appointments found for ${safePupassText(MAIN_CAMPUS)} and ${safePupassText(selectedAdminOfficeFilter)}.</p>
               </div>
             `;
             return;
@@ -2616,6 +2580,7 @@ function openAdminTechnicalReports() {
     }
 
     window.addEventListener("load", function() {
+  localStorage.removeItem("pupass_admin_campus_filter");
   setupCalendarDefaults();
   selectServiceDataOnly("registrar");
 
