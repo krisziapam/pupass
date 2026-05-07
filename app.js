@@ -732,10 +732,6 @@ async function getStudentAppointments(studentId, rawStudentId) {
 
   setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
 
-        if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
-  showMessage("You already have an existing active booking. Please complete or cancel it before making another booking.");
-}
-
   await db.collection("appointments").doc(existingAppointment.id).set({
     studentKey: studentId,
     campus: MAIN_CAMPUS
@@ -753,6 +749,7 @@ async function getStudentAppointments(studentId, rawStudentId) {
 
 if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
   setTimeout(function() {
+    alert("You already have an existing active booking. Please complete or cancel it before making another booking.");
     showMessage("You already have an existing active booking. Please complete or cancel it before making another booking.");
   }, 300);
 }
@@ -1130,6 +1127,7 @@ const hasActiveBooking = allAppointments.some(function(item) {
 });
 
 if (hasActiveBooking) {
+  alert("You already have an active booking. Only one booking is allowed at a time.");
   showMessage("You already have an active booking. Only one booking is allowed at a time.");
   showAppointmentScreen();
   return;
