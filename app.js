@@ -1021,20 +1021,63 @@ showScreen("dashboard");
       return officeKey + "_" + dateKey;
     }
 
-    async function createSequentialAppointment(newAppointment, office, appointmentDateKey) {
-      const counterId = getQueueCounterId(office, appointmentDateKey);
-      const counterRef = db.collection("queueCounters").doc(counterId);
-      const appointmentRef = db.collection("appointments").doc();
+   async function createSequentialAppointment(newAppointment, office, appointmentDateKey) {
+  const studentId = normalizeStudentId(newAppointment.studentId);
+  const lockRef = db.collection("activeStudentBookings").doc(studentId);
 
-      let finalAppointment = null;
+  const counterId = getQueueCounterId(office, appointmentDateKey);
+  const counterRef = db.collection("queueCounters").doc(counterId);
+  const appointmentRef = db.collection("appointments").doc();
 
-      await db.runTransaction(async function(transaction) {
-        const counterDoc = await transaction.get(counterRef);
-        let lastNumber = 0;
+  let finalAppointment = null;
 
-        if (counterDoc.exists) {
-          lastNumber = counterDoc.data().lastNumber || 0;
-        }
+  await db.runTransaction(async function(transaction) {
+    const lockDoc = await transaction.get(lockRef);
+
+    if (lockDoc.exists) {
+      throw new Error("ACTIVE_BOOKING_EXISTS");
+    }
+
+    const counterDoc = await transaction.get(counterRef);
+    let lastNumber = 0;
+
+    if (counterDoc.exists) {
+      lastNumber = counterDoc.data().lastNumber || 0;
+    }
+
+    const nextNumber = lastNumber + 1;
+    const queueNumber = formatSequentialQueueNumber(office, nextNumber);
+
+    finalAppointment = {
+      ...newAppointment,
+      queueNumber: queueNumber,
+      queueSequence: nextNumber,
+      queueCounterId: counterId
+    };
+
+    transaction.set(lockRef, {
+      studentId: studentId,
+      appointmentId: appointmentRef.id,
+      status: "Waiting",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    transaction.set(counterRef, {
+      office: office,
+      officeKey: getQueueOfficeKey(office),
+      appointmentDateKey: appointmentDateKey,
+      lastNumber: nextNumber,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    transaction.set(appointmentRef, finalAppointment);
+  });
+
+  return {
+    appointmentId: appointmentRef.id,
+    appointment: finalAppointment
+  };
+}
 
         const nextNumber = lastNumber + 1;
         const queueNumber = formatSequentialQueueNumber(office, nextNumber);
@@ -1467,9 +1510,17 @@ let estimatedWait = "-";
   positionText = "Now Serving";
   estimatedWait = "0 mins";
 }
-      } catch (error) {
-        console.error("Error loading queue status:", error);
-      }
+     } catch (error) {
+  console.error("Error saving booking with sequential queue:", error);
+
+  if (error.message === "ACTIVE_BOOKING_EXISTS") {
+    showMessage("You already have an active booking. Only one booking is allowed at a time.");
+    showAppointmentScreen();
+    return;
+  }
+
+  showMessage("Booking was not saved. Please check your connection and try again.");
+}
 
       const isServing =
         currentAppointment.status === "Serving" ||
