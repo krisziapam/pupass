@@ -749,9 +749,15 @@ async function getStudentAppointments(studentId, rawStudentId) {
   setStudentError(fullNameInput, fullNameError, false);
   setStudentError(campusInput, campusError, false);
 
-  showScreen("dashboard");
-  return;
+ showScreen("dashboard");
+
+if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
+  setTimeout(function() {
+    showMessage("You already have an existing active booking. Please complete or cancel it before making another booking.");
+  }, 300);
 }
+
+return;
 
         let valid = true;
 
