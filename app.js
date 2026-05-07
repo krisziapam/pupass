@@ -732,6 +732,10 @@ async function getStudentAppointments(studentId, rawStudentId) {
 
   setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
 
+        if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
+  showMessage("You already have an existing active booking. Please complete or cancel it before making another booking.");
+}
+
   await db.collection("appointments").doc(existingAppointment.id).set({
     studentKey: studentId,
     campus: MAIN_CAMPUS
