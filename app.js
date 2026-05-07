@@ -313,8 +313,8 @@ function studentLogout() {
     }
 
     function adminCampusMatches(campus) {
-      return normalizeAdminCampusName(campus) === normalizeAdminCampusName(MAIN_CAMPUS);
-    }
+  return true;
+}
 
     function adminOfficeMatches(office) {
       if (selectedAdminOfficeFilter === "All") {
@@ -1582,6 +1582,14 @@ let estimatedWait = "-";
         return;
       }
 
+      async function releaseActiveStudentBooking(studentId) {
+  const studentKey = normalizeStudentId(studentId || verifiedStudent.studentId);
+
+  if (!studentKey) return;
+
+  await db.collection("activeStudentBookings").doc(studentKey).delete();
+}
+
       const confirmCancel = confirm("Cancel this appointment?");
       if (!confirmCancel) return;
 
@@ -1590,6 +1598,7 @@ let estimatedWait = "-";
           status: "Cancelled",
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+await releaseActiveStudentBooking(verifiedStudent.studentId);
 
         showMessage("Appointment cancelled.");
       } catch (error) {
@@ -1609,6 +1618,8 @@ let estimatedWait = "-";
           status: "Completed",
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        await releaseActiveStudentBooking(verifiedStudent.studentId);
 
         showScreen("thankYou");
       } catch (error) {
