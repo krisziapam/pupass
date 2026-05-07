@@ -1106,15 +1106,6 @@ if (hasActiveBooking) {
   return;
 }
 
-          
-          setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
-          listenToStudentAppointment(existingAppointment.id);
-
-          showMessage("You already have an active booking. Showing your existing appointment instead.");
-          showAppointmentScreen();
-          return;
-        }
-
         const bookingsToday = await countBookingsForDate(appointmentDateKey);
 
         if (bookingsToday >= DAILY_BOOKING_LIMIT) {
