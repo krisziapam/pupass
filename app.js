@@ -1503,16 +1503,8 @@ let estimatedWait = "-";
   positionText = "Now Serving";
   estimatedWait = "0 mins";
 }
-     } catch (error) {
-  console.error("Error saving booking with sequential queue:", error);
-
-  if (error.message === "ACTIVE_BOOKING_EXISTS") {
-    showMessage("You already have an active booking. Only one booking is allowed at a time.");
-    showAppointmentScreen();
-    return;
-  }
-
-  showMessage("Booking was not saved. Please check your connection and try again.");
+  } catch (error) {
+  console.error("Error loading queue status:", error);
 }
 
       const isServing =
