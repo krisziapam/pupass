@@ -747,13 +747,6 @@ async function getStudentAppointments(studentId, rawStudentId) {
 
  showScreen("dashboard");
 
-if (isActiveBooking(existingAppointment.data.status || "Waiting")) {
-  setTimeout(function() {
-    alert("You already have an existing active booking. Please complete or cancel it before making another booking.");
-    showMessage("You already have an existing active booking. Please complete or cancel it before making another booking.");
-  }, 300);
-}
-
 return;
 }
 
