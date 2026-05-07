@@ -1093,9 +1093,20 @@ showScreen("dashboard");
       }
 
       try {
-        const existingAppointment = await getLatestStudentAppointment(studentId, studentId);
+        
+       const allAppointments = await getStudentAppointments(studentId, studentId);
 
-        if (existingAppointment && isActiveBooking(existingAppointment.data.status)) {
+const hasActiveBooking = allAppointments.some(function(item) {
+  return isActiveBooking(item.data.status);
+});
+
+if (hasActiveBooking) {
+  showMessage("You already have an active booking. Only one booking is allowed at a time.");
+  showAppointmentScreen();
+  return;
+}
+
+          
           setCurrentAppointmentFromFirestore(existingAppointment.id, existingAppointment.data);
           listenToStudentAppointment(existingAppointment.id);
 
