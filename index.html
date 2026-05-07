@@ -54,7 +54,7 @@
         <div class="center-block">
           <img class="logo-circle" src="PUPLogo.png" alt="PUP Logo" style="width:78px;height:78px;margin-bottom:22px;" />
           <h1>Student Login</h1>
-          <p>Enter your Student ID Number, Full Name, and Campus/Site to continue booking.</p>
+          <p>Enter your Student ID Number and Full Name to continue booking for PUP Main / Sta. Mesa.</p>
         </div>
 
         <div style="margin-top:34px;">
@@ -66,19 +66,9 @@
           <input class="input-box" type="text" id="fullNameInput" placeholder="Enter your full name" />
           <div class="error-text" id="fullNameError">Full Name is required.</div>
 
-          <label>Campus / Site <span style="color:var(--red);">*</span></label>
-          <select class="input-box" id="campusInput">
-            <option value="">Select your campus/site</option>
-            <option>PUP Main / Sta. Mesa</option>
-            <option>PUP Taguig</option>
-            <option>PUP San Juan</option>
-            <option>PUP Parañaque</option>
-            <option>PUP Quezon City</option>
-            <option>PUP Bataan</option>
-            <option>PUP Sta. Maria</option>
-            <option>PUP Other Campus / Branch</option>
-          </select>
-          <div class="error-text" id="campusError">Campus / Site is required.</div>
+          <label>Campus / Site</label>
+          <input class="input-box" type="text" id="campusInput" value="PUP Main / Sta. Mesa" readonly />
+          <div class="error-text" id="campusError">Main Campus is selected automatically.</div>
 
           <div class="card gold-card">
             <p><b>Note:</b> Dummy student accounts are allowed for prototype testing. No password is required. If you are using a non-real student number, please create a unique random number, as this will be used as the basis for tracking and monitoring your appointment.</p>
