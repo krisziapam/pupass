@@ -1079,27 +1079,6 @@ showScreen("dashboard");
   };
 }
 
-        const nextNumber = lastNumber + 1;
-        const queueNumber = formatSequentialQueueNumber(office, nextNumber);
-
-        finalAppointment = {
-          ...newAppointment,
-          queueNumber: queueNumber,
-          queueSequence: nextNumber,
-          queueCounterId: counterId
-        };
-
-        transaction.set(counterRef, {
-          office: office,
-          officeKey: getQueueOfficeKey(office),
-          appointmentDateKey: appointmentDateKey,
-          lastNumber: nextNumber,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        transaction.set(appointmentRef, finalAppointment);
-      });
-
       return {
         appointmentId: appointmentRef.id,
         appointment: finalAppointment
