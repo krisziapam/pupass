@@ -1059,7 +1059,8 @@ showScreen("dashboard");
       studentId: studentId,
       appointmentId: appointmentRef.id,
       status: "Waiting",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     transaction.set(counterRef, {
@@ -1078,6 +1079,7 @@ showScreen("dashboard");
     appointment: finalAppointment
   };
 }
+
 
     async function saveBookingToFirestore() {
       const studentId = normalizeStudentId(getText("confirmStudentId"));
@@ -1490,9 +1492,16 @@ let estimatedWait = "-";
   positionText = "Now Serving";
   estimatedWait = "0 mins";
 }
-        
-  } catch (error) {
-  console.error("Error loading queue status:", error);
+     } catch (error) {
+  console.error("Error saving booking with sequential queue:", error);
+
+  if (error.message === "ACTIVE_BOOKING_EXISTS") {
+    showMessage("You already have an active booking. Only one booking is allowed at a time.");
+    showAppointmentScreen();
+    return;
+  }
+
+  showMessage("Booking was not saved. Please check your connection and try again.");
 }
 
       const isServing =
@@ -1576,13 +1585,8 @@ let estimatedWait = "-";
       showScreen("queue");
     }
 
-    async function cancelAppointment() {
-      if (!currentAppointmentId) {
-        showMessage("No appointment selected.");
-        return;
-      }
-
-      async function releaseActiveStudentBooking(studentId) {
+    
+async function releaseActiveStudentBooking(studentId) {
   const studentKey = normalizeStudentId(studentId || verifiedStudent.studentId);
 
   if (!studentKey) return;
@@ -1590,43 +1594,52 @@ let estimatedWait = "-";
   await db.collection("activeStudentBookings").doc(studentKey).delete();
 }
 
-      const confirmCancel = confirm("Cancel this appointment?");
-      if (!confirmCancel) return;
+async function cancelAppointment() {
+  if (!currentAppointmentId) {
+    showMessage("No appointment selected.");
+    return;
+  }
 
-      try {
-        await db.collection("appointments").doc(currentAppointmentId).update({
-          status: "Cancelled",
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-await releaseActiveStudentBooking(verifiedStudent.studentId);
+  const confirmCancel = confirm("Cancel this appointment?");
+  if (!confirmCancel) return;
 
-        showMessage("Appointment cancelled.");
-      } catch (error) {
-        console.error("Error cancelling appointment:", error);
-        showMessage("Appointment was not cancelled.");
-      }
-    }
+  try {
+    await db.collection("appointments").doc(currentAppointmentId).update({
+      status: "Cancelled",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    await releaseActiveStudentBooking(verifiedStudent.studentId);
+
+    showMessage("Appointment cancelled.");
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    showMessage("Appointment was not cancelled.");
+  }
+}
+
 
     async function completeAppointment() {
-      if (!currentAppointmentId) {
-        showScreen("thankYou");
-        return;
-      }
+  if (!currentAppointmentId) {
+    showScreen("thankYou");
+    return;
+  }
 
-      try {
-        await db.collection("appointments").doc(currentAppointmentId).update({
-          status: "Completed",
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+  try {
+    await db.collection("appointments").doc(currentAppointmentId).update({
+      status: "Completed",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-        await releaseActiveStudentBooking(verifiedStudent.studentId);
+    await releaseActiveStudentBooking(verifiedStudent.studentId);
 
-        showScreen("thankYou");
-      } catch (error) {
-        console.error("Error completing appointment:", error);
-        showScreen("thankYou");
-      }
-    }
+    showScreen("thankYou");
+  } catch (error) {
+    console.error("Error completing appointment:", error);
+    showScreen("thankYou");
+  }
+}
+
 
   function openFeedbackSurvey() {
   const feedbackFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfWcDZugsMhWRd3oLtIBXC4_b1TEFmcAYnymFRRnaUIIcK3Rw/viewform?usp=sharing&ouid=112133641462307009901";
@@ -2380,16 +2393,37 @@ function openAdminTechnicalReports() {
     }
 
     async function updateAdminStatus(appointmentId, newStatus) {
-      try {
-        await db.collection("appointments").doc(appointmentId).update({
+  try {
+    const appointmentRef = db.collection("appointments").doc(appointmentId);
+    const appointmentDoc = await appointmentRef.get();
+    const appointmentData = appointmentDoc.exists ? appointmentDoc.data() : {};
+    const studentId = normalizeStudentId(appointmentData.studentId || appointmentData.studentKey || "");
+
+    await appointmentRef.update({
+      status: newStatus,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (studentId) {
+      const lockRef = db.collection("activeStudentBookings").doc(studentId);
+
+      if (newStatus === "Completed" || newStatus === "Cancelled" || newStatus === "No-show") {
+        await lockRef.delete();
+      } else if (isActiveBooking(newStatus)) {
+        await lockRef.set({
+          studentId: studentId,
+          appointmentId: appointmentId,
           status: newStatus,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } catch (error) {
-        console.error("Error updating appointment:", error);
-        showMessage("Status was not updated.");
+        }, { merge: true });
       }
     }
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    showMessage("Status was not updated.");
+  }
+}
+
 
     function ensureAdminTechnicalReportControls() {
       const controls = document.getElementById("adminTechnicalReportControls");
