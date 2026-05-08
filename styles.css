@@ -1628,3 +1628,27 @@ font-weight: 600 !important;
     background: linear-gradient(135deg, #f2f2f2, #e8e8e8);
   }
 }
+
+/* Admin desktop: make Appointment Date and Search inputs smaller and cleaner */
+@media (min-width: 769px) {
+  #adminDateFilter,
+  #adminAppointmentSearch {
+    width: 100%;
+    max-width: 420px;
+    height: 50px;
+    border-radius: 14px;
+  }
+
+  #adminAppointmentSearch {
+    max-width: 520px;
+  }
+
+  /* Optional: keep labels and controls closer together */
+  #adminFilterArea label {
+    margin-bottom: 8px;
+  }
+
+  #adminFilterArea .admin-filter-grid {
+    row-gap: 18px;
+  }
+}
