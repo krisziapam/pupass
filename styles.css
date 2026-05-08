@@ -359,6 +359,100 @@ label {
   line-height: 1.3;
 }
 
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.calendar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+
+.calendar-dot-available {
+  background: white;
+}
+
+.calendar-dot-unavailable {
+  background: #eeeeee;
+}
+
+.calendar-dot-full {
+  background: #ffdddd;
+  border-color: var(--red);
+}
+
+.calendar-date-reason {
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-top: -4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+.calendar-date-reason-available {
+  background: #f3fff5;
+  border-color: #b8dfbd;
+  color: var(--green);
+}
+
+.calendar-date-reason-unavailable {
+  background: #f5f5f5;
+  border-color: #dddddd;
+  color: var(--gray);
+}
+
+.calendar-date-reason-full {
+  background: #fff5f5;
+  border-color: #f1b5b5;
+  color: var(--red);
+}
+
+.flatpickr-day.pupass-unavailable-date,
+.flatpickr-day.disabled.pupass-unavailable-date {
+  color: #999999 !important;
+  background: #f2f2f2 !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
+}
+
+.flatpickr-day.pupass-full-date,
+.flatpickr-day.disabled.pupass-full-date {
+  color: var(--red) !important;
+  background: #fff1f1 !important;
+  border-color: #f1b5b5 !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
+}
+
+.flatpickr-day.selected {
+  background: var(--maroon) !important;
+  border-color: var(--maroon) !important;
+  color: white !important;
+}
+
+.flatpickr-day.today {
+  border-color: var(--gold) !important;
+}
+
 .input-box {
   width: 100%;
   height: 52px;
