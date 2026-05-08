@@ -2015,83 +2015,107 @@ function bookingHistoryMatchesFilter(status) {
   return status === bookingHistoryFilter;
 }
 
-    async function showNotificationsScreen() {
-      if (!ensureStudentLoggedIn()) return;
+  async function showNotificationsScreen() {
+  if (!ensureStudentLoggedIn()) return;
 
-      const content = document.getElementById("notificationsContent");
+  const content = document.getElementById("notificationsContent");
 
-      content.innerHTML = `<div class="card"><p>Loading booking history...</p></div>`;
-      showScreen("notifications");
+  content.innerHTML =
+    renderBookingHistoryControls() +
+    `<div class="card"><p>Loading booking history...</p></div>`;
 
-      try {
-        const appointments = await getStudentAppointments(
-          verifiedStudent.studentId,
-          verifiedStudent.studentId
-        );
+  showScreen("notifications");
 
-        const history = appointments.filter(function(item) {
-          const status = item.data.status || "";
-          return status === "Completed" || status === "Cancelled";
-        });
+  try {
+    const appointments = await getStudentAppointments(
+      verifiedStudent.studentId,
+      verifiedStudent.studentId
+    );
 
-        if (!history.length) {
-          content.innerHTML = `
-            <div class="card gold-card">
-              <h2>No Booking History Yet</h2>
-              <p>Completed and cancelled bookings will appear here.</p>
-              <span class="status-pill">No History</span>
-            </div>
-          `;
-          return;
-        }
+    const historyStatuses = ["Completed", "Cancelled", "No-show"];
 
-        content.innerHTML = history.map(function(item) {
-          const booking = item.data;
-          const status = booking.status || "";
-          const statusClass = status === "Cancelled" ? "status-cancelled" : "status-completed";
+    const history = appointments.filter(function(item) {
+      const status = item.data.status || "";
 
-          return `
-            <div class="card">
-              <h2>${safePupassText(booking.office || "Appointment")}</h2>
+      return historyStatuses.includes(status) &&
+        bookingHistoryMatchesFilter(status);
+    });
 
-              <div class="detail-row">
-                <span>Status</span>
-                <span><span class="status-pill ${statusClass}">${safePupassText(status)}</span></span>
-              </div>
-
-              <div class="detail-row">
-                <span>Queue Number</span>
-                <span>${safePupassText(booking.queueNumber || "")}</span>
-              </div>
-
-              <div class="detail-row">
-                <span>Request</span>
-                <span>${safePupassText(booking.requestType || "")}</span>
-              </div>
-
-              <div class="detail-row">
-                <span>Date</span>
-                <span>${safePupassText(booking.appointmentDate || "")}</span>
-              </div>
-
-              <div class="detail-row">
-                <span>Time</span>
-                <span>${safePupassText(booking.appointmentTime || "")}</span>
-              </div>
-            </div>
-          `;
-        }).join("");
-      } catch (error) {
-        console.error("Error loading booking history:", error);
-
-        content.innerHTML = `
-          <div class="card">
-            <h2>Could not load booking history</h2>
-            <p>Please check Firebase rules or internet connection.</p>
+    if (!history.length) {
+      content.innerHTML =
+        renderBookingHistoryControls() +
+        `
+          <div class="card gold-card">
+            <h2>No ${safePupassText(bookingHistoryFilter)} Booking History</h2>
+            <p>
+              ${
+                bookingHistoryFilter === "All"
+                  ? "Completed, cancelled, and no-show bookings will appear here."
+                  : "No bookings found with this status."
+              }
+            </p>
+            <span class="status-pill">No History</span>
           </div>
         `;
-      }
+      return;
     }
+
+    content.innerHTML =
+      renderBookingHistoryControls() +
+      history.map(function(item) {
+        const booking = item.data;
+        const status = booking.status || "";
+        const statusClass = getStatusClass(status);
+
+        return `
+          <div class="card">
+            <h2>${safePupassText(booking.office || "Appointment")}</h2>
+
+            <div class="detail-row">
+              <span>Status</span>
+              <span>
+                <span class="status-pill ${statusClass}">
+                  ${safePupassText(status)}
+                </span>
+              </span>
+            </div>
+
+            <div class="detail-row">
+              <span>Queue Number</span>
+              <span>${safePupassText(booking.queueNumber || "")}</span>
+            </div>
+
+            <div class="detail-row">
+              <span>Request</span>
+              <span>${safePupassText(booking.requestType || "")}</span>
+            </div>
+
+            <div class="detail-row">
+              <span>Date</span>
+              <span>${safePupassText(booking.appointmentDate || "")}</span>
+            </div>
+
+            <div class="detail-row">
+              <span>Time</span>
+              <span>${safePupassText(booking.appointmentTime || "")}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+  } catch (error) {
+    console.error("Error loading booking history:", error);
+
+    content.innerHTML =
+      renderBookingHistoryControls() +
+      `
+        <div class="card">
+          <h2>Could not load booking history</h2>
+          <p>Please check Firebase rules or internet connection.</p>
+        </div>
+      `;
+  }
+}
 
     function createTechnicalReportNumber() {
       const date = new Date();
