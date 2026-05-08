@@ -816,8 +816,19 @@
 
       <div id="adminFilterArea"></div>
 
-      <div class="section-title">Appointment Queue</div>
-      <div id="adminAppointmentList" class="admin-list"></div>
+     <div class="admin-queue-title-row">
+  <div class="section-title">Appointment Queue</div>
+
+  <button
+    class="btn btn-small btn-outline"
+    type="button"
+    onclick="refreshAdminAppointments()"
+  >
+    Refresh
+  </button>
+</div>
+
+<div id="adminAppointmentList" class="admin-list"></div>
     </section>
 
     <section id="adminTechnicalReports" class="screen">
