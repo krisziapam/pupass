@@ -296,13 +296,40 @@
           <select class="input-box" id="requestType" onchange="updatePurpose()"></select>
 
           <label>Appointment Date</label>
-          <input class="input-box" type="date" id="appointmentDate" />
-          <div class="error-text" id="appointmentDateError">
-            Bookings are not available on weekends or Philippine holidays.
-          </div>
-          <div id="appointmentSlotNote" class="card gold-card" style="display:none; margin-top:-4px; margin-bottom:14px; padding:14px;">
-            <p id="appointmentSlotText">Checking available slots...</p>
-          </div>
+<input
+  class="input-box"
+  type="text"
+  id="appointmentDate"
+  placeholder="Select appointment date"
+  readonly
+/>
+
+<div class="error-text" id="appointmentDateError">
+  Bookings are not available on weekends or Philippine holidays.
+</div>
+
+<div class="calendar-legend">
+  <div class="calendar-legend-item">
+    <span class="calendar-dot calendar-dot-available"></span>
+    Available date
+  </div>
+
+  <div class="calendar-legend-item">
+    <span class="calendar-dot calendar-dot-unavailable"></span>
+    Weekend / Philippine holiday
+  </div>
+
+  <div class="calendar-legend-item">
+    <span class="calendar-dot calendar-dot-full"></span>
+    Fully booked
+  </div>
+</div>
+
+<div id="calendarDateReason" class="calendar-date-reason" style="display:none;"></div>
+
+<div id="appointmentSlotNote" class="card gold-card" style="display:none; margin-top:-4px; margin-bottom:14px; padding:14px;">
+  <p id="appointmentSlotText">Checking available slots...</p>
+</div>
 
           <label>Appointment Time</label>
           <select class="input-box" id="appointmentTime">
