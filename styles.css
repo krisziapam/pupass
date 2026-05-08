@@ -714,10 +714,28 @@ textarea.input-box {
 
 .admin-filter-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
   align-items: start;
   margin-top: 14px;
+}
+
+.admin-filter-office {
+  grid-column: 1 / -1;
+}
+
+.admin-office-filter-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.admin-office-filter-buttons .btn {
+  white-space: nowrap;
+  flex: 0 0 auto;
+  margin-top: 0;
 }
 
 .admin-filter-label {
@@ -1320,12 +1338,22 @@ font-weight: 600 !important;
 }
 /* Mobile status badge fix */
 @media (max-width: 768px) {
+
+   .admin-filter-grid {
+  grid-template-columns: 1fr;
+}
+
+.admin-filter-office {
+  grid-column: auto;
+}
   #appointment .status-pill {
     min-width: 80px;
     text-align: center;
     white-space: nowrap;
     padding: 6px 12px;
   }
+
+ 
 
   #appointment .detail-row {
     align-items: center;
