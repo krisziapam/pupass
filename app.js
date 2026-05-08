@@ -2566,7 +2566,7 @@ function openAdminTechnicalReports() {
             }).join("")}
           </select>
 
-          <div class="admin-office-filter-buttons" style="display:flex;flex-wrap:wrap;gap:8px;">
+         <div class="admin-office-filter-buttons">
             ${ADMIN_OFFICES.map(function(office) {
               const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
               return `
