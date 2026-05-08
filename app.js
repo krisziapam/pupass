@@ -33,14 +33,21 @@ async function submitContactForm() {
 
 function showMessage(message) {
   const box = document.getElementById("systemMessage");
-  if (!box) return;
+
+  // Backup alert if the systemMessage div is missing
+  if (!box) {
+    alert(message);
+    return;
+  }
 
   box.innerText = message;
   box.style.display = "block";
 
-  setTimeout(function() {
+  clearTimeout(box.hideTimer);
+
+  box.hideTimer = setTimeout(function() {
     box.style.display = "none";
-  }, 4000);
+  }, 5000);
 }
 
 function showLoadingMessage(message) {
