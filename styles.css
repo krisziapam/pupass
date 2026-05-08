@@ -775,6 +775,25 @@ textarea.input-box {
   font-weight: 700;
 }
 
+.system-message-info {
+  border-left-color: var(--maroon);
+}
+
+.system-message-success {
+  border-left-color: var(--green);
+  background: #f3fff5;
+}
+
+.system-message-error {
+  border-left-color: var(--red);
+  background: #fff5f5;
+}
+
+.system-message-warning {
+  border-left-color: var(--gold);
+  background: var(--light-gold);
+}
+
 .center-block {
   text-align: center;
   margin-top: 35px;
