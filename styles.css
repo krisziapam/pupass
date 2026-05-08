@@ -1511,3 +1511,31 @@ font-weight: 600 !important;
   }
 
 }
+
+/* Mobile dark mode toggle position fix */
+@media (max-width: 768px) {
+  .theme-toggle {
+    top: auto;
+    right: auto;
+    left: 18px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+
+  .theme-toggle::before {
+    content: "🌙";
+    font-size: 22px;
+  }
+
+  body.dark-mode .theme-toggle::before {
+    content: "☀️";
+  }
+}
