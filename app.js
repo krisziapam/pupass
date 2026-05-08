@@ -1143,8 +1143,7 @@ const hasActiveBooking = allAppointments.some(function(item) {
 });
 
 if (hasActiveBooking) {
-  alert("You already have an active booking. Only one booking is allowed at a time.");
-  showMessage("You already have an active booking. Only one booking is allowed at a time.");
+  showMessage("You already have an active booking. Only one booking is allowed at a time.", "warning");
   showAppointmentScreen();
   return;
 }
@@ -2086,23 +2085,23 @@ let message = "";
   const emailInput = document.getElementById("adminEmail");
 
   if (!emailInput) {
-    alert("Admin email field not found.");
+    showMessage("Admin email field not found.", "error");
     return;
   }
 
   const email = emailInput.value.trim();
 
   if (!email) {
-    alert("Please enter your admin email first.");
+    showMessage("Please enter your admin email first.", "warning");
     return;
   }
 
   try {
     await auth.sendPasswordResetEmail(email);
-    alert("Password reset email sent. Please check your inbox or spam folder.");
+   showMessage("Password reset email sent. Please check your inbox or spam folder.", "success");
   } catch (error) {
     console.error("Password reset error:", error);
-    alert(error.message || "Could not send password reset email.");
+    showMessage(error.message || "Could not send password reset email.", "error");
   }
 };
 
