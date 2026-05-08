@@ -317,14 +317,9 @@ let adminTechnicalReportSearch = "";
 
 let bookingHistoryFilter = "All";
 
-    function showScreen(screenId) {
-      const screens = document.querySelectorAll(".screen");
+}
 
-      screens.forEach(function(screen) {
-        screen.classList.remove("active");
-      });
-
-      function applySavedTheme() {
+function applySavedTheme() {
   const savedTheme = localStorage.getItem("pupass_theme");
   const toggleButton = document.getElementById("themeToggle");
 
@@ -366,29 +361,36 @@ function toggleDarkMode() {
   }
 }
 
-      const selectedScreen = document.getElementById(screenId);
+function showScreen(screenId) {
+  const screens = document.querySelectorAll(".screen");
 
-      if (selectedScreen) {
-        selectedScreen.classList.add("active");
-      }
+  screens.forEach(function(screen) {
+    screen.classList.remove("active");
+  });
 
-      window.scrollTo(0, 0);
-      
-      renderBookingProgress();
+  const selectedScreen = document.getElementById(screenId);
 
-      if (screenId === "pass") {
-        setTimeout(renderQRCode, 100);
-      }
+  if (selectedScreen) {
+    selectedScreen.classList.add("active");
+  }
 
-      if (screenId === "dashboard") {
-        setTimeout(function() {
-          loadDashboardOfficeQueueMonitor();
-          startDashboardOfficeQueueAutoRefresh();
-        }, 200);
-      } else {
-        stopDashboardOfficeQueueAutoRefresh();
-      }
-    }
+  window.scrollTo(0, 0);
+
+  renderBookingProgress();
+
+  if (screenId === "pass") {
+    setTimeout(renderQRCode, 100);
+  }
+
+  if (screenId === "dashboard") {
+    setTimeout(function() {
+      loadDashboardOfficeQueueMonitor();
+      startDashboardOfficeQueueAutoRefresh();
+    }, 200);
+  } else {
+    stopDashboardOfficeQueueAutoRefresh();
+  }
+}
 
 function renderBookingProgress() {
   const progressHolders = document.querySelectorAll(".booking-progress-holder");
@@ -3299,4 +3301,10 @@ showHomeScreen();
 
 document.addEventListener("DOMContentLoaded", function() {
   applySavedTheme();
+
+  const themeToggle = document.getElementById("themeToggle");
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleDarkMode);
+  }
 });
