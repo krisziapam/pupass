@@ -76,7 +76,14 @@
             <p><b>Note:</b> Dummy student accounts are allowed for prototype testing. No password is required. If you are using a non-real student number, please create a unique random number, as this will be used as the basis for tracking and monitoring your appointment.</p>
           </div>
 
-          <button class="btn" onclick="studentLogin()">Continue to Booking</button>
+         <button
+  class="btn"
+  id="studentLoginButton"
+  type="button"
+  onclick="runWithButtonLoading('studentLoginButton', 'Checking appointment...', studentLogin)"
+>
+  Continue to Booking
+</button>
         </div>
       </div>
     </section>
@@ -313,7 +320,14 @@
             <p><b>Reminder:</b> Please bring your student ID and required documents on your appointment date.</p>
           </div>
 
-          <button class="btn" onclick="prepareConfirmation()">Review Appointment</button>
+         <button
+  class="btn"
+  id="reviewAppointmentButton"
+  type="button"
+  onclick="runWithButtonLoading('reviewAppointmentButton', 'Checking slots...', prepareConfirmation)"
+>
+  Review Appointment
+</button>
         </div>
       </div>
     </section>
@@ -358,7 +372,15 @@
         </div>
       </div>
 
-      <button class="btn" onclick="saveBookingToFirestore()">Confirm Booking</button>
+      <button
+  class="btn"
+  id="confirmBookingButton"
+  type="button"
+  onclick="runWithButtonLoading('confirmBookingButton', 'Saving booking...', saveBookingToFirestore)"
+>
+  Confirm Booking
+</button>
+      
       <button class="btn btn-outline" onclick="showScreen('book')">Edit Details</button>
     </section>
 
@@ -629,8 +651,15 @@
 
         <label>Steps before the error</label>
         <textarea class="input-box" id="technicalErrorSteps" placeholder="Example: I logged in, selected Registrar, chose date, then clicked Confirm Booking."></textarea>
-
-        <button class="btn" onclick="submitTechnicalErrorReport()">Submit Technical Report</button>
+<button
+  class="btn"
+  id="technicalReportButton"
+  type="button"
+  onclick="runWithButtonLoading('technicalReportButton', 'Submitting report...', submitTechnicalErrorReport)"
+>
+  Submit Technical Report
+</button>
+        
       </div>
 
       <div class="bottom-nav">
@@ -653,7 +682,15 @@
 
       <textarea class="input-box" id="feedbackComment" placeholder="Write your comments or suggestions here..."></textarea>
 
-      <button class="btn" onclick="completeAppointment()">Submit Feedback</button>
+     <button
+  class="btn"
+  id="submitFeedbackButton"
+  type="button"
+  onclick="runWithButtonLoading('submitFeedbackButton', 'Submitting feedback...', completeAppointment)"
+>
+  Submit Feedback
+</button>
+      
     </section>
 
     <section id="thankYou" class="screen">
@@ -681,7 +718,15 @@
           <input class="input-box" type="email" id="adminEmail" placeholder="Admin Email" />
           <input class="input-box" type="password" id="adminPassword" placeholder="Password" />
 
-          <button class="btn" onclick="adminLogin()">Log In</button>
+         <button
+  class="btn"
+  id="adminLoginButton"
+  type="button"
+  onclick="runWithButtonLoading('adminLoginButton', 'Logging in...', adminLogin)"
+>
+  Log In
+</button>
+          
           <button class="admin-forgot-link" type="button" onclick="resetAdminPassword()">Forgot Password?</button>
           <button class="btn btn-outline" onclick="showAdminCreateForm()">Create Admin Account</button>
 
@@ -697,7 +742,14 @@
   readonly 
   style="background:#eeeeee; color:#777777; cursor:not-allowed;" 
 />
-            <button class="btn btn-gold" onclick="createAdminAccount()">Create Account</button>
+            <button
+  class="btn btn-gold"
+  id="createAdminButton"
+  type="button"
+  onclick="runWithButtonLoading('createAdminButton', 'Creating account...', createAdminAccount)"
+>
+  Create Account
+</button>
           </div>
 
           <p class="muted-center">For authorized PUP staff only.</p>
@@ -806,7 +858,14 @@
     <label>Inquiry</label>
     <textarea class="input-box" id="contactMessage" placeholder="Write your inquiry here..."></textarea>
 
-    <button class="btn" onclick="submitContactForm()">Submit Inquiry</button>
+   <button
+  class="btn"
+  id="contactSubmitButton"
+  type="button"
+  onclick="runWithButtonLoading('contactSubmitButton', 'Submitting inquiry...', submitContactForm)"
+>
+  Submit Inquiry
+</button>
   </div>
 </section>
 
