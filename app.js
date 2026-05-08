@@ -322,6 +322,8 @@ let adminTechnicalReportSearch = "";
       }
 
       window.scrollTo(0, 0);
+      
+      renderBookingProgress();
 
       if (screenId === "pass") {
         setTimeout(renderQRCode, 100);
@@ -336,6 +338,72 @@ let adminTechnicalReportSearch = "";
         stopDashboardOfficeQueueAutoRefresh();
       }
     }
+
+function renderBookingProgress() {
+  const progressHolders = document.querySelectorAll(".booking-progress-holder");
+
+  if (!progressHolders.length) return;
+
+  const steps = [
+    {
+      number: 1,
+      label: "Select Service"
+    },
+    {
+      number: 2,
+      label: "Choose Date and Time"
+    },
+    {
+      number: 3,
+      label: "Review Details"
+    },
+    {
+      number: 4,
+      label: "Queue Pass"
+    }
+  ];
+
+  progressHolders.forEach(function(holder) {
+    const currentStep = Number(holder.dataset.bookingStep || 1);
+
+    const stepText = steps
+      .map(function(step) {
+        let stateClass = "pending";
+        let circleText = step.number;
+
+        if (step.number < currentStep) {
+          stateClass = "completed";
+          circleText = "✓";
+        } else if (step.number === currentStep) {
+          stateClass = "active";
+        }
+
+        return `
+          <div class="booking-progress-item ${stateClass}">
+            <div class="booking-progress-circle">${circleText}</div>
+            <div class="booking-progress-label">${step.label}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+    const currentLabel = steps[currentStep - 1]
+      ? steps[currentStep - 1].label
+      : "Booking";
+
+    holder.innerHTML = `
+      <div class="booking-progress-card">
+        <div class="booking-progress-title">
+          Step ${currentStep} of 4: ${currentLabel}
+        </div>
+
+        <div class="booking-progress-track">
+          ${stepText}
+        </div>
+      </div>
+    `;
+  });
+}
 
     function getText(id) {
       const element = document.getElementById(id);
