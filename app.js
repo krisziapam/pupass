@@ -315,6 +315,8 @@ let adminAppointmentSearch = "";
 let adminTechnicalReportView = "open";
 let adminTechnicalReportSearch = "";
 
+let bookingHistoryFilter = "All";
+
     function showScreen(screenId) {
       const screens = document.querySelectorAll(".screen");
 
@@ -1971,6 +1973,46 @@ async function cancelAppointment() {
   const feedbackFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfWcDZugsMhWRd3oLtIBXC4_b1TEFmcAYnymFRRnaUIIcK3Rw/viewform?usp=sharing&ouid=112133641462307009901";
 
   window.open(feedbackFormUrl, "_blank", "noopener,noreferrer");
+}
+
+function setBookingHistoryFilter(filter) {
+  bookingHistoryFilter = filter;
+  showNotificationsScreen();
+}
+
+function renderBookingHistoryControls() {
+  const filters = ["All", "Completed", "Cancelled", "No-show"];
+
+  return `
+    <div class="card">
+      <h2>History Filter</h2>
+      <p>View all past bookings or filter by status.</p>
+
+      <div class="booking-history-filter-row">
+        ${filters.map(function(filter) {
+          const activeClass = bookingHistoryFilter === filter ? "btn-gold" : "btn-outline";
+
+          return `
+            <button
+              class="btn btn-small ${activeClass}"
+              type="button"
+              onclick="setBookingHistoryFilter('${filter}')"
+            >
+              ${filter}
+            </button>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function bookingHistoryMatchesFilter(status) {
+  if (bookingHistoryFilter === "All") {
+    return true;
+  }
+
+  return status === bookingHistoryFilter;
 }
 
     async function showNotificationsScreen() {
