@@ -453,29 +453,35 @@ function studentLogout() {
     }
 
     function validateAppointmentDateSelection(showAlert) {
-      const appointmentDateInput = document.getElementById("appointmentDate");
+  const appointmentDateInput = document.getElementById("appointmentDate");
 
-      if (!appointmentDateInput || !appointmentDateInput.value) return true;
+  if (!appointmentDateInput || !appointmentDateInput.value) return true;
 
-      const reason = getUnavailableBookingReason(appointmentDateInput.value);
+  const selectedDateKey = appointmentDateInput.value;
+  const reason = getUnavailableBookingReason(selectedDateKey);
 
-      updateAppointmentDateError(appointmentDateInput.value);
+  updateAppointmentDateError(selectedDateKey);
 
-      if (reason) {
-        if (showAlert) {
-          showMessage(reason);
-        }
-
-        const nextAvailableDateKey = getNextAvailableBookingDateKey(appointmentDateInput.value);
-        appointmentDateInput.value = nextAvailableDateKey;
-        updateAppointmentDateError(nextAvailableDateKey);
-        updateAppointmentSlotNote(nextAvailableDateKey);
-
-        return false;
-      }
-
-      return true;
+  if (reason) {
+    if (showAlert) {
+      showMessage(reason);
     }
+
+    const nextAvailableDateKey = getNextAvailableBookingDateKey(selectedDateKey);
+    const nextAvailableDisplay = formatDateForDisplay(nextAvailableDateKey);
+
+    appointmentDateInput.value = nextAvailableDateKey;
+
+    updateAppointmentDateError(nextAvailableDateKey);
+    updateAppointmentSlotNote(nextAvailableDateKey);
+
+    showMessage(reason + " The next available date is " + nextAvailableDisplay + ".");
+
+    return false;
+  }
+
+  return true;
+}
 
     function formatPupassDateTime(value) {
       if (!value) return "Just now";
