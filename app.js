@@ -324,6 +324,48 @@ let bookingHistoryFilter = "All";
         screen.classList.remove("active");
       });
 
+      function applySavedTheme() {
+  const savedTheme = localStorage.getItem("pupass_theme");
+  const toggleButton = document.getElementById("themeToggle");
+
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+
+    if (toggleButton) {
+      toggleButton.innerText = "☀️ Light";
+    }
+  } else {
+    document.body.classList.remove("dark-mode");
+
+    if (toggleButton) {
+      toggleButton.innerText = "🌙 Dark";
+    }
+  }
+}
+
+function toggleDarkMode() {
+  const isDarkMode = document.body.classList.toggle("dark-mode");
+  const toggleButton = document.getElementById("themeToggle");
+
+  if (isDarkMode) {
+    localStorage.setItem("pupass_theme", "dark");
+
+    if (toggleButton) {
+      toggleButton.innerText = "☀️ Light";
+    }
+
+    showMessage("Dark mode enabled.", "success");
+  } else {
+    localStorage.setItem("pupass_theme", "light");
+
+    if (toggleButton) {
+      toggleButton.innerText = "🌙 Dark";
+    }
+
+    showMessage("Light mode enabled.", "success");
+  }
+}
+
       const selectedScreen = document.getElementById(screenId);
 
       if (selectedScreen) {
