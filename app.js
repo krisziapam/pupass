@@ -31,16 +31,20 @@ async function submitContactForm() {
   }
 }
 
-function showMessage(message) {
+function showMessage(message, type = "info") {
   const box = document.getElementById("systemMessage");
 
-  // Backup alert if the systemMessage div is missing
+  // Fallback, just in case the systemMessage div is missing
   if (!box) {
     alert(message);
     return;
   }
 
   box.innerText = message;
+
+  box.className = "system-message";
+  box.classList.add("system-message-" + type);
+
   box.style.display = "block";
 
   clearTimeout(box.hideTimer);
