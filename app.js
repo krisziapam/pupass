@@ -2593,12 +2593,34 @@ document.getElementById("adminCompleted").innerText = completed;
         });
     }
 
-    async function updateAdminStatus(appointmentId, newStatus) {
+ async function updateAdminStatus(appointmentId, newStatus) {
+  const needsConfirmation =
+    newStatus === "Completed" ||
+    newStatus === "Cancelled" ||
+    newStatus === "No-show";
+
+  if (needsConfirmation) {
+    const confirmed = confirm("Mark this appointment as " + newStatus + "?");
+
+    if (!confirmed) {
+      showMessage("Status update cancelled.", "info");
+      return;
+    }
+  }
+
   try {
     const appointmentRef = db.collection("appointments").doc(appointmentId);
     const appointmentDoc = await appointmentRef.get();
-    const appointmentData = appointmentDoc.exists ? appointmentDoc.data() : {};
-    const studentId = normalizeStudentId(appointmentData.studentId || appointmentData.studentKey || "");
+
+    if (!appointmentDoc.exists) {
+      showMessage("Appointment was not found.", "error");
+      return;
+    }
+
+    const appointmentData = appointmentDoc.data();
+    const studentId = normalizeStudentId(
+      appointmentData.studentId || appointmentData.studentKey || ""
+    );
 
     await appointmentRef.update({
       status: newStatus,
@@ -2608,7 +2630,11 @@ document.getElementById("adminCompleted").innerText = completed;
     if (studentId) {
       const lockRef = db.collection("activeStudentBookings").doc(studentId);
 
-      if (newStatus === "Completed" || newStatus === "Cancelled" || newStatus === "No-show") {
+      if (
+        newStatus === "Completed" ||
+        newStatus === "Cancelled" ||
+        newStatus === "No-show"
+      ) {
         await lockRef.delete();
       } else if (isActiveBooking(newStatus)) {
         await lockRef.set({
@@ -2619,9 +2645,12 @@ document.getElementById("adminCompleted").innerText = completed;
         }, { merge: true });
       }
     }
+
+    showMessage("Appointment status updated to " + newStatus + ".", "success");
+
   } catch (error) {
     console.error("Error updating appointment:", error);
-    showMessage("Status was not updated.");
+    showMessage("Status was not updated.", "error");
   }
 }
 
