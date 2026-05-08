@@ -297,11 +297,16 @@ function studentLogout() {
     let selectedAdminOfficeFilter =
       localStorage.getItem("pupass_admin_office_filter") || "Registrar";
 
-    let adminQueueView =
-      localStorage.getItem("pupass_admin_queue_view") || "active";
+   let adminQueueView =
+  localStorage.getItem("pupass_admin_queue_view") || "active";
 
-    let adminTechnicalReportView = "open";
-    let adminTechnicalReportSearch = "";
+let selectedAdminDateKey =
+  localStorage.getItem("pupass_admin_date_filter") || getTodayDateKey();
+
+let adminAppointmentSearch = "";
+
+let adminTechnicalReportView = "open";
+let adminTechnicalReportSearch = "";
 
     function showScreen(screenId) {
       const screens = document.querySelectorAll(".screen");
@@ -2201,16 +2206,38 @@ function openAdminTechnicalReports() {
   renderAdminTechnicalReportInbox();
 }
 
-    function ensureAdminFilterUI() {
-      const area = document.getElementById("adminFilterArea");
-      if (!area) return;
+   function ensureAdminFilterUI() {
+  const area = document.getElementById("adminFilterArea");
+  if (!area) return;
 
-      area.innerHTML = `
-        <div class="card">
-          <h2>Filter by Office</h2>
-          <p>Select which office queue you want to manage.</p>
+  const selectedDateLabel = selectedAdminDateKey
+    ? formatDateForDisplay(selectedAdminDateKey)
+    : "All Dates";
 
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+  const queueViewLabel = adminQueueView === "active"
+    ? "Active Queue"
+    : "Archive";
+
+  area.innerHTML = `
+    <div class="card">
+      <h2>Admin Queue Controls</h2>
+      <p>Filter appointments by office, date, queue view, Student ID, or Queue Number.</p>
+
+      <div class="admin-filter-grid">
+        <div>
+          <label>Office</label>
+
+          <select class="input-box admin-office-filter-dropdown" onchange="setAdminOfficeFilter(this.value)">
+            ${ADMIN_OFFICES.map(function(office) {
+              return `
+                <option value="${safePupassText(office)}" ${selectedAdminOfficeFilter === office ? "selected" : ""}>
+                  ${safePupassText(office)}
+                </option>
+              `;
+            }).join("")}
+          </select>
+
+          <div class="admin-office-filter-buttons" style="display:flex;flex-wrap:wrap;gap:8px;">
             ${ADMIN_OFFICES.map(function(office) {
               const activeClass = selectedAdminOfficeFilter === office ? "btn-gold" : "btn-outline";
               return `
@@ -2220,27 +2247,127 @@ function openAdminTechnicalReports() {
               `;
             }).join("")}
           </div>
-
-          <p style="margin-top:12px;font-weight:700;color:var(--maroon);">
-            Currently showing office: ${safePupassText(selectedAdminOfficeFilter)}
-          </p>
         </div>
 
-        <div class="card">
-          <h2>Queue View</h2>
-          <p>Active Queue shows waiting and serving students. Archive shows completed, cancelled, and no-show records.</p>
+        <div>
+          <label>Appointment Date</label>
+          <input
+            class="input-box"
+            type="date"
+            id="adminDateFilter"
+            value="${safePupassText(selectedAdminDateKey)}"
+            onchange="setAdminDateFilter(this.value)"
+          />
 
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="btn btn-small ${adminQueueView === "active" ? "btn-gold" : "btn-outline"}" onclick="setAdminQueueView('active')">
-              Active Queue
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-small btn-gold" type="button" onclick="setAdminDateFilter(getTodayDateKey())">
+              Today
             </button>
-            <button class="btn btn-small ${adminQueueView === "archive" ? "btn-gold" : "btn-outline"}" onclick="setAdminQueueView('archive')">
-              Archive
+            <button class="btn btn-small btn-outline" type="button" onclick="clearAdminDateFilter()">
+              All Dates
             </button>
           </div>
         </div>
-      `;
-    }
+
+        <div>
+          <label>Search</label>
+          <input
+            class="input-box"
+            type="text"
+            id="adminAppointmentSearch"
+            placeholder="Search Student ID, name, queue number..."
+            value="${safePupassText(adminAppointmentSearch)}"
+            oninput="setAdminAppointmentSearch(this.value)"
+          />
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <h2 style="font-size:16px;margin-bottom:8px;">Queue View</h2>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <button class="btn btn-small ${adminQueueView === "active" ? "btn-gold" : "btn-outline"}" onclick="setAdminQueueView('active')">
+            Active Queue
+          </button>
+
+          <button class="btn btn-small ${adminQueueView === "archive" ? "btn-gold" : "btn-outline"}" onclick="setAdminQueueView('archive')">
+            Archive
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-filter-label">
+        Showing: ${safePupassText(selectedAdminOfficeFilter)} · ${safePupassText(selectedDateLabel)} · ${safePupassText(queueViewLabel)}
+      </div>
+    </div>
+  `;
+}
+
+function setAdminDateFilter(dateKey) {
+  selectedAdminDateKey = dateKey || "";
+
+  if (selectedAdminDateKey) {
+    localStorage.setItem("pupass_admin_date_filter", selectedAdminDateKey);
+  } else {
+    localStorage.removeItem("pupass_admin_date_filter");
+  }
+
+  ensureAdminFilterUI();
+  renderAdminAppointments();
+}
+
+function clearAdminDateFilter() {
+  selectedAdminDateKey = "";
+  localStorage.removeItem("pupass_admin_date_filter");
+
+  ensureAdminFilterUI();
+  renderAdminAppointments();
+}
+
+function setAdminAppointmentSearch(value) {
+  adminAppointmentSearch = String(value || "").toLowerCase().trim();
+
+  ensureAdminFilterUI();
+  renderAdminAppointments();
+}
+
+function refreshAdminAppointments() {
+  showMessage("Refreshing appointment queue...", "info");
+  ensureAdminFilterUI();
+  renderAdminAppointments();
+}
+
+function adminDateMatches(item) {
+  if (!selectedAdminDateKey) return true;
+
+  const selectedDisplayDate = formatDateForDisplay(selectedAdminDateKey);
+
+  return item.appointmentDateKey === selectedAdminDateKey ||
+    item.appointmentDate === selectedDisplayDate;
+}
+
+function adminSearchMatches(record) {
+  if (!adminAppointmentSearch) return true;
+
+  const item = record.data || {};
+
+  const searchableText = [
+    item.studentId,
+    item.studentKey,
+    item.fullName,
+    item.queueNumber,
+    item.office,
+    item.requestType,
+    item.appointmentDate,
+    item.appointmentDateKey,
+    item.appointmentTime,
+    item.status,
+    item.purpose
+  ].join(" ").toLowerCase();
+
+  return searchableText.includes(adminAppointmentSearch);
+}
+
 
     function setAdminCampusFilter() {
       selectedAdminCampusFilter = MAIN_CAMPUS;
@@ -2347,9 +2474,11 @@ function openAdminTechnicalReports() {
           });
 
           let filteredAppointments = allAppointments.filter(function(record) {
-            return adminCampusMatches(record.data.campus) &&
-              adminOfficeMatches(record.data.office);
-          });
+  return adminCampusMatches(record.data.campus) &&
+    adminOfficeMatches(record.data.office) &&
+    adminDateMatches(record.data) &&
+    adminSearchMatches(record);
+});
 
           if (adminQueueView === "active") {
             filteredAppointments = filteredAppointments.filter(function(record) {
@@ -2380,10 +2509,18 @@ function openAdminTechnicalReports() {
             if (status === "Completed") completed++;
           });
 
-          document.getElementById("adminTotal").innerText = total;
-          document.getElementById("adminWaiting").innerText = waiting;
-          document.getElementById("adminServing").innerText = serving;
-          document.getElementById("adminCompleted").innerText = completed;
+          const adminTotalLabel = document.getElementById("adminTotalLabel");
+
+if (adminTotalLabel) {
+  adminTotalLabel.innerText = selectedAdminDateKey
+    ? "Appointments on " + formatDateForDisplay(selectedAdminDateKey)
+    : "All Appointments";
+}
+
+document.getElementById("adminTotal").innerText = total;
+document.getElementById("adminWaiting").innerText = waiting;
+document.getElementById("adminServing").innerText = serving;
+document.getElementById("adminCompleted").innerText = completed;
 
           updateAdminQueueNumberStats(filteredAppointments);
 
@@ -2391,7 +2528,11 @@ function openAdminTechnicalReports() {
             list.innerHTML = `
               <div class="card gold-card">
                 <h2>No Appointments Found</h2>
-                <p>No appointments found for ${safePupassText(MAIN_CAMPUS)} and ${safePupassText(selectedAdminOfficeFilter)}.</p>
+                <p>
+  No appointments found for
+  ${safePupassText(selectedAdminOfficeFilter)}
+  ${selectedAdminDateKey ? "on " + safePupassText(formatDateForDisplay(selectedAdminDateKey)) : "for all dates"}.
+</p>
               </div>
             `;
             return;
