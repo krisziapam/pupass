@@ -818,7 +818,11 @@ async function refreshFullyBookedCalendarDates(year, monthIndex) {
     return;
   }
 
-  appointmentDateInput.min = todayKey;
+      // Fallback if Flatpickr fails to load
+appointmentDateInput.type = "date";
+appointmentDateInput.removeAttribute("readonly");
+appointmentDateInput.min = todayKey;
+
 
   if (!appointmentDateInput.value || getUnavailableBookingReason(appointmentDateInput.value)) {
     appointmentDateInput.value = getNextAvailableBookingDateKey(todayKey);
