@@ -72,6 +72,50 @@ function showLoadingMessage(message) {
   clearTimeout(box.hideTimer);
 }
 
+function setButtonLoading(buttonId, loadingText) {
+  const button = document.getElementById(buttonId);
+  if (!button) return null;
+
+  if (!button.dataset.originalText) {
+    button.dataset.originalText = button.innerText;
+  }
+
+  button.disabled = true;
+  button.classList.add("loading");
+  button.innerText = loadingText;
+
+  return button;
+}
+
+function resetButtonLoading(buttonId) {
+  const button = document.getElementById(buttonId);
+  if (!button) return;
+
+  button.disabled = false;
+  button.classList.remove("loading");
+
+  if (button.dataset.originalText) {
+    button.innerText = button.dataset.originalText;
+  }
+}
+
+async function runWithButtonLoading(buttonId, loadingText, actionFunction) {
+  const button = document.getElementById(buttonId);
+
+  if (button && button.disabled) return;
+
+  setButtonLoading(buttonId, loadingText);
+
+  try {
+    await actionFunction();
+  } catch (error) {
+    console.error("Button action error:", error);
+    showMessage("Something went wrong. Please try again.", "error");
+  } finally {
+    resetButtonLoading(buttonId);
+  }
+}
+
     /* =====================================================
        PUPASS COMPLETE SINGLE-FILE SYSTEM
        - Student login for Main Campus only
