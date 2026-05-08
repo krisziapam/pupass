@@ -509,14 +509,17 @@ function studentLogout() {
         updateAppointmentDateError(appointmentDateInput.value);
         updateAppointmentSlotNote(appointmentDateInput.value);
 
-        if (!appointmentDateInput.dataset.blackoutListenerAttached) {
-          appointmentDateInput.addEventListener("change", function() {
-            validateAppointmentDateSelection(true);
-            updateAppointmentSlotNote(this.value);
-          });
+       if (!appointmentDateInput.dataset.blackoutListenerAttached) {
+  function handleDateSelection() {
+    validateAppointmentDateSelection(true);
+    updateAppointmentSlotNote(appointmentDateInput.value);
+  }
 
-          appointmentDateInput.dataset.blackoutListenerAttached = "true";
-        }
+  appointmentDateInput.addEventListener("input", handleDateSelection);
+  appointmentDateInput.addEventListener("change", handleDateSelection);
+
+  appointmentDateInput.dataset.blackoutListenerAttached = "true";
+}
       }
     }
 
