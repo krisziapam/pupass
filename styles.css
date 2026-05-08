@@ -426,6 +426,14 @@ label {
   color: var(--red);
 }
 
+.calendar-helper-text {
+  margin-top: -8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .flatpickr-day.pupass-unavailable-date,
 .flatpickr-day.disabled.pupass-unavailable-date {
   color: #999999 !important;
