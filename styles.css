@@ -1082,10 +1082,10 @@ textarea.input-box {
   }
 
   .screen {
-    min-height: 100vh;
-    padding: 20px;
-    padding-bottom: 90px;
-  }
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 110px;
+}
 
   .page-header {
     margin: -20px -20px 22px;
