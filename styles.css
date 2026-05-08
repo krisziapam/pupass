@@ -287,6 +287,24 @@ label {
   border-top-color: var(--maroon);
 }
 
+.booking-history-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.booking-history-filter-row .btn {
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .booking-history-filter-row .btn {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
 @keyframes pupassButtonSpin {
   to {
     transform: rotate(360deg);
