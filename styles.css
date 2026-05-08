@@ -526,6 +526,57 @@ textarea.input-box {
   flex-shrink: 0;
 }
 
+.admin-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 14px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.admin-filter-label {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--light-gold);
+  border: 1px solid #f1d47a;
+  color: var(--dark-maroon);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.admin-queue-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.admin-queue-title-row .section-title {
+  margin: 0;
+}
+
+.admin-queue-title-row .btn {
+  width: auto;
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .admin-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-queue-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-queue-title-row .btn {
+    width: 100%;
+  }
+}
+
 .status-waiting {
   background: var(--light-gold);
   color: var(--dark-maroon);
