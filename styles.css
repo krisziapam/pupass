@@ -749,9 +749,15 @@ textarea.input-box {
 }
 
 @media (max-width: 768px) {
-  .admin-filter-grid {
+  .admin-dashboard-shortcuts {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
+
+  .admin-dashboard-shortcuts-lower {
+    margin-top: 22px;
+  }
+}
 
   .admin-queue-title-row {
     align-items: stretch;
@@ -1257,6 +1263,11 @@ textarea.input-box {
   grid-template-columns: 1fr 1fr;
   gap: 18px;
   margin: 22px 0;
+}
+
+.admin-dashboard-shortcuts-lower {
+  margin-top: 28px;
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
