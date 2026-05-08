@@ -738,32 +738,109 @@ async function refreshFullyBookedCalendarDates(year, monthIndex) {
 }
 
     function setupCalendarDefaults() {
-      const todayKey = getTodayDateKey();
-      const appointmentDateInput = document.getElementById("appointmentDate");
+  const todayKey = getTodayDateKey();
+  const appointmentDateInput = document.getElementById("appointmentDate");
 
-      if (appointmentDateInput) {
-        appointmentDateInput.min = todayKey;
+  if (!appointmentDateInput) return;
 
-        if (!appointmentDateInput.value || getUnavailableBookingReason(appointmentDateInput.value)) {
-          appointmentDateInput.value = getNextAvailableBookingDateKey(todayKey);
+  const currentValue = appointmentDateInput.value || todayKey;
+
+  const defaultDateKey = getUnavailableBookingReason(currentValue)
+    ? getNextAvailableBookingDateKey(todayKey)
+    : currentValue;
+
+  if (typeof flatpickr !== "undefined") {
+    if (!appointmentCalendar) {
+      appointmentCalendar = flatpickr(appointmentDateInput, {
+        dateFormat: "Y-m-d",
+        minDate: todayKey,
+        defaultDate: defaultDateKey,
+        disableMobile: true,
+        disable: [shouldDisableCalendarDate],
+
+        onReady: function(selectedDates, dateStr, instance) {
+          refreshFullyBookedCalendarDates(instance.currentYear, instance.currentMonth);
+          updateCalendarDateReason(dateStr || defaultDateKey);
+          updateAppointmentSlotNote(dateStr || defaultDateKey);
+        },
+
+        onOpen: function(selectedDates, dateStr, instance) {
+          refreshFullyBookedCalendarDates(instance.currentYear, instance.currentMonth);
+        },
+
+        onMonthChange: function(selectedDates, dateStr, instance) {
+          refreshFullyBookedCalendarDates(instance.currentYear, instance.currentMonth);
+        },
+
+        onYearChange: function(selectedDates, dateStr, instance) {
+          refreshFullyBookedCalendarDates(instance.currentYear, instance.currentMonth);
+        },
+
+        onChange: function(selectedDates, dateStr) {
+          if (!dateStr) return;
+
+          validateAppointmentDateSelection(true);
+          updateCalendarDateReason(dateStr);
+          updateAppointmentSlotNote(dateStr);
+        },
+
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const dateKey = formatDateKeyFromLocalDate(dayElem.dateObj);
+          const status = getCalendarDateStatus(dateKey);
+
+          if (status.type === "unavailable") {
+            dayElem.classList.add("pupass-unavailable-date");
+            dayElem.title = formatDateForDisplay(dateKey) + " - " + status.label;
+          }
+
+          if (status.type === "full") {
+            dayElem.classList.add("pupass-full-date");
+            dayElem.title = formatDateForDisplay(dateKey) + " - Fully booked";
+          }
+
+          if (status.type === "available") {
+            dayElem.title = formatDateForDisplay(dateKey) + " - Available date";
+          }
         }
+      });
+    } else {
+      appointmentCalendar.set("minDate", todayKey);
+      appointmentCalendar.set("disable", [shouldDisableCalendarDate]);
+      appointmentCalendar.setDate(defaultDateKey, false);
+      refreshFullyBookedCalendarDates(appointmentCalendar.currentYear, appointmentCalendar.currentMonth);
+    }
 
-        updateAppointmentDateError(appointmentDateInput.value);
-        updateAppointmentSlotNote(appointmentDateInput.value);
+    appointmentDateInput.value = defaultDateKey;
+    updateAppointmentDateError(defaultDateKey);
+    updateCalendarDateReason(defaultDateKey);
+    updateAppointmentSlotNote(defaultDateKey);
 
-       if (!appointmentDateInput.dataset.blackoutListenerAttached) {
-  function handleDateSelection() {
-    validateAppointmentDateSelection(true);
-    updateAppointmentSlotNote(appointmentDateInput.value);
+    return;
   }
 
-  appointmentDateInput.addEventListener("input", handleDateSelection);
-  appointmentDateInput.addEventListener("change", handleDateSelection);
+  appointmentDateInput.min = todayKey;
 
-  appointmentDateInput.dataset.blackoutListenerAttached = "true";
-}
-      }
+  if (!appointmentDateInput.value || getUnavailableBookingReason(appointmentDateInput.value)) {
+    appointmentDateInput.value = getNextAvailableBookingDateKey(todayKey);
+  }
+
+  updateAppointmentDateError(appointmentDateInput.value);
+  updateCalendarDateReason(appointmentDateInput.value);
+  updateAppointmentSlotNote(appointmentDateInput.value);
+
+  if (!appointmentDateInput.dataset.blackoutListenerAttached) {
+    function handleDateSelection() {
+      validateAppointmentDateSelection(true);
+      updateCalendarDateReason(appointmentDateInput.value);
+      updateAppointmentSlotNote(appointmentDateInput.value);
     }
+
+    appointmentDateInput.addEventListener("input", handleDateSelection);
+    appointmentDateInput.addEventListener("change", handleDateSelection);
+
+    appointmentDateInput.dataset.blackoutListenerAttached = "true";
+  }
+}
 
     function setStudentError(inputElement, errorElement, hasError) {
       if (!inputElement || !errorElement) return;
