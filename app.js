@@ -2552,9 +2552,11 @@ function openAdminTechnicalReports() {
 
       <div class="admin-filter-grid">
         <div>
-          <label>Office</label>
+         <div class="admin-filter-office">
+  <label>Office</label>
 
-          <select class="input-box admin-office-filter-dropdown" onchange="setAdminOfficeFilter(this.value)">
+  <select class="input-box admin-office-filter-dropdown" onchange="setAdminOfficeFilter(this.value)">
+  
             ${ADMIN_OFFICES.map(function(office) {
               return `
                 <option value="${safePupassText(office)}" ${selectedAdminOfficeFilter === office ? "selected" : ""}>
