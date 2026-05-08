@@ -3295,3 +3295,8 @@ document.getElementById("adminCompleted").innerText = completed;
         });
       }
     });
+showHomeScreen();
+
+document.addEventListener("DOMContentLoaded", function() {
+  applySavedTheme();
+});
