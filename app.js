@@ -215,11 +215,18 @@ async function runWithButtonLoading(buttonId, loadingText, actionFunction) {
 
     let selectedServiceKey = "registrar";
 
+let appointmentCalendar = null;
+const FULLY_BOOKED_DATE_KEYS = {};
+let calendarAvailabilityRefreshToken = 0;
+
+
     let verifiedStudent = {
       studentId: "",
       fullName: "",
       campus: MAIN_CAMPUS
     };
+
+
 
 function saveStudentSession() {
   localStorage.setItem("pupass_student", JSON.stringify({
@@ -624,6 +631,111 @@ function renderBookingProgress() {
         return "Just now";
       }
     }
+
+function isFullyBookedDateKey(dateKey) {
+  return Boolean(FULLY_BOOKED_DATE_KEYS[dateKey]);
+}
+
+function getCalendarDateStatus(dateKey) {
+  if (!dateKey) {
+    return {
+      type: "none",
+      label: "",
+      message: ""
+    };
+  }
+
+  const displayDate = formatDateForDisplay(dateKey);
+  const holidayName = getPhilippineHolidayName(dateKey);
+
+  if (holidayName) {
+    return {
+      type: "unavailable",
+      label: holidayName,
+      message: displayDate + " is unavailable because it is " + holidayName + "."
+    };
+  }
+
+  if (isWeekendDateKey(dateKey)) {
+    return {
+      type: "unavailable",
+      label: "Weekend",
+      message: displayDate + " is unavailable because it falls on a weekend."
+    };
+  }
+
+  if (isFullyBookedDateKey(dateKey)) {
+    return {
+      type: "full",
+      label: "Fully booked",
+      message: displayDate + " is fully booked. Please choose another date."
+    };
+  }
+
+  return {
+    type: "available",
+    label: "Available date",
+    message: displayDate + " is available for booking."
+  };
+}
+
+function updateCalendarDateReason(dateKey) {
+  const reasonBox = document.getElementById("calendarDateReason");
+
+  if (!reasonBox || !dateKey) return;
+
+  const status = getCalendarDateStatus(dateKey);
+
+  reasonBox.className = "calendar-date-reason calendar-date-reason-" + status.type;
+  reasonBox.innerHTML =
+    "<b>" + safePupassText(formatDateForDisplay(dateKey)) + "</b> - " +
+    safePupassText(status.label);
+
+  reasonBox.style.display = "block";
+}
+
+function shouldDisableCalendarDate(date) {
+  const dateKey = formatDateKeyFromLocalDate(date);
+
+  return Boolean(
+    getUnavailableBookingReason(dateKey) ||
+    isFullyBookedDateKey(dateKey)
+  );
+}
+
+async function refreshFullyBookedCalendarDates(year, monthIndex) {
+  const token = ++calendarAvailabilityRefreshToken;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, monthIndex, day);
+    const dateKey = formatDateKeyFromLocalDate(date);
+
+    if (getUnavailableBookingReason(dateKey)) {
+      delete FULLY_BOOKED_DATE_KEYS[dateKey];
+      continue;
+    }
+
+    try {
+      const bookedSlots = await countBookingsForDate(dateKey);
+
+      if (token !== calendarAvailabilityRefreshToken) return;
+
+      if (bookedSlots >= DAILY_BOOKING_LIMIT) {
+        FULLY_BOOKED_DATE_KEYS[dateKey] = true;
+      } else {
+        delete FULLY_BOOKED_DATE_KEYS[dateKey];
+      }
+    } catch (error) {
+      console.error("Error checking calendar availability:", error);
+    }
+  }
+
+  if (appointmentCalendar && token === calendarAvailabilityRefreshToken) {
+    appointmentCalendar.set("disable", [shouldDisableCalendarDate]);
+    appointmentCalendar.redraw();
+  }
+}
 
     function setupCalendarDefaults() {
       const todayKey = getTodayDateKey();
