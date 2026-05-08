@@ -317,8 +317,6 @@ let adminTechnicalReportSearch = "";
 
 let bookingHistoryFilter = "All";
 
-}
-
 function applySavedTheme() {
   const savedTheme = localStorage.getItem("pupass_theme");
   const toggleButton = document.getElementById("themeToggle");
@@ -3297,7 +3295,6 @@ document.getElementById("adminCompleted").innerText = completed;
         });
       }
     });
-showHomeScreen();
 
 document.addEventListener("DOMContentLoaded", function() {
   applySavedTheme();
