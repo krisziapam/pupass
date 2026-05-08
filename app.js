@@ -56,19 +56,22 @@ function showMessage(message, type = "info") {
 
 function showLoadingMessage(message) {
   const box = document.getElementById("systemMessage");
-  if (!box) return;
+
+  if (!box) {
+    console.log(message);
+    return;
+  }
 
   box.innerText = message;
+
+  box.className = "system-message";
+  box.classList.add("system-message-info");
+
   box.style.display = "block";
+
+  clearTimeout(box.hideTimer);
 }
 
-function hideMessage() {
-  const box = document.getElementById("systemMessage");
-  if (!box) return;
-
-  box.style.display = "none";
-}
-    
     /* =====================================================
        PUPASS COMPLETE SINGLE-FILE SYSTEM
        - Student login for Main Campus only
