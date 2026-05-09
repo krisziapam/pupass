@@ -2113,14 +2113,14 @@ function bookingHistoryMatchesFilter(status) {
           <div class="card">
             <h2>${safePupassText(booking.office || "Appointment")}</h2>
 
-            <div class="detail-row">
-              <span>Status</span>
-              <span>
-                <span class="status-pill ${statusClass}">
-                  ${safePupassText(status)}
-                </span>
-              </span>
-            </div>
+           <div class="detail-row booking-history-status-row">
+  <span>Status</span>
+  <span class="booking-history-status-cell">
+    <span class="status-pill booking-history-status-pill ${statusClass}">
+      ${safePupassText(status)}
+    </span>
+  </span>
+</div>
 
             <div class="detail-row">
               <span>Queue Number</span>
