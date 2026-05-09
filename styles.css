@@ -1858,3 +1858,33 @@ font-weight: 600 !important;
     font-size: 10.5px;
   }
 }
+/* Booking History mobile status badge fix */
+@media (max-width: 768px) {
+  #notifications .booking-history-status-row {
+    align-items: center;
+  }
+
+  #notifications .booking-history-status-cell {
+    max-width: none !important;
+    display: flex;
+    justify-content: flex-end;
+    flex: 1;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  #notifications .booking-history-status-pill {
+    width: auto !important;
+    max-width: none !important;
+    min-width: 96px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 14px;
+    line-height: 1.1;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    text-align: center;
+  }
+}
