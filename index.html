@@ -11,7 +11,7 @@
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 />
  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=13">
 
 </head>
 
@@ -40,19 +40,22 @@
         <button class="btn btn-gold" onclick="showScreen('studentLogin')">Continue as Student</button>
         <button class="btn btn-outline" onclick="showScreen('adminLogin')" style="margin-top:14px;">Continue as Admin</button>
 
-    <div style="margin-top:70px; font-size:12px; text-align:center; line-height:1.7;">
-  <p style="font-weight:700;">
-    Polytechnic University of the Philippines
-  </p>
+   <div class="splash-footer">
+  <p class="splash-school">Polytechnic University of the Philippines</p>
 
-  <p style="opacity:0.85; margin-top:10px;">
-    Interested in this project or want to collaborate?
-    <span style="text-decoration:underline; cursor:pointer; color:#fff4cc;" onclick="showScreen('contact')">
+  <div class="splash-collab">
+    <p>Interested in this project or want to collaborate?</p>
+
+    <button
+      class="splash-contact-btn"
+      type="button"
+      onclick="showScreen('contact')"
+    >
       Contact the Creator
-    </span>
-  </p>
+    </button>
+  </div>
 
-  <p style="opacity:0.75; margin-top:14px; font-size:11px;">
+  <p class="splash-copyright">
     © 2026 Kriszia Pamintuan. All rights reserved.<br>
     Prototype for educational purposes only.
   </p>
@@ -939,6 +942,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script src="firebase-config.js"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
