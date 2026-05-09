@@ -1773,3 +1773,88 @@ font-weight: 600 !important;
     padding-bottom: 120px;
   }
 }
+/* Splash footer / Contact Creator mobile polish */
+.splash-footer {
+  width: 100%;
+  max-width: 430px;
+  margin: clamp(48px, 8vh, 70px) auto 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.splash-school {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.splash-collab {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.splash-collab p {
+  max-width: 340px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+}
+
+.splash-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 193, 7, 0.85);
+  background: rgba(255, 193, 7, 0.14);
+  color: var(--light-gold);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.splash-contact-btn:hover,
+.splash-contact-btn:focus {
+  background: var(--gold);
+  color: var(--dark-maroon);
+}
+
+.splash-copyright {
+  margin-top: 18px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 480px) {
+  .splash-footer {
+    margin-top: 48px;
+    padding: 0 6px;
+  }
+
+  .splash-school {
+    font-size: 13px;
+  }
+
+  .splash-collab p {
+    max-width: 280px;
+    font-size: 12.5px;
+  }
+
+  .splash-contact-btn {
+    min-height: 40px;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .splash-copyright {
+    font-size: 10.5px;
+  }
+}
